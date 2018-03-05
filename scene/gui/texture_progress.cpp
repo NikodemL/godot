@@ -114,48 +114,26 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 		val += 1;
 	if (val > 1)
 		val -= 1;
+	const float PI = 3.1415;
 
+	float angle = val * 2 * PI;
 	Point2 p = get_relative_center();
 
-	// Minimal version of Liang-Barsky clipping algorithm
-	float angle = (val * Math_TAU) - Math_PI * 0.5;
-	Point2 dir = Vector2(Math::cos(angle), Math::sin(angle));
-	float t1 = 1.0;
-	float cp;
-	float cq;
-	float cr;
-	float edgeLeft = 0.0;
-	float edgeRight = 1.0;
-	float edgeBottom = 0.0;
-	float edgeTop = 1.0;
+	float x = cosf(angle - PI / 2);
+	float y = sinf(angle - PI / 2);
 
-	for (int edge = 0; edge < 4; edge++) {
-		if (edge == 0) {
-			if (dir.x > 0)
-				continue;
-			cp = -dir.x;
-			cq = -(edgeLeft - p.x);
-		} else if (edge == 1) {
-			if (dir.x < 0)
-				continue;
-			cp = dir.x;
-			cq = (edgeRight - p.x);
-		} else if (edge == 2) {
-			if (dir.y > 0)
-				continue;
-			cp = -dir.y;
-			cq = -(edgeBottom - p.y);
-		} else if (edge == 3) {
-			if (dir.y < 0)
-				continue;
-			cp = dir.y;
-			cq = (edgeTop - p.y);
-		}
-		cr = cq / cp;
-		if (cr >= 0 && cr < t1)
-			t1 = cr;
+	// Project to longer square side
+	float ax = fabsf(x);
+	float ay = fabsf(y);
+	if (ax > ay) {
+		x = x / ax;
+		y = y / ax;
+	} else {
+		x = x / ay;
+		y = y / ay;
 	}
-	return (p + t1 * dir);
+
+	return Point2(0.5f + x * 0.5f, 0.5f + y * 0.5f);
 }
 
 Point2 TextureProgress::get_relative_center() {

@@ -245,7 +245,7 @@ def make_version(template, nargs, argmax, const, ret):
 def run(target, source, env):
 
     versions = 13
-    versions_ext = 6
+    versions_ext = 7
     text = ""
     text_ext = ""
 

@@ -87,7 +87,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate", "expand_scale"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(1.0f));
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
 }
 
@@ -494,25 +494,25 @@ Ref<BitmapFont> BitmapFont::get_fallback() const {
 	return fallback;
 }
 
-float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate) const {
+float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, float custom_scale) const {
 
 	const Character *c = char_map.getptr(p_char);
 
 	if (!c) {
 		if (fallback.is_valid())
-			return fallback->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate);
+			return fallback->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, custom_scale);
 		return 0;
 	}
 
 	Point2 cpos = p_pos;
-	cpos.x += c->h_align;
-	cpos.y -= ascent;
-	cpos.y += c->v_align;
+	cpos.x += c->h_align * custom_scale;
+	cpos.y -= ascent * custom_scale;
+	cpos.y += c->v_align * custom_scale;
 	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
 	if (c->texture_idx != -1)
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
+		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size * custom_scale), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
 
-	return get_char_size(p_char, p_next).width;
+	return get_char_size(p_char, p_next).width * custom_scale;
 }
 
 Size2 BitmapFont::get_char_size(CharType p_char, CharType p_next) const {

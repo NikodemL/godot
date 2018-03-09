@@ -832,7 +832,7 @@ bool DynamicFont::is_distance_field_hint() const {
 	return false;
 }
 
-float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate) const {
+float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, float expand_size) const {
 
 	if (!data_at_size.is_valid())
 		return 0;

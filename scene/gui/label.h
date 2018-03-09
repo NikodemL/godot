@@ -61,11 +61,14 @@ private:
 	VAlign valign;
 	String text;
 	String xl_text;
+	String loc_label;
 	bool autowrap;
 	bool clip;
 	Size2 minsize;
 	int line_count;
 	bool uppercase;
+	bool expand;
+	int max_font_size;
 
 	int get_longest_line_width() const;
 
@@ -91,6 +94,8 @@ private:
 
 	bool word_cache_dirty;
 	void regenerate_word_cache();
+	Size2 calculate_label_rect();
+	bool update_translation();
 
 	float percent_visible;
 
@@ -142,6 +147,15 @@ public:
 	int get_line_height() const;
 	int get_line_count() const;
 	int get_visible_line_count() const;
+
+	bool has_expand() const;
+	void set_expand(bool p_expand);
+
+	int get_max_font_size() const;
+	void set_max_font_size(int p_max_font_size);
+
+	void set_loc_label(String p_loc_label);
+	String get_loc_label() const;
 
 	Label(const String &p_text = String());
 	~Label();

@@ -162,7 +162,7 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next) const {
 	return ret;
 }
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate) const {
+float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, float expand_scale) const {
 
 	const_cast<DynamicFontAtSize *>(this)->_update_char(p_char);
 
@@ -173,16 +173,16 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 	}
 
 	Point2 cpos = p_pos;
-	cpos.x += c->h_align;
-	cpos.y -= get_ascent();
-	cpos.y += c->v_align;
+	cpos.x += c->h_align * expand_scale;
+	cpos.y -= get_ascent() * expand_scale;
+	cpos.y += c->v_align * expand_scale;
 	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
 	if (c->texture_idx != -1)
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx].texture->get_rid(), c->rect, p_modulate);
+		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size * expand_scale), textures[c->texture_idx].texture->get_rid(), c->rect, p_modulate);
 
 	//textures[c->texture_idx].texture->draw(p_canvas_item,Vector2());
 
-	float ret = c->advance;
+	float ret = c->advance * expand_scale;
 	if (p_next) {
 		DynamicFontData::KerningPairKey kpk;
 		kpk.A = p_char;
@@ -190,7 +190,7 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 
 		const Map<DynamicFontData::KerningPairKey, int>::Element *K = font->kerning_map.find(kpk);
 		if (K) {
-			ret += K->get() * scale;
+			ret += K->get() * scale * expand_scale;
 		}
 	}
 
@@ -459,12 +459,12 @@ bool DynamicFont::is_distance_field_hint() const {
 	return false;
 }
 
-float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate) const {
+float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, float expand_size) const {
 
 	if (!data_at_size.is_valid())
 		return 0;
 
-	return data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate);
+	return data_at_size->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, expand_size);
 }
 
 DynamicFont::DynamicFont() {

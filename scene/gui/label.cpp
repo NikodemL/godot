@@ -60,16 +60,133 @@ int Label::get_line_height() const {
 	return get_font("font")->get_height();
 }
 
+bool Label::update_translation() {
+	String new_text;
+	if (loc_label == "") {
+		new_text = tr(text);
+		if (new_text == xl_text)
+			return false; //nothing new
+		xl_text = new_text;
+	} else {
+		// If in editor or localization disabled
+		if (!can_translate_messages() || !TranslationServer::get_singleton() || !TranslationServer::get_singleton()->is_enabled()) {
+			new_text = text;
+		} else {
+			new_text = tr(loc_label);
+			if (new_text == loc_label) {
+				new_text = loc_label + " not found";
+			}
+		}
+
+		if (new_text == xl_text)
+			return false;
+		xl_text = new_text;
+	}
+
+	word_cache_dirty = true;
+	if (percent_visible < 1)
+		visible_chars = get_total_character_count() * percent_visible;
+
+	regenerate_word_cache();
+	return true;
+}
+
+Size2 Label::calculate_label_rect() {
+	if (word_cache_dirty)
+		regenerate_word_cache();
+
+	int line_spacing = get_constant("line_spacing");
+	Ref<Font> font = get_font("font");
+	Size2 size = get_size();
+
+	// We need to calculate the rect (max line width, max height) for text
+	int font_h = font->get_height() + line_spacing;
+
+	int lines_visible = line_count; // We want to fit all lines
+
+	int space_w = font->get_char_size(' ').width;
+	int chars_total = 0;
+
+	int vbegin = 0, vsep = 0;
+
+	if (lines_visible > line_count) {
+		lines_visible = line_count;
+	}
+
+	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
+		lines_visible = max_lines_visible;
+	}
+
+	float text_size_y = lines_visible * font_h - line_spacing;
+	if (text_size_y < 1) {
+		text_size_y = 1;
+	}
+
+	WordCache *wc = word_cache;
+	if (!wc) {
+		ERR_PRINT("Word cache does not exist");
+		return Size2(1, 1);
+	}
+
+	float text_size_x = 0;
+	int line = 0;
+	int line_to = lines_skipped + (lines_visible > 0 ? lines_visible : 1);
+	while (wc) {
+		/* handle lines not meant to be drawn quickly */
+		if (line >= line_to)
+			break;
+		if (line < lines_skipped) {
+
+			while (wc && wc->char_pos >= 0)
+				wc = wc->next;
+			if (wc)
+				wc = wc->next;
+			line++;
+			continue;
+		}
+
+		/* handle lines normally */
+		if (wc->char_pos < 0) {
+			//empty line
+			wc = wc->next;
+			line++;
+			continue;
+		}
+
+		WordCache *from = wc;
+		WordCache *to = wc;
+
+		int taken = 0;
+		int spaces = 0;
+		while (to && to->char_pos >= 0) {
+
+			taken += to->pixel_width;
+			if (to != from && to->space_count) {
+				spaces += to->space_count;
+			}
+			to = to->next;
+		}
+
+		int line_width = taken + spaces * space_w;
+		if (line_width > text_size_x)
+			text_size_x = line_width;
+
+		wc = to ? to->next : 0;
+		line++;
+	}
+
+	if (text_size_x < 1)
+		text_size_x = 1;
+
+	return Size2(text_size_x, text_size_y);
+}
+
 void Label::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 
-		String new_text = tr(text);
-		if (new_text == xl_text)
-			return; //nothing new
-		xl_text = new_text;
-
-		regenerate_word_cache();
+		if (!update_translation())
+			return;
 		update();
 	}
 
@@ -98,11 +215,26 @@ void Label::_notification(int p_what) {
 
 		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
-		int font_h = font->get_height() + line_spacing;
+		// For auto-expand, we need to precalculate label rect so we expand to region
+		float expand_scale = 1.0f;
+		if (expand) {
+			Size2 labelRect = calculate_label_rect();
 
-		int lines_visible = (size.y + line_spacing) / font_h;
+			expand_scale = fminf(size.x / labelRect.x, size.y / labelRect.y);
 
-		int space_w = font->get_char_size(' ').width;
+			// Maximum font size so we don't overscale text
+			int max_label_size_y = max_font_size * line_count;
+			if (labelRect.y * expand_scale > max_label_size_y) {
+				expand_scale = max_label_size_y / labelRect.y;
+			}
+		}
+
+		int line_spacing_expand = line_spacing * expand_scale;
+		int font_h_expand = font->get_height() * expand_scale + line_spacing_expand;
+
+		int lines_visible = (size.y + line_spacing_expand) / font_h_expand;
+
+		int space_w_expand = font->get_char_size(' ').width * expand_scale;
 		int chars_total = 0;
 
 		int vbegin = 0, vsep = 0;
@@ -123,19 +255,19 @@ void Label::_notification(int p_what) {
 					//nothing
 				} break;
 				case VALIGN_CENTER: {
-					vbegin = (size.y - (lines_visible * font_h - line_spacing)) / 2;
+					vbegin = (size.y - (lines_visible * font_h_expand - line_spacing_expand)) / 2;
 					vsep = 0;
 
 				} break;
 				case VALIGN_BOTTOM: {
-					vbegin = size.y - (lines_visible * font_h - line_spacing);
+					vbegin = size.y - (lines_visible * font_h_expand - line_spacing_expand);
 					vsep = 0;
 
 				} break;
 				case VALIGN_FILL: {
 					vbegin = 0;
 					if (lines_visible > 1) {
-						vsep = (size.y - (lines_visible * font_h - line_spacing)) / (lines_visible - 1);
+						vsep = (size.y - (lines_visible * font_h_expand - line_spacing_expand)) / (lines_visible - 1);
 					} else {
 						vsep = 0;
 					}
@@ -180,7 +312,7 @@ void Label::_notification(int p_what) {
 			int spaces = 0;
 			while (to && to->char_pos >= 0) {
 
-				taken += to->pixel_width;
+				taken += to->pixel_width * expand_scale;
 				if (to != from && to->space_count) {
 					spaces += to->space_count;
 				}
@@ -200,16 +332,16 @@ void Label::_notification(int p_what) {
 				} break;
 				case ALIGN_CENTER: {
 
-					x_ofs = int(size.width - (taken + spaces * space_w)) / 2;
+					x_ofs = int(size.width - (taken + spaces * space_w_expand)) / 2;
 				} break;
 				case ALIGN_RIGHT: {
 
-					x_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (taken + spaces * space_w));
+					x_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (taken + spaces * space_w_expand));
 				} break;
 			}
 
 			float y_ofs = style->get_offset().y;
-			y_ofs += (line - lines_skipped) * font_h + font->get_ascent();
+			y_ofs += (line - lines_skipped) * font_h_expand + font->get_ascent() * expand_scale;
 			y_ofs += vbegin + line * vsep;
 
 			while (from != to) {
@@ -223,10 +355,10 @@ void Label::_notification(int p_what) {
 				}
 				if (from->space_count) {
 					/* spacing */
-					x_ofs += space_w * from->space_count;
+					x_ofs += space_w_expand * from->space_count;
 					if (can_fill && align == ALIGN_FILL && spaces) {
 
-						x_ofs += int((size.width - (taken + space_w * spaces)) / spaces);
+						x_ofs += int((size.width - (taken + space_w_expand * spaces)) / spaces);
 					}
 				}
 
@@ -244,11 +376,11 @@ void Label::_notification(int p_what) {
 								n = String::char_uppercase(c);
 							}
 
-							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow);
+							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow, expand_scale);
 							if (use_outline) {
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow, expand_scale);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, expand_scale);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, expand_scale);
 							}
 							x_ofs_shadow += move;
 							chars_total_shadow++;
@@ -265,7 +397,7 @@ void Label::_notification(int p_what) {
 							n = String::char_uppercase(c);
 						}
 
-						x_ofs += font->draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color);
+						x_ofs += font->draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color, expand_scale);
 						chars_total++;
 					}
 				}
@@ -289,6 +421,10 @@ void Label::_notification(int p_what) {
 }
 
 Size2 Label::get_minimum_size() const {
+
+	// If expanded, we can resize to any size (in theory)
+	if (expand)
+		return Size2(1, 1);
 
 	Size2 min_style = get_stylebox("normal")->get_minimum_size();
 
@@ -534,10 +670,7 @@ void Label::set_text(const String &p_string) {
 	if (text == p_string)
 		return;
 	text = p_string;
-	xl_text = tr(p_string);
-	word_cache_dirty = true;
-	if (percent_visible < 1)
-		visible_chars = get_total_character_count() * percent_visible;
+	update_translation();
 	update();
 }
 
@@ -624,6 +757,39 @@ int Label::get_total_character_count() const {
 	return total_char_cache;
 }
 
+bool Label::has_expand() const {
+	return expand;
+}
+
+void Label::set_expand(bool p_expand) {
+	expand = p_expand;
+	update();
+}
+
+int Label::get_max_font_size() const {
+	return max_font_size;
+}
+
+void Label::set_max_font_size(int p_max_font_size) {
+	max_font_size = p_max_font_size;
+	update();
+}
+
+void Label::set_loc_label(String p_loc_text) {
+	if (p_loc_text.find(" ", 0) >= 0) {
+		WARN_PRINT("Localization label typically does not contain spaces");
+	}
+
+	loc_label = p_loc_text;
+	if (!update_translation())
+		return;
+	update();
+}
+
+String Label::get_loc_label() const {
+	return loc_label;
+}
+
 void Label::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &Label::set_align);
@@ -650,6 +816,12 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_lines_skipped"), &Label::get_lines_skipped);
 	ClassDB::bind_method(D_METHOD("set_max_lines_visible", "lines_visible"), &Label::set_max_lines_visible);
 	ClassDB::bind_method(D_METHOD("get_max_lines_visible"), &Label::get_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("has_expand"), &Label::has_expand);
+	ClassDB::bind_method(D_METHOD("set_expand", "expand"), &Label::set_expand);
+	ClassDB::bind_method(D_METHOD("get_max_font_size"), &Label::get_max_font_size);
+	ClassDB::bind_method(D_METHOD("set_max_font_size", "max_size"), &Label::set_max_font_size);
+	ClassDB::bind_method(D_METHOD("get_loc_label"), &Label::get_loc_label);
+	ClassDB::bind_method(D_METHOD("set_loc_label", "loc_label"), &Label::set_loc_label);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -671,6 +843,9 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE, "-1,999,1"), "set_max_lines_visible", "get_max_lines_visible");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_max_font_size", "get_max_font_size");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "loc_label"), "set_loc_label", "get_loc_label");
 }
 
 Label::Label(const String &p_text) {
@@ -693,6 +868,9 @@ Label::Label(const String &p_text) {
 	set_text(p_text);
 	uppercase = false;
 	set_v_size_flags(SIZE_SHRINK_CENTER);
+	expand = false;
+	max_font_size = 3000;
+	loc_label = "";
 }
 
 Label::~Label() {

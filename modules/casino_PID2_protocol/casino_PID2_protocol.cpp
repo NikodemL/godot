@@ -219,6 +219,18 @@ __declspec(cdecl) void on_c_init(void* userdata, ECasinoGameClientGame gameType,
 	}
 }
 
+__declspec(cdecl) void on_c_jackpot_type(void* userdata, int type)
+{
+	ProtocolUserData* data = (ProtocolUserData*)userdata;
+	if (data && data->isOK())
+	{
+		return data->_connection->on_jackpot_type(type);
+	}
+	else {
+		ERR_PRINTS("On Init from invalid source");
+	}
+}
+
 __declspec(cdecl) void on_c_protocol_version(void* userdata, int version)
 {
 	ProtocolUserData* data = (ProtocolUserData*)userdata;
@@ -273,10 +285,11 @@ __declspec(cdecl) void on_c_game_time(void* userdata, int rem, int gt, int lbt)
 	if (data && data->isOK())
 	{
 		auto conn = data->_connection;
+		/*
 		if (conn->get_protocol_version() > 1)
 		{
 			return conn->on_game_time(rem / 1000.0f, gt / 1000.0f, lbt / 1000.0f);
-		}
+		}*/
 		return conn->on_game_time(rem, gt, lbt);
 	}
 	else {
@@ -332,6 +345,7 @@ void ProtocolPID2Connection::set_callbacks()
 	set_callback(cgccOnDisconnected, on_c_disconnected);
 	set_callback(cgccOnInit, on_c_init);
 	set_callback(cgccOnProtocolVersion, on_c_protocol_version);
+	set_callback(cgccOnJackpotType, on_c_jackpot_type);
 
 	// roulette specific
 	set_callback(cgccOnRouletteResult, on_c_roulette_result);
@@ -352,7 +366,7 @@ void ProtocolPID2Connection::set_mask(unsigned char* arr, int command)
 
 ProtocolPID2Connection::ProtocolPID2Connection()
 {
-
+	_protocolVersion = 1;
 }
 void ProtocolPID2Connection::ask_for_history()
 {
@@ -368,6 +382,7 @@ void ProtocolPID2Connection::subscribe()
 
 	// Subscribe to all events
 	(_PID_client->_fpProposeProtocolVersion)(&_userData, (unsigned short)1);
+	
 
 	(_PID_client->_fpSubscribe)(&_userData, 0, 5, _CommandMask.data());
 
@@ -376,8 +391,6 @@ void ProtocolPID2Connection::subscribe()
 	(_PID_client->_fpSubscribe)(&_userData, commShutdown, 1, _ShutdownCommandMask.data());
 	(_PID_client->_fpSubscribe)(&_userData, commPlaystationEvent, 2, _PlaystationEventCommandMask.data());
 	(_PID_client->_fpSubscribe)(&_userData, commCenterEvent, 1, _CenterEventCommandMask.data());
-
-	ask_for_history();
 }
 
 void ProtocolPID2Connection::on_connected()
@@ -398,12 +411,18 @@ void ProtocolPID2Connection::on_disconnected()
 	emit_signal("on_disconnected");
 }
 
+void ProtocolPID2Connection::on_jackpot_type(int type) {
+	print_line("PID jackpot type");
+	(_PID_client->_fpSendInit)(&_userData);
+
+	subscribe();
+
+	ask_for_history();
+}
+
 void ProtocolPID2Connection::on_init(ECasinoGameClientGame gameType, int playStationWinningThreshold,
 	byte playStationWinningCount, const char* centerVersion)
 {
-	print_line("PID on init");
-	subscribe();
-
 	emit_signal("on_init");
 }
 
@@ -463,7 +482,7 @@ void ProtocolPID2Connection::init(ProtocolPID2* protocol, String id, String addr
 	_userData._connection = this;
 
 	// Call create
-	(_PID_client->_fpCreate)(cgcgInvalid, _IP.ascii().get_data(), port, 0, _ID.ascii().get_data(), &_userData);
+	(_PID_client->_fpCreate)(cgcgRoulette0, _IP.ascii().get_data(), port, 0, _ID.ascii().get_data(), &_userData);
 }
 
 Ref<ProtocolPID2Connection> ProtocolPID2::create_connection(String id, String ip, int port)

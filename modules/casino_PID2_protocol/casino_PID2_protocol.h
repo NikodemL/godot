@@ -222,6 +222,7 @@ public:
 	void on_init(ECasinoGameClientGame gameType, int playStationWinningThreshold,
 		unsigned char playStationWinningCount, const char* centerVersion);
 	void on_protocol_version(int version);
+	void on_jackpot_type(int type);
 
 	// common
 	void on_no_more_bets();

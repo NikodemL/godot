@@ -376,6 +376,8 @@ void ProtocolPID2Connection::subscribe()
 	(_PID_client->_fpSubscribe)(&_userData, commShutdown, 1, _ShutdownCommandMask.data());
 	(_PID_client->_fpSubscribe)(&_userData, commPlaystationEvent, 2, _PlaystationEventCommandMask.data());
 	(_PID_client->_fpSubscribe)(&_userData, commCenterEvent, 1, _CenterEventCommandMask.data());
+
+	ask_for_history();
 }
 
 void ProtocolPID2Connection::on_connected()

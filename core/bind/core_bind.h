@@ -331,6 +331,8 @@ public:
 
 	bool has_feature(const String &p_feature) const;
 
+	void add_logger(const String& file);
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();

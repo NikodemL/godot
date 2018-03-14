@@ -816,6 +816,10 @@ void _OS::dump_memory_to_file(const String &p_file) {
 	OS::get_singleton()->dump_memory_to_file(p_file.utf8().get_data());
 }
 
+void _OS::add_logger(const String &p_file) {
+	OS::get_singleton()->add_logger(memnew(RotatedFileLogger(p_file)));
+}
+
 struct _OSCoreBindImg {
 
 	String path;
@@ -1095,6 +1099,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_datetime", "utc"), &_OS::get_datetime, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_date", "utc"), &_OS::get_date, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_time", "utc"), &_OS::get_time, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_logger", "filename"), &_OS::add_logger, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_time_zone_info"), &_OS::get_time_zone_info);
 	ClassDB::bind_method(D_METHOD("get_unix_time"), &_OS::get_unix_time);
 	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"), &_OS::get_datetime_from_unix_time);

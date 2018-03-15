@@ -169,8 +169,8 @@ class ProtocolPID2Connection : public Reference
 {
 	GDCLASS(ProtocolPID2Connection, Reference);
 
-	String _ID;
-	String _IP;
+	CharString _ID;
+	CharString _IP;
 	int _port;
 	void* _handle;
 

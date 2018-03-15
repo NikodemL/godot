@@ -168,8 +168,6 @@ void ProtocolPID2Connection::set_callback(ECasinoGameClientCallback callback, vo
 
 __declspec(cdecl) void on_c_log(void* userdata, const char* str)
 {
-	print_line(str);
-
 	/*
 	ProtocolUserData* data = (ProtocolUserData*)userdata;
 	if (data && data->isOK())
@@ -371,8 +369,8 @@ ProtocolPID2Connection::ProtocolPID2Connection()
 void ProtocolPID2Connection::ask_for_history()
 {
 	print_line("PID asking for history");
-	(_PID_client->_fpSetHistorySize)(&_userData, 50);
-	(_PID_client->_fpAskForHistory)(&_userData);
+	(_PID_client->_fpSetHistorySize)(_handle, 500);
+	(_PID_client->_fpAskForHistory)(_handle);
 }
 
 
@@ -381,16 +379,16 @@ void ProtocolPID2Connection::subscribe()
 	print_line("Subscribing");
 
 	// Subscribe to all events
-	(_PID_client->_fpProposeProtocolVersion)(&_userData, (unsigned short)1);
+	(_PID_client->_fpProposeProtocolVersion)(_handle, (unsigned short)1);
 	
 
-	(_PID_client->_fpSubscribe)(&_userData, 0, 5, _CommandMask.data());
+	(_PID_client->_fpSubscribe)(_handle, 0, 5, _CommandMask.data());
 
-	(_PID_client->_fpSubscribe)(&_userData, commCenterData2, 1, _CenterData2CommandMask.data());
-	(_PID_client->_fpSubscribe)(&_userData, commInit, 2, _InitCommandMask.data());
-	(_PID_client->_fpSubscribe)(&_userData, commShutdown, 1, _ShutdownCommandMask.data());
-	(_PID_client->_fpSubscribe)(&_userData, commPlaystationEvent, 2, _PlaystationEventCommandMask.data());
-	(_PID_client->_fpSubscribe)(&_userData, commCenterEvent, 1, _CenterEventCommandMask.data());
+	(_PID_client->_fpSubscribe)(_handle, commCenterData2, 1, _CenterData2CommandMask.data());
+	(_PID_client->_fpSubscribe)(_handle, commInit, 2, _InitCommandMask.data());
+	(_PID_client->_fpSubscribe)(_handle, commShutdown, 1, _ShutdownCommandMask.data());
+	(_PID_client->_fpSubscribe)(_handle, commPlaystationEvent, 2, _PlaystationEventCommandMask.data());
+	(_PID_client->_fpSubscribe)(_handle, commCenterEvent, 1, _CenterEventCommandMask.data());
 }
 
 void ProtocolPID2Connection::on_connected()
@@ -413,7 +411,7 @@ void ProtocolPID2Connection::on_disconnected()
 
 void ProtocolPID2Connection::on_jackpot_type(int type) {
 	print_line("PID jackpot type");
-	(_PID_client->_fpSendInit)(&_userData);
+	(_PID_client->_fpSendInit)(_handle);
 
 	subscribe();
 
@@ -472,8 +470,8 @@ void ProtocolPID2Connection::init(ProtocolPID2* protocol, String id, String addr
 	add_commands();
 
 	// Copy connect string
-	_ID = id;
-	_IP = address;
+	_ID = id.ascii();
+	_IP = address.ascii();
 	_port = port;
 
 	// Set all the callback when "update" is called
@@ -482,7 +480,7 @@ void ProtocolPID2Connection::init(ProtocolPID2* protocol, String id, String addr
 	_userData._connection = this;
 
 	// Call create
-	(_PID_client->_fpCreate)(cgcgRoulette0, _IP.ascii().get_data(), port, 0, _ID.ascii().get_data(), &_userData);
+	_handle = (_PID_client->_fpCreate)(cgcgRoulette0, _IP.get_data(), port, 0, _ID.get_data(), &_userData);
 }
 
 Ref<ProtocolPID2Connection> ProtocolPID2::create_connection(String id, String ip, int port)

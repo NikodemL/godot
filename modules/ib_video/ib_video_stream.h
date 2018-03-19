@@ -2,33 +2,47 @@
 /* IB video library for video and camera streaming                       */
 /*************************************************************************/
 
+#include <Windows.h>
+#include <d3d9.h>
+#include <d3dx9.h>
+#include <assert.h>
+#include "glew.h"
+#include "wglew.h"
 
 #ifndef IB_VIDEO_STREAM_H
 #define IB_VIDEO_STREAM_H
+
+class VideoStreamPlaybackIB;
 
 // A texture that is accessible as read-only to OpenGL but is rendered to by DirectX
 class DirectXIBVideoTexture : public Texture {
 	GDCLass(DirectXIBVideoTexture);
 
+	RID texture;
+	Image::Format format;
+	int w, h;
+
+	HANDLE dx_surface_handle;
+	HANDLE gl_texture_handle;
+
 public:
-	virtual int get_width() const = 0;
-	virtual int get_height() const = 0;
-	virtual Size2 get_size() const;
-	virtual RID get_rid() const = 0;
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+	virtual RID get_rid() const override;
 
-	virtual bool has_alpha() const = 0;
+	virtual bool has_alpha() const override;
 
-	virtual void set_flags(uint32_t p_flags) = 0;
-	virtual uint32_t get_flags() const = 0;
+	virtual void set_flags(uint32_t p_flags) override;
+	virtual uint32_t get_flags() const override;
 
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_clip_uv = true) const;
-	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
-	virtual Ref<Image> get_data() const { return Ref<Image>(); }
+	DirectXIBVideoTexture();
+	~DirectXIBVideoTexture();
 
-	Texture();
+private:
+	void register_shared_texture_DX(LPDIRECT3DDEVICE9EX p_dx_device, HANDLE p_shared_dx_texture);
+
+	friend VideoStreamPlaybackIB;
 };
 
 
@@ -36,7 +50,7 @@ class VideoStreamPlaybackIB : public VideoStreamPlayback {
 
 	GDCLASS(VideoStreamPlaybackIB, VideoStreamPlayback);
 
-	Ref<ImageTexture> texture;
+	Ref<DirectXIBVideoTexture> texture;
 
 protected:
 	void clear();
@@ -99,6 +113,31 @@ public:
 	void set_audio_track(int p_track) { audio_track = p_track; }
 
 	VideoStreamIB() { audio_track = 0; }
+};
+
+
+class VideoStreamIBManager {
+
+	static VideoStreamIBManager* singleton;
+
+	LPDIRECT3D9EX d3d;
+	LPDIRECT3DDEVICE9EX d9device;
+	HWND hWndDX;
+
+public:
+	VideoStreamIBManager() {
+		singleton = this;
+	}
+
+	VideoStreamIBManager* get_singleton{ return singleton; }
+
+	// Global update 
+	void update();
+
+	// Will initiali
+	void init();
+	void release();
+
 };
 
 #endif

@@ -79,7 +79,7 @@ void LogHelper(int level, const char* fmt, ...)
 // Video globals
 /////////////////////////////////////////////////////////////////
 struct TVideoInstance {
-	int id;
+	int id;;
 	TVideoObject* pVideoObject;
 	IDirect3DTexture9* pVideoTexture9;
 	ID3D11ShaderResourceView* pVideoTexture11;

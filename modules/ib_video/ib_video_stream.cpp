@@ -1,575 +1,550 @@
+#include <d3d9.h>
+#include <d3d11.h>
+#include <map>
+#include <mutex>
+#include <thread>
+#include <string>
+#include <list>
+#include <concurrent_queue.h>
+
 #include "ib_video_stream.h"
 
+#include "video.h"
+#include "video_ffmpeg.h"
+#include "video_dxframe.h"
+#include "video_wasapiaudio.h"
+#include "dxva2decoder.h"
 
 
-void VideoStreamPlaybackIB::set_url(const String &p_url) {
 
-	ERR_FAIL_COND(playing);
-	ogg_packet op;
-	th_setup_info *ts = NULL;
+int DirectXIBVideoTexture::get_width() const {
+	return w;
+}
 
-	file_name = p_file;
-	if (file) {
-		memdelete(file);
-	}
-	file = FileAccess::open(p_file, FileAccess::READ);
-	ERR_FAIL_COND(!file);
+int DirectXIBVideoTexture::get_height() const {
+	return h;
+}
 
-#ifdef THEORA_USE_THREAD_STREAMING
-	thread_exit = false;
-	thread_eof = false;
-	//pre-fill buffer
-	int to_read = ring_buffer.space_left();
-	int read = file->get_buffer(read_buffer.ptr(), to_read);
-	ring_buffer.write(read_buffer.ptr(), read);
+RID DirectXIBVideoTexture::get_rid() const {
+	return texture;
+}
 
-	thread = Thread::create(_streaming_thread, this);
+bool DirectXIBVideoTexture::has_alpha() const {
+	return false;
+}
 
-#endif
+void DirectXIBVideoTexture::set_flags(uint32_t p_flags) {
+	ERR_FAIL(false && "Cannot set flags for DX texture");
+}
+uint32_t DirectXIBVideoTexture::get_flags() const {
+	return FLAG_VIDEO_SURFACE;
+}
 
-	ogg_sync_init(&oy);
+DirectXIBVideoTexture::DirectXIBVideoTexture() {
+	format = Image::TEXTURE_MAX;
+	flags = 0;
+	w = 0;
+	h = 0;
 
-	/* init supporting Vorbis structures needed in header parsing */
-	vorbis_info_init(&vi);
-	vorbis_comment_init(&vc);
+	texture = VS::get_singleton()->texture_create();
+}
 
-	/* init supporting Theora structures needed in header parsing */
-	th_comment_init(&tc);
-	th_info_init(&ti);
+DirectXIBVideoTexture::~DirectXIBVideoTexture() {
+	VS::get_singleton()->texture_free();
+}
 
-	theora_eos = false;
-	vorbis_eos = false;
 
-	/* Ogg file open; parse the headers */
-	/* Only interested in Vorbis/Theora streams */
-	int stateflag = 0;
+DirectXIBVideoTexture::register_shared_texture_DX(LPDIRECT3DDEVICE9EX p_dx_device, HANDLE p_shared_dx_texture) {
 
-	int audio_track_skip = audio_track;
+	ERR_FAIL(p_shared_dx_texture != NULL);
+	ERR_FAIL(dx_handle == NULL);
 
-	while (!stateflag) {
-		int ret = buffer_data();
-		if (ret == 0) break;
-		while (ogg_sync_pageout(&oy, &og) > 0) {
-			ogg_stream_state test;
+	dx_texture_handle = p_shared_dx_texture;
 
-			/* is this a mandated initial header? If not, stop parsing */
-			if (!ogg_page_bos(&og)) {
-				/* don't leak the page; get it into the appropriate stream */
-				queue_page(&og);
-				stateflag = 1;
-				break;
-			}
+	bool success = wglDXSetResourceShareHandleNV(dx_texture_handle, dx_texture_handle);
 
-			ogg_stream_init(&test, ogg_page_serialno(&og));
-			ogg_stream_pagein(&test, &og);
-			ogg_stream_packetout(&test, &op);
+	// gl_texture_handle is the shared texture data, now identified by the g_GLTexture name
+	gl_texture_handle = wglDXRegisterObjectNV(p_dx_device,
+		dx_texture_handle,
+		texture->get_id(),
+		GL_TEXTURE_2D,
+		WGL_ACCESS_READ_ONLY_NV);
+}
 
-			/* identify the codec: try theora */
-			if (!theora_p && th_decode_headerin(&ti, &tc, &ts, &op) >= 0) {
-				/* it is theora */
-				copymem(&to, &test, sizeof(test));
-				theora_p = 1;
-			}
-			else if (!vorbis_p && vorbis_synthesis_headerin(&vi, &vc, &op) >= 0) {
 
-				/* it is vorbis */
-				if (audio_track_skip) {
-					vorbis_info_clear(&vi);
-					vorbis_comment_clear(&vc);
-					ogg_stream_clear(&test);
-					vorbis_info_init(&vi);
-					vorbis_comment_init(&vc);
+void VideoStreamPlaybackIB::clear() {
 
-					audio_track_skip--;
-				}
-				else {
-					copymem(&vo, &test, sizeof(test));
-					vorbis_p = 1;
-				}
-			}
-			else {
-				/* whatever it is, we don't care about it */
-				ogg_stream_clear(&test);
-			}
-		}
-		/* fall through to non-bos page parsing */
-	}
+}
 
-	/* we're expecting more header packets. */
-	while ((theora_p && theora_p < 3) || (vorbis_p && vorbis_p < 3)) {
-		int ret;
+void VideoStreamPlaybackIB::play() {
 
-		/* look for further theora headers */
-		while (theora_p && (theora_p < 3) && (ret = ogg_stream_packetout(&to, &op))) {
-			if (ret < 0) {
-				fprintf(stderr, "Error parsing Theora stream headers; "
-					"corrupt stream?\n");
-				clear();
-				return;
-			}
-			if (!th_decode_headerin(&ti, &tc, &ts, &op)) {
-				fprintf(stderr, "Error parsing Theora stream headers; "
-					"corrupt stream?\n");
-				clear();
-				return;
-			}
-			theora_p++;
-		}
+}
 
-		/* look for more vorbis header packets */
-		while (vorbis_p && (vorbis_p < 3) && (ret = ogg_stream_packetout(&vo, &op))) {
-			if (ret < 0) {
-				fprintf(stderr, "Error parsing Vorbis stream headers; corrupt stream?\n");
-				clear();
-				return;
-			}
-			ret = vorbis_synthesis_headerin(&vi, &vc, &op);
-			if (ret) {
-				fprintf(stderr, "Error parsing Vorbis stream headers; corrupt stream?\n");
-				clear();
-				return;
-			}
-			vorbis_p++;
-			if (vorbis_p == 3) break;
-		}
+bool VideoStreamPlaybackIB::is_playing() {
 
-		/* The header pages/packets will arrive before anything else we
-		care about, or the stream is not obeying spec */
+}
 
-		if (ogg_sync_pageout(&oy, &og) > 0) {
-			queue_page(&og); /* demux into the appropriate stream */
-		}
-		else {
-			int ret = buffer_data(); /* someone needs more data */
-			if (ret == 0) {
-				fprintf(stderr, "End of file while searching for codec headers.\n");
-				clear();
-				return;
-			}
-		}
-	}
+void VideoStreamPlaybackIB::set_paused(bool p_paused) {
 
-	/* and now we have it all.  initialize decoders */
-	if (theora_p) {
-		td = th_decode_alloc(&ti, ts);
-		px_fmt = ti.pixel_fmt;
-		switch (ti.pixel_fmt) {
-		case TH_PF_420: printf(" 4:2:0 video\n"); break;
-		case TH_PF_422: printf(" 4:2:2 video\n"); break;
-		case TH_PF_444: printf(" 4:4:4 video\n"); break;
-		case TH_PF_RSVD:
-		default:
-			printf(" video\n  (UNKNOWN Chroma sampling!)\n");
-			break;
-		}
-		th_decode_ctl(td, TH_DECCTL_GET_PPLEVEL_MAX, &pp_level_max,
-			sizeof(pp_level_max));
-		pp_level = 0;
-		th_decode_ctl(td, TH_DECCTL_SET_PPLEVEL, &pp_level, sizeof(pp_level));
-		pp_inc = 0;
+}
 
-		int w;
-		int h;
-		w = (ti.pic_x + ti.frame_width + 1 & ~1) - (ti.pic_x & ~1);
-		h = (ti.pic_y + ti.frame_height + 1 & ~1) - (ti.pic_y & ~1);
-		size.x = w;
-		size.y = h;
+bool VideoStreamPlaybackIB::is_paused() {
 
-		texture->create(w, h, Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+}
 
-	}
-	else {
-		/* tear down the partial theora setup */
-		th_info_clear(&ti);
-		th_comment_clear(&tc);
-	}
+void VideoStreamPlaybackIB::set_loop(int p_enable) {
 
-	th_setup_free(ts);
+}
 
-	if (vorbis_p) {
-		vorbis_synthesis_init(&vd, &vi);
-		vorbis_block_init(&vd, &vb);
-		//_setup(vi.channels, vi.rate);
-	}
-	else {
-		/* tear down the partial vorbis setup */
-		vorbis_info_clear(&vi);
-		vorbis_comment_clear(&vc);
-	}
+bool VideoStreamPlaybackIB::get_loop() {
 
-	playing = false;
-	buffering = true;
-	time = 0;
-	audio_frames_wrote = 0;
-};
+}
 
-float VideoStreamPlaybackIB::get_time() const {
+float VideoStreamPlaybackIB::get_length() {
 
-	return time - AudioServer::get_singleton()->get_output_delay() - delay_compensation; //-((get_total())/(float)vi.rate);
-};
+}
+
+String VideoStreamPlaybackIB::get_stream_name() const {
+
+}
+
+int VideoStreamPlaybackIB::get_loop_count() const {
+
+}
+
+float VideoStreamPlaybackIB::get_playback_position() const {
+
+}
+
+void VideoStreamPlaybackIB::seek(float p_time) {
+
+}
 
 Ref<Texture> VideoStreamPlaybackIB::get_texture() {
 
-	return texture;
 }
 
 void VideoStreamPlaybackIB::update(float p_delta) {
 
-	if (!file)
-		return;
-
-	if (!playing || paused) {
-		//printf("not playing\n");
-		return;
-	};
-
-	time += p_delta;
-
-	if (videobuf_time > get_time()) {
-		return; //no new frames need to be produced
-	}
-
-	bool frame_done = false;
-	bool audio_done = !vorbis_p;
-
-	while (!frame_done || (!audio_done && !vorbis_eos)) {
-		//a frame needs to be produced
-
-		ogg_packet op;
-		bool no_theora = false;
-		bool buffer_full = false;
-
-		while (vorbis_p && !audio_done && !buffer_full) {
-			int ret;
-			float **pcm;
-
-			/* if there's pending, decoded audio, grab it */
-			ret = vorbis_synthesis_pcmout(&vd, &pcm);
-			if (ret > 0) {
-
-				const int AUXBUF_LEN = 4096;
-				int to_read = ret;
-				float aux_buffer[AUXBUF_LEN];
-
-				while (to_read) {
-
-					int m = MIN(AUXBUF_LEN / vi.channels, to_read);
-
-					int count = 0;
-
-					for (int j = 0; j < m; j++) {
-						for (int i = 0; i < vi.channels; i++) {
-							aux_buffer[count++] = pcm[i][j];
-						}
-					}
-
-					if (mix_callback) {
-						int mixed = mix_callback(mix_udata, aux_buffer, m);
-						to_read -= mixed;
-						if (mixed != m) { //could mix no more
-							buffer_full = true;
-							break;
-						}
-					}
-					else {
-						to_read -= m; //just pretend we sent the audio
-					}
-				}
-
-				int tr = vorbis_synthesis_read(&vd, ret - to_read);
-
-				if (vd.granulepos >= 0) {
-					//print_line("wrote: "+itos(audio_frames_wrote)+" gpos: "+itos(vd.granulepos));
-				}
-
-				//print_line("mix audio!");
-
-				audio_frames_wrote += ret - to_read;
-
-				//print_line("AGP: "+itos(vd.granulepos)+" added "+itos(ret-to_read));
-
-			}
-			else {
-
-				/* no pending audio; is there a pending packet to decode? */
-				if (ogg_stream_packetout(&vo, &op) > 0) {
-					if (vorbis_synthesis(&vb, &op) == 0) { /* test for success! */
-						vorbis_synthesis_blockin(&vd, &vb);
-					}
-				}
-				else { /* we need more data; break out to suck in another page */
-					   //printf("need moar data\n");
-					break;
-				};
-			}
-
-			audio_done = videobuf_time < (audio_frames_wrote / float(vi.rate));
-
-			if (buffer_full)
-				break;
-		}
-
-		while (theora_p && !frame_done) {
-			/* theora is one in, one out... */
-			if (ogg_stream_packetout(&to, &op) > 0) {
-
-				if (false && pp_inc) {
-					pp_level += pp_inc;
-					th_decode_ctl(td, TH_DECCTL_SET_PPLEVEL, &pp_level,
-						sizeof(pp_level));
-					pp_inc = 0;
-				}
-				/*HACK: This should be set after a seek or a gap, but we might not have
-				a granulepos for the first packet (we only have them for the last
-				packet on a page), so we just set it as often as we get it.
-				To do this right, we should back-track from the last packet on the
-				page and compute the correct granulepos for the first packet after
-				a seek or a gap.*/
-				if (op.granulepos >= 0) {
-					th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos,
-						sizeof(op.granulepos));
-				}
-				ogg_int64_t videobuf_granulepos;
-				if (th_decode_packetin(td, &op, &videobuf_granulepos) == 0) {
-					videobuf_time = th_granule_time(td, videobuf_granulepos);
-
-					//printf("frame time %f, play time %f, ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
-
-					/* is it already too old to be useful?  This is only actually
-					useful cosmetically after a SIGSTOP.  Note that we have to
-					decode the frame even if we don't show it (for now) due to
-					keyframing.  Soon enough libtheora will be able to deal
-					with non-keyframe seeks.  */
-
-					if (videobuf_time >= get_time()) {
-						frame_done = true;
-					}
-					else {
-						/*If we are too slow, reduce the pp level.*/
-						pp_inc = pp_level > 0 ? -1 : 0;
-					}
-				}
-				else {
-				}
-
-			}
-			else {
-				no_theora = true;
-				break;
-			}
-		}
-
-#ifdef THEORA_USE_THREAD_STREAMING
-		if (file && thread_eof && no_theora && theora_eos && ring_buffer.data_left() == 0) {
-#else
-		if (file && /*!videobuf_ready && */ no_theora && theora_eos) {
-#endif
-			printf("video done, stopping\n");
-			stop();
-			return;
-		};
-
-		if (!frame_done || !audio_done) {
-			//what's the point of waiting for audio to grab a page?
-
-			buffer_data();
-			while (ogg_sync_pageout(&oy, &og) > 0) {
-				queue_page(&og);
-			}
-		}
-
-		/* If playback has begun, top audio buffer off immediately. */
-		//if(stateflag) audio_write_nonblocking();
-
-		/* are we at or past time for this video frame? */
-		if (videobuf_ready && videobuf_time <= get_time()) {
-
-			//video_write();
-			//videobuf_ready=0;
-		}
-		else {
-			//printf("frame at %f not ready (time %f), ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
-		}
-
-		float tdiff = videobuf_time - get_time();
-		/*If we have lots of extra time, increase the post-processing level.*/
-		if (tdiff > ti.fps_denominator * 0.25 / ti.fps_numerator) {
-			pp_inc = pp_level < pp_level_max ? 1 : 0;
-		}
-		else if (tdiff < ti.fps_denominator * 0.05 / ti.fps_numerator) {
-			pp_inc = pp_level > 0 ? -1 : 0;
-		}
-		}
-
-	video_write();
-	};
-
-void VideoStreamPlaybackIB::play() {
-
-	if (!playing)
-		time = 0;
-	else {
-		stop();
-	}
-
-	playing = true;
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
-	delay_compensation /= 1000.0;
-};
-
-void VideoStreamPlaybackIB::stop() {
-
-	if (playing) {
-
-		clear();
-		set_file(file_name); //reset
-	}
-	playing = false;
-	time = 0;
-};
-
-bool VideoStreamPlaybackIB::is_playing() const {
-
-	return playing;
-};
-
-void VideoStreamPlaybackIB::set_paused(bool p_paused) {
-
-	paused = p_paused;
-};
-
-bool VideoStreamPlaybackIB::is_paused() const {
-
-	return paused;
-};
-
-void VideoStreamPlaybackIB::set_loop(bool p_enable) {
-
-};
-
-bool VideoStreamPlaybackIB::has_loop() const {
-
-	return false;
-};
-
-float VideoStreamPlaybackIB::get_length() const {
-
-	return 0;
-};
-
-String VideoStreamPlaybackIB::get_stream_name() const {
-
-	return "";
-};
-
-int VideoStreamPlaybackIB::get_loop_count() const {
-
-	return 0;
-};
-
-float VideoStreamPlaybackIB::get_playback_position() const {
-
-	return get_time();
-};
-
-void VideoStreamPlaybackIB::seek(float p_time) {
-
-	// no
-};
+}
 
 void VideoStreamPlaybackIB::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
 
-	mix_callback = p_callback;
-	mix_udata = p_userdata;
 }
 
 int VideoStreamPlaybackIB::get_channels() const {
 
-	return vi.channels;
-}
-
-void VideoStreamPlaybackIB::set_audio_track(int p_idx) {
-
-	audio_track = p_idx;
 }
 
 int VideoStreamPlaybackIB::get_mix_rate() const {
 
-	return vi.rate;
 }
 
-#ifdef THEORA_USE_THREAD_STREAMING
+void VideoStreamPlaybackIB::set_audio_track(int p_idx) {
 
-void VideoStreamPlaybackIB::_streaming_thread(void *ud) {
+}
 
-	VideoStreamPlaybackTheora *vs = (VideoStreamPlaybackTheora *)ud;
+VideoStreamPlaybackIB::VideoStreamPlaybackIB() {
 
-	while (!vs->thread_exit) {
+}
 
-		//just fill back the buffer
-		if (!vs->thread_eof) {
+VideoStreamPlaybackIB::~VideoStreamPlaybackIB() {
 
-			int to_read = vs->ring_buffer.space_left();
-			if (to_read) {
-				int read = vs->file->get_buffer(vs->read_buffer.ptr(), to_read);
-				vs->ring_buffer.write(vs->read_buffer.ptr(), read);
-				vs->thread_eof = vs->file->eof_reached();
-			}
+}
+
+
+
+/////////////////////////////////////////////////////////////////
+// Loggging
+/////////////////////////////////////////////////////////////////
+int logLevel = 1; // Log errors only by default
+
+				  // We cache all log entries and dump them only when UpdateLog is called
+				  // This is becuase we can't trigger callbacks into Unity outside of the main thread (it causes Mono cleanup to fail, at least in Editor)
+struct LogEntry {
+	int level;
+	char str[1024];
+};
+concurrency::concurrent_queue<LogEntry> logBuffer;
+
+// Timer funcs from video_ffmpeg.cpp
+void InitTimer();
+double GetPreciseTime();
+
+// Unity callback
+typedef void(*LogFuncPtr)(int, const char *);
+LogFuncPtr LogFunc = 0;
+
+// All log calls are rerouted through here
+void LogHelperVA(int level, const char* fmt, va_list args)
+{
+	if (logLevel >= level)
+	{
+		// Fix fmt string if using %td that visual studio doesn't support (asserts printf in CRT)
+		char localFmt[2048];
+		sprintf_s(localFmt, "%5.03f | %s", GetPreciseTime(), fmt);
+		//strcpy_s(localFmt, fmt);
+		char* fmtFix = 0;
+		if (fmtFix = strstr(localFmt, "%td"))
+		{
+			fmtFix[1] = 'l';
 		}
 
-		vs->thread_sem->wait();
+		// Add new log entry
+		LogEntry le;
+		le.level = level;
+		vsprintf_s(le.str, localFmt, args);
+		logBuffer.push(le);
 	}
 }
 
-#endif
+void LogHelper(int level, const char* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	LogHelperVA(level, fmt, args);
+}
 
-VideoStreamPlaybackIB::VideoStreamPlaybackTheora() {
-
-	file = NULL;
-	theora_p = 0;
-	vorbis_p = 0;
-	videobuf_ready = 0;
-	playing = false;
-	frames_pending = 0;
-	videobuf_time = 0;
-	paused = false;
-
-	buffering = false;
-	texture = Ref<ImageTexture>(memnew(ImageTexture));
-	mix_callback = NULL;
-	mix_udata = NULL;
-	audio_track = 0;
-	delay_compensation = 0;
-	audio_frames_wrote = 0;
-
-#ifdef THEORA_USE_THREAD_STREAMING
-	int rb_power = nearest_shift(RB_SIZE_KB * 1024);
-	ring_buffer.resize(rb_power);
-	read_buffer.resize(RB_SIZE_KB * 1024);
-	thread_sem = Semaphore::create();
-	thread = NULL;
-	thread_exit = false;
-	thread_eof = false;
-
-#endif
+/////////////////////////////////////////////////////////////////
+// Video globals
+/////////////////////////////////////////////////////////////////
+struct TVideoInstance {
+	int id;;
+	TVideoObject* pVideoObject;
+	IDirect3DTexture9* pVideoTexture9;
+	ID3D11ShaderResourceView* pVideoTexture11;
+	double currentTime;
 };
 
-VideoStreamPlaybackIB::~VideoStreamPlaybackTheora() {
+int nextVideoId = 1000;
+std::map<int, TVideoInstance> mVideoObject;
+std::mutex videoMutex;
+IDirect3DDevice9* pDevice9 = 0;
+ID3D11Device* pDevice11 = 0;
 
-#ifdef THEORA_USE_THREAD_STREAMING
+void InitVideoInstance(TVideoInstance &inst)
+{
+	inst.pVideoObject = TFFMPEGVideoObject::Create();
+	inst.pVideoObject->pAudioOut = TWASAPIVideoAudioOutput::Create();
+	inst.pVideoObject->pFrameOut = TDXVideoFrameOutput::Create(inst.pVideoObject, pDevice9, pDevice11);
+}
 
-	memdelete(thread_sem);
-#endif
-	clear();
+void DestroyVideoInstance(TVideoInstance& inst)
+{
+	MLog("Destroying video %d (%s) at time %f", inst.id, inst.pVideoObject->fileName, inst.currentTime)
+		TWASAPIVideoAudioOutput::Destroy(inst.pVideoObject->pAudioOut);
+	TDXVideoFrameOutput::Destroy(inst.pVideoObject->pFrameOut);
+	TFFMPEGVideoObject::Destroy(inst.pVideoObject);
+}
 
-	if (file)
-		memdelete(file);
-};
+void ForceShutdownVideos(int saveState = 0)
+{
+	auto it = mVideoObject.begin();
+	while (it != mVideoObject.end())
+	{
+		TVideoInstance &inst = it->second;
+		inst.pVideoObject->RequestShutdown();
+		while (inst.pVideoObject->TryWaitShutdown() == 0)
+			SleepEx(1, TRUE);
+		DestroyVideoInstance(inst);
+		it = mVideoObject.erase(it);
+	}
+}
 
-void VideoStreamTheora::_bind_methods() {
+/////////////////////////////////////////////////////////////////
+// DLL interface
+/////////////////////////////////////////////////////////////////
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetLogCallback(LogFuncPtr ptr, int level)
+{
+	LogFunc = ptr;
+	logLevel = (level < 0) ? (0) : ((level > 3) ? (3) : (level));
+}
 
-	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamTheora::set_file);
-	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamTheora::get_file);
+void VideoStreamIBManager::update() {
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
+	// Dump log entries
+	LogEntry le;
+	while (logBuffer.try_pop(le))
+	{
+		LogFunc(le.level, le.str);
+	}
+}
+
+void VideoStreamIBManager::init() {
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+
+	InitTimer();
+
+	// Create a dummy window for DX device
+	hWndDX = CreateWindowA("STATIC", "dummy", NULL, 0, 0, 100, 100, NULL, NULL, NULL, NULL);
+
+	// Create D3D device
+	D3DPRESENT_PARAMETERS d3dpp;
+
+	ZeroMemory(&d3dpp, sizeof(d3dpp));
+	d3dpp.Windowed = TRUE;
+	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	d3dpp.hDeviceWindow = hWndDX;
+	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
+	d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
+
+	HRESULT hr = S_OK;
+
+	// A D3D9EX device is required to create the g_hSharedSurface 
+	Direct3DCreate9Ex(D3D_SDK_VERSION, &d3d);
+
+	// The interop definition states D3DCREATE_MULTITHREADED is required, but it may vary by vendor
+	hr = d3d->CreateDeviceEx(D3DADAPTER_DEFAULT,
+		D3DDEVTYPE_HAL,
+		hWndDX,
+		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,
+		&d3dpp,
+		NULL,
+		&d9device);
+
+	hr = d9device->GetRenderTarget(0, &g_pSurfaceRenderTarget);
+	D3DSURFACE_DESC rtDesc;
+	g_pSurfaceRenderTarget->GetDesc(&rtDesc);
+
+	// g_pSharedTexture should be able to be opened in OGL via the WGL_NV_DX_interop extension
+	// Vendor support for various textures/surfaces may vary
+	hr = g_pDevice->CreateTexture(rtDesc.Width,
+		rtDesc.Height,
+		1,
+		0,
+		rtDesc.Format,
+		D3DPOOL_DEFAULT,
+		&g_pSharedTexture,
+		&g_hSharedTexture);
+
+	// We want access to the underlying surface of this texture
+	if (g_pSharedTexture)
+	{
+		hr = g_pSharedTexture->GetSurfaceLevel(0, &g_pSharedSurface);
+	}
+
+	hr = g_pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	hr = g_pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+}
+
+void VideoStreamIBManager::release() {
+
+	if (d9device) {
+		d9device->Release();
+		d9device = NULL;
+	}
+
+	if(d3d) {
+		d3d->Release();
+		d3d = NULL;
+	}
+}
+
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API CreateVideo()
+{
+	MDiagnostic("CreateVideo(), nextVideoId = %d", nextVideoId);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	// Fail if no valid GFX device is set
+	if (!pDevice9 && !pDevice11)
+		return 0;
+	TVideoInstance inst = { 0 };
+	InitVideoInstance(inst);
+	inst.id = nextVideoId;
+	nextVideoId += 1;
+	mVideoObject.insert(std::pair<int, TVideoInstance>(inst.id, inst));
+	return inst.id;
+}
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API  ConfigureVideo(int id, unsigned int streamBufferVideoChunks, unsigned int streamBufferAudioChunks, unsigned int decodeBufferVideoFrames, unsigned int decodeBufferAudioMs, bool presentImmediately, float avSyncOffset, int decodeThreads, bool useHwAccel) {
+	MDiagnostic("ConfigureVideo(id=%d,streamBufferVideoChunks=%d,streamBufferAudioChunks=%d,decodeBufferVideoFrames=%d,decodeBufferAudioMs=%d, presentImmediately=%d, avSyncOffset=%f, decodeThreads=%d, useHwAccell=%d)", id, streamBufferVideoChunks, streamBufferAudioChunks, decodeBufferVideoFrames, decodeBufferAudioMs, presentImmediately, avSyncOffset, decodeThreads, useHwAccel);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! ConfigureVideo(id=%d,streamBufferVideoChunks=%d,streamBufferAudioChunks=%d,decodeBufferVideoFrames=%d,decodeBufferAudioMs=%d)", id, streamBufferVideoChunks, streamBufferAudioChunks, decodeBufferVideoFrames, decodeBufferAudioMs);
+		return -1;
+	}
+	TVideoInstance &inst = it->second;
+	inst.pVideoObject->streamBufferVideoChunks = streamBufferVideoChunks;
+	inst.pVideoObject->streamBufferAudioChunks = streamBufferAudioChunks;
+	inst.pVideoObject->decodeBufferVideoFrames = decodeBufferVideoFrames;
+	inst.pVideoObject->decodeBufferAudioMs = decodeBufferAudioMs;
+	inst.pVideoObject->presentImmediately = presentImmediately;
+	inst.pVideoObject->avSyncOffset = avSyncOffset;
+	inst.pVideoObject->numDecodeThreads = decodeThreads;
+	inst.pVideoObject->useHwAccel = useHwAccel;
+	return (int)inst.pVideoObject->State;
+}
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenVideo(int id, const char* fileName, const char* options)
+{
+	MDiagnostic("OpenVideo(id=%d,fileName=%s)", id, fileName);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! OpenVideo(id=%d,fileName=%s,options=%s)", id, fileName, options);
+		return -1;
+	}
+	TVideoInstance &inst = it->second;
+	strcpy_s(inst.pVideoObject->fileName, fileName);
+	strcpy_s(inst.pVideoObject->options, options);
+	inst.pVideoObject->Initialize();
+	return (int)inst.pVideoObject->State;
+}
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetVideoState(int id)
+{
+	//MDiagnostic("GetVideoState(id=%d)", id);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+		return -1;
+	TVideoInstance &inst = it->second;
+
+	// If video is shutting down, report as if already destroyed
+	if ((int)inst.pVideoObject->State == TVideoObject::sShutdown)
+		return -1;
+
+	return (int)inst.pVideoObject->State;
+}
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API PlayVideo(int id, int loopCount)
+{
+	MDiagnostic("PlayVideo(id=%d)", id);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! PlayVideo(id=%d)", id);
+		return -1;
+	}
+	TVideoInstance &inst = it->second;
+	inst.pVideoObject->loopCount = loopCount;
+	inst.pVideoObject->Play();
+	return inst.pVideoObject->State;
+}
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API PauseVideo(int id)
+{
+	MDiagnostic("PauseVideo(id=%d)", id);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! PauseVideo(id=%d)", id);
+		return -1;
+	}
+	TVideoInstance &inst = it->second;
+	inst.pVideoObject->Play();
+	return inst.pVideoObject->State;
+}
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SeekVideo(int id, float time)
+{
+	MDiagnostic("SeekVideo(id=%d,time=%f)", id, time);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! SeekVideo(id=%d,time=%f)", id, time);
+		return -1;
+	}
+	TVideoInstance &inst = it->second;
+	inst.pVideoObject->Seek(time);
+	return inst.pVideoObject->State;
+}
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API CloseVideo(int id)
+{
+	MDiagnostic("CloseVideo(id=%d)", id);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! CloseVideo(id=%d)", id);
+		return -1;
+	}
+	TVideoInstance &inst = it->second;
+	inst.pVideoObject->RequestShutdown();
+	return inst.pVideoObject->State;
+}
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetVideoInfo(int id, int* width, int* height, float* duration)
+{
+	MDiagnostic("GetVideoInfo(id=%d,widthPtr=%x,heightPtr=%x,durationPtr=%x)", id, width, height, duration);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! GetVideoInfo(id=%d,widthPtr=%x,heightPtr=%x,durationPtr=%x)", id, width, height, duration);
+		return -1;
+	}
+	TVideoInstance &inst = it->second;
+	if (width) *width = inst.pVideoObject->pFrameOut->videoWidth;
+	if (height) *height = inst.pVideoObject->pFrameOut->videoHeight;
+	if (duration) *duration = inst.pVideoObject->pFrameOut->videoLength;
+	return inst.pVideoObject->State;
+}
+
+extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetVideoTexture(int id, void** texturePtr, float* currentTime)
+{
+	//MDiagnostic("GetVideoTexture(id=%d,texturePtr=%x)", id, texturePtr);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! GetVideoTexture(id=%d,texturePtr=%x)", id, texturePtr);
+		return -1;
+	}
+	TVideoInstance &inst = it->second;
+	if (texturePtr) *texturePtr = pDevice9 ? (void*)inst.pVideoTexture9 : (void*)inst.pVideoTexture11;
+	if (currentTime) *currentTime = (float)inst.currentTime;
+	return inst.pVideoObject->State;
+}
+
+// Called from render thread
+extern "C" void UNITY_INTERFACE_API UnityRenderEvent(int eventID)
+{
+	//MDiagnostic("UnityRenderEvent");
+	if (eventID = 1337515)
+	{
+		HWDecoderManager::RenderThreadUpdate();
+
+		std::lock_guard<std::mutex> scopeLock(videoMutex);
+
+		auto it = mVideoObject.begin();
+		while (it != mVideoObject.end())
+		{
+			TVideoInstance &inst = it->second;
+			switch (inst.pVideoObject->State) {
+			case TVideoObject::sPlaying:
+			case TVideoObject::sPaused:
+				if (pDevice9)
+					inst.pVideoTexture9 = (IDirect3DTexture9*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
+				else
+					inst.pVideoTexture11 = (ID3D11ShaderResourceView*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
+				inst.currentTime = inst.pVideoObject->syncTime;
+				break;
+			case TVideoObject::sShutdown:
+				//MDiagnostic("UnityRenderEvent - Shutdown %d", it->first);
+				if (inst.pVideoObject->TryWaitShutdown())
+				{
+					DestroyVideoInstance(inst);
+					it = mVideoObject.erase(it);
+					continue;
+				}
+				break;
+			};
+			++it;
+		}
+	}
+}
+
+extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc()
+{
+	return UnityRenderEvent;
 }

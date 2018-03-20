@@ -55,7 +55,8 @@ private:
 	bool expand;
 	Ref<Texture> texture;
 	StretchMode stretch_mode;
-
+	Size2 src_position;
+	Size2 src_size;
 protected:
 	void _notification(int p_what);
 	virtual Size2 get_minimum_size() const;
@@ -70,6 +71,12 @@ public:
 
 	void set_stretch_mode(StretchMode p_mode);
 	StretchMode get_stretch_mode() const;
+
+	void set_src_position(Size2 p_src_position);
+	Size2 get_src_position() const;
+
+	void set_src_size(Size2 p_src_size);
+	Size2 get_src_size() const;
 
 	TextureRect();
 	~TextureRect();

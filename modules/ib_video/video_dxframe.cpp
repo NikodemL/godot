@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <concurrent_queue.h>
 #include <atomic>
 #include <d3d9.h>
@@ -48,6 +46,7 @@ public:
 public:
 	bool isPassthrough;
 	IDirect3DTexture9* renderTex9;
+	HANDLE renderTexHandle;
 	IDirect3DSurface9* renderSurf9;
 	ID3D11Texture2D* renderTex11;
 	ID3D11ShaderResourceView* renderRV11;
@@ -84,6 +83,7 @@ public:
 	int RenderThread_InitTextures();
 	void RenderThread_ReleaseTextures();
 	void* GetFrame();
+	void* GetRenderTexHandle() { return renderTexHandle; }
 protected:
 	void UpdateTextureClear();
 	int GetTextureFromDecoder(TVideoTexture* vt);
@@ -107,7 +107,7 @@ void TDXVideoFrameOutput::Destroy(TVideoFrameOutput* vfo)
 	delete dx11vfo;
 }
 
-TDXVideoFrameOutput_Int::TDXVideoFrameOutput_Int() : isPassthrough(false), renderTex9(0), renderSurf9(0), renderTex11(0), renderRV11(0), initState(isNone), pFillTexture(0), pVideo(0), pDevice9(0), pDevice11(0), pDeviceCtx11(0), pCurrentFrame(0), pNextFrame(0), hasValidFrame(false), textureReleaseDelay(0)
+TDXVideoFrameOutput_Int::TDXVideoFrameOutput_Int() : isPassthrough(false), renderTex9(0), renderTexHandle(0), renderSurf9(0), renderTex11(0), renderRV11(0), initState(isNone), pFillTexture(0), pVideo(0), pDevice9(0), pDevice11(0), pDeviceCtx11(0), pCurrentFrame(0), pNextFrame(0), hasValidFrame(false), textureReleaseDelay(0)
 {
 	memset(aTexture, 0, sizeof(aTexture));
 }
@@ -185,7 +185,8 @@ int TDXVideoFrameOutput_Int::RenderThread_InitTextures()
 	if (pDevice9)
 	{
 		// Create primary output surface - this one gets passed to the renderer
-		hr = pDevice9->CreateTexture(videoWidth, videoHeight, 1, isPassthrough ? D3DUSAGE_RENDERTARGET : NULL, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &renderTex9, NULL);
+		hr = pDevice9->CreateTexture(videoWidth, videoHeight, 1, isPassthrough ? D3DUSAGE_RENDERTARGET : NULL,
+			D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &renderTex9, &renderTexHandle);
 		if (FAILED(hr))
 			return 1;
 

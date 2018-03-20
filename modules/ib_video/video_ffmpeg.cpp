@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <memory>
 #include <vector>
 #include <concurrent_queue.h>

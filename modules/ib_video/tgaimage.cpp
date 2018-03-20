@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "tgaimage.h"
 
 #include <fstream>

@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <Mmdeviceapi.h>
 #include <Audioclient.h>
 #include <concurrent_queue.h>

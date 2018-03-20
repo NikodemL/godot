@@ -1,6 +1,6 @@
 #ifdef WIN32
 #include "Dxva2Decoder.h"
-#include <video.h>
+//#include <video.h>
 #include <concurrent_queue.h>
 #include <vector>
 
@@ -66,7 +66,7 @@ int Dxva2Decoder::Init()
 	if (pDevice11)
 	{
 		// Load D3D11 DLL and get D3D11CreateDevice funcptr
-		m_Dxva2Context->hD3D11Lib = LoadLibrary(L"d3d11.dll");
+		m_Dxva2Context->hD3D11Lib = LoadLibrary("d3d11.dll");
 		if (!m_Dxva2Context->hD3D11Lib) {
 			av_log(NULL, AV_LOG_ERROR, "Failed to load D3D11 library\n");
 			goto fail;
@@ -142,7 +142,7 @@ int Dxva2Decoder::Init()
 
 		m_Dxva2Context->hD3D9Device = INVALID_HANDLE_VALUE;
 
-		m_Dxva2Context->hDXVALib = LoadLibrary(L"dxva2.dll");
+		m_Dxva2Context->hDXVALib = LoadLibrary("dxva2.dll");
 		if (!m_Dxva2Context->hDXVALib) {
 			av_log(NULL, AV_LOG_ERROR, "Failed to load DXVA2 library\n");
 			goto fail;

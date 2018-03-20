@@ -1,3 +1,4 @@
+#include "ib_video_stream.h"
 #include <d3d9.h>
 #include <d3d11.h>
 #include <map>
@@ -7,8 +8,7 @@
 #include <list>
 #include <concurrent_queue.h>
 
-#include "ib_video_stream.h"
-
+#include "image.h"
 #include "video.h"
 #include "video_ffmpeg.h"
 #include "video_dxframe.h"
@@ -41,122 +41,30 @@ uint32_t DirectXIBVideoTexture::get_flags() const {
 }
 
 DirectXIBVideoTexture::DirectXIBVideoTexture() {
-	format = Image::TEXTURE_MAX;
-	flags = 0;
+	format = Image::FORMAT_MAX;
 	w = 0;
 	h = 0;
+	id = 0;
 
 	texture = VS::get_singleton()->texture_create();
 }
 
 DirectXIBVideoTexture::~DirectXIBVideoTexture() {
-	VS::get_singleton()->texture_free();
+	VS::get_singleton()->free(texture);
 }
 
 
-DirectXIBVideoTexture::register_shared_texture_DX(LPDIRECT3DDEVICE9EX p_dx_device, HANDLE p_shared_dx_texture) {
-
-	ERR_FAIL(p_shared_dx_texture != NULL);
-	ERR_FAIL(dx_handle == NULL);
-
-	dx_texture_handle = p_shared_dx_texture;
-
-	bool success = wglDXSetResourceShareHandleNV(dx_texture_handle, dx_texture_handle);
-
-	// gl_texture_handle is the shared texture data, now identified by the g_GLTexture name
-	gl_texture_handle = wglDXRegisterObjectNV(p_dx_device,
-		dx_texture_handle,
-		texture->get_id(),
-		GL_TEXTURE_2D,
-		WGL_ACCESS_READ_ONLY_NV);
+void DirectXIBVideoTexture::register_shared_texture_DX(int p_id) {
+	id = p_id;
 }
 
 
-void VideoStreamPlaybackIB::clear() {
-
-}
-
-void VideoStreamPlaybackIB::play() {
-
-}
-
-bool VideoStreamPlaybackIB::is_playing() {
-
-}
-
-void VideoStreamPlaybackIB::set_paused(bool p_paused) {
-
-}
-
-bool VideoStreamPlaybackIB::is_paused() {
-
-}
-
-void VideoStreamPlaybackIB::set_loop(int p_enable) {
-
-}
-
-bool VideoStreamPlaybackIB::get_loop() {
-
-}
-
-float VideoStreamPlaybackIB::get_length() {
-
-}
-
-String VideoStreamPlaybackIB::get_stream_name() const {
-
-}
-
-int VideoStreamPlaybackIB::get_loop_count() const {
-
-}
-
-float VideoStreamPlaybackIB::get_playback_position() const {
-
-}
-
-void VideoStreamPlaybackIB::seek(float p_time) {
-
-}
-
-Ref<Texture> VideoStreamPlaybackIB::get_texture() {
-
-}
-
-void VideoStreamPlaybackIB::update(float p_delta) {
-
-}
-
-void VideoStreamPlaybackIB::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
-
-}
-
-int VideoStreamPlaybackIB::get_channels() const {
-
-}
-
-int VideoStreamPlaybackIB::get_mix_rate() const {
-
-}
-
-void VideoStreamPlaybackIB::set_audio_track(int p_idx) {
-
-}
-
-VideoStreamPlaybackIB::VideoStreamPlaybackIB() {
-
-}
-
-VideoStreamPlaybackIB::~VideoStreamPlaybackIB() {
-
-}
-
-
+// This is a port of Unity binding to Godot system
 
 /////////////////////////////////////////////////////////////////
 // Loggging
 /////////////////////////////////////////////////////////////////
+
 int logLevel = 1; // Log errors only by default
 
 				  // We cache all log entries and dump them only when UpdateLog is called
@@ -170,10 +78,6 @@ concurrency::concurrent_queue<LogEntry> logBuffer;
 // Timer funcs from video_ffmpeg.cpp
 void InitTimer();
 double GetPreciseTime();
-
-// Unity callback
-typedef void(*LogFuncPtr)(int, const char *);
-LogFuncPtr LogFunc = 0;
 
 // All log calls are rerouted through here
 void LogHelperVA(int level, const char* fmt, va_list args)
@@ -208,12 +112,20 @@ void LogHelper(int level, const char* fmt, ...)
 /////////////////////////////////////////////////////////////////
 // Video globals
 /////////////////////////////////////////////////////////////////
+
 struct TVideoInstance {
-	int id;;
+	int id;
 	TVideoObject* pVideoObject;
 	IDirect3DTexture9* pVideoTexture9;
-	ID3D11ShaderResourceView* pVideoTexture11;
+	//ID3D11ShaderResourceView* pVideoTexture11;
+
 	double currentTime;
+	Ref<DirectXIBVideoTexture> pGLVideoTexture;
+
+	HANDLE pRenderTexHandle;
+	HANDLE pDXGLSharedHandle;
+
+
 };
 
 int nextVideoId = 1000;
@@ -235,6 +147,11 @@ void DestroyVideoInstance(TVideoInstance& inst)
 		TWASAPIVideoAudioOutput::Destroy(inst.pVideoObject->pAudioOut);
 	TDXVideoFrameOutput::Destroy(inst.pVideoObject->pFrameOut);
 	TFFMPEGVideoObject::Destroy(inst.pVideoObject);
+
+	if (inst.pDXGLSharedHandle) {
+		wglDXUnregisterObjectNV(pDevice9, inst.pDXGLSharedHandle);
+		inst.pDXGLSharedHandle = NULL;
+	}
 }
 
 void ForceShutdownVideos(int saveState = 0)
@@ -251,23 +168,18 @@ void ForceShutdownVideos(int saveState = 0)
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// DLL interface
-/////////////////////////////////////////////////////////////////
-extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SetLogCallback(LogFuncPtr ptr, int level)
-{
-	LogFunc = ptr;
+void VideoStreamIBManager::set_log_level(int level) {
 	logLevel = (level < 0) ? (0) : ((level > 3) ? (3) : (level));
 }
 
-void VideoStreamIBManager::update() {
+void VideoStreamIBManager::update(float p_delta_time) {
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 
 	// Dump log entries
 	LogEntry le;
 	while (logBuffer.try_pop(le))
 	{
-		LogFunc(le.level, le.str);
+		print_line(String(le.str));
 	}
 }
 
@@ -291,7 +203,7 @@ void VideoStreamIBManager::init() {
 
 	HRESULT hr = S_OK;
 
-	// A D3D9EX device is required to create the g_hSharedSurface 
+	// A D3D9EX device is required to create the 
 	Direct3DCreate9Ex(D3D_SDK_VERSION, &d3d);
 
 	// The interop definition states D3DCREATE_MULTITHREADED is required, but it may vary by vendor
@@ -303,30 +215,17 @@ void VideoStreamIBManager::init() {
 		NULL,
 		&d9device);
 
-	hr = d9device->GetRenderTarget(0, &g_pSurfaceRenderTarget);
-	D3DSURFACE_DESC rtDesc;
-	g_pSurfaceRenderTarget->GetDesc(&rtDesc);
+	// TODO: Do we need to acquire render target like this ...
+	hr = d9device->GetRenderTarget(0, &d3dSurface);
 
-	// g_pSharedTexture should be able to be opened in OGL via the WGL_NV_DX_interop extension
-	// Vendor support for various textures/surfaces may vary
-	hr = g_pDevice->CreateTexture(rtDesc.Width,
-		rtDesc.Height,
-		1,
-		0,
-		rtDesc.Format,
-		D3DPOOL_DEFAULT,
-		&g_pSharedTexture,
-		&g_hSharedTexture);
 
-	// We want access to the underlying surface of this texture
-	if (g_pSharedTexture)
-	{
-		hr = g_pSharedTexture->GetSurfaceLevel(0, &g_pSharedSurface);
+	// We now need to initialize OpenGL extensions
+	glDXHandle = wglDXOpenDeviceNV(d9device);
+
+	if (!glDXHandle) {
+		print_error("Could not open DX device");
+		return;
 	}
-
-	hr = g_pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	hr = g_pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
 }
 
 void VideoStreamIBManager::release() {
@@ -336,14 +235,13 @@ void VideoStreamIBManager::release() {
 		d9device = NULL;
 	}
 
-	if(d3d) {
+	if (d3d) {
 		d3d->Release();
 		d3d = NULL;
 	}
 }
 
-
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API CreateVideo()
+int VideoStreamIBManager::create_video()
 {
 	MDiagnostic("CreateVideo(), nextVideoId = %d", nextVideoId);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
@@ -353,12 +251,19 @@ extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API CreateVideo()
 	TVideoInstance inst = { 0 };
 	InitVideoInstance(inst);
 	inst.id = nextVideoId;
+
+	// We have video instance, we need to link it to OpenGL texture (share mode)
+	Ref<DirectXIBVideoTexture> ibVideoTexture = memnew(DirectXIBVideoTexture);
+	inst.pGLVideoTexture = ibVideoTexture;
+	ibVideoTexture->register_shared_texture_DX(inst.id);
+
 	nextVideoId += 1;
 	mVideoObject.insert(std::pair<int, TVideoInstance>(inst.id, inst));
 	return inst.id;
 }
 
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API  ConfigureVideo(int id, unsigned int streamBufferVideoChunks, unsigned int streamBufferAudioChunks, unsigned int decodeBufferVideoFrames, unsigned int decodeBufferAudioMs, bool presentImmediately, float avSyncOffset, int decodeThreads, bool useHwAccel) {
+int VideoStreamIBManager::configure_video(int id, unsigned int streamBufferVideoChunks, unsigned int streamBufferAudioChunks,
+	unsigned int decodeBufferVideoFrames, unsigned int decodeBufferAudioMs, bool presentImmediately, float avSyncOffset, int decodeThreads, bool useHwAccel) {
 	MDiagnostic("ConfigureVideo(id=%d,streamBufferVideoChunks=%d,streamBufferAudioChunks=%d,decodeBufferVideoFrames=%d,decodeBufferAudioMs=%d, presentImmediately=%d, avSyncOffset=%f, decodeThreads=%d, useHwAccell=%d)", id, streamBufferVideoChunks, streamBufferAudioChunks, decodeBufferVideoFrames, decodeBufferAudioMs, presentImmediately, avSyncOffset, decodeThreads, useHwAccel);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -379,9 +284,9 @@ extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API  ConfigureVideo(int id
 	return (int)inst.pVideoObject->State;
 }
 
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenVideo(int id, const char* fileName, const char* options)
+int VideoStreamIBManager::open_video(int id, String fileName, String options)
 {
-	MDiagnostic("OpenVideo(id=%d,fileName=%s)", id, fileName);
+	MDiagnostic("OpenVideo(id=%d,fileName=%s)", id, fileName.ascii());
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
 	if (it == mVideoObject.end())
@@ -390,13 +295,13 @@ extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API OpenVideo(int id, cons
 		return -1;
 	}
 	TVideoInstance &inst = it->second;
-	strcpy_s(inst.pVideoObject->fileName, fileName);
-	strcpy_s(inst.pVideoObject->options, options);
+	strcpy_s(inst.pVideoObject->fileName, fileName.ascii());
+	strcpy_s(inst.pVideoObject->options, options.ascii());
 	inst.pVideoObject->Initialize();
 	return (int)inst.pVideoObject->State;
 }
 
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetVideoState(int id)
+int VideoStreamIBManager::get_video_state(int id)
 {
 	//MDiagnostic("GetVideoState(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
@@ -412,7 +317,7 @@ extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetVideoState(int id)
 	return (int)inst.pVideoObject->State;
 }
 
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API PlayVideo(int id, int loopCount)
+int VideoStreamIBManager::play_video(int id, int loopCount)
 {
 	MDiagnostic("PlayVideo(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
@@ -428,7 +333,7 @@ extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API PlayVideo(int id, int 
 	return inst.pVideoObject->State;
 }
 
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API PauseVideo(int id)
+int VideoStreamIBManager::pause_video(int id)
 {
 	MDiagnostic("PauseVideo(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
@@ -443,7 +348,7 @@ extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API PauseVideo(int id)
 	return inst.pVideoObject->State;
 }
 
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SeekVideo(int id, float time)
+int VideoStreamIBManager::seek_video(int id, float time)
 {
 	MDiagnostic("SeekVideo(id=%d,time=%f)", id, time);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
@@ -458,7 +363,7 @@ extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API SeekVideo(int id, floa
 	return inst.pVideoObject->State;
 }
 
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API CloseVideo(int id)
+int VideoStreamIBManager::close_video(int id)
 {
 	MDiagnostic("CloseVideo(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
@@ -473,78 +378,101 @@ extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API CloseVideo(int id)
 	return inst.pVideoObject->State;
 }
 
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetVideoInfo(int id, int* width, int* height, float* duration)
+Size2 VideoStreamIBManager::get_video_info_size(int id)
 {
-	MDiagnostic("GetVideoInfo(id=%d,widthPtr=%x,heightPtr=%x,durationPtr=%x)", id, width, height, duration);
+	MDiagnostic("GetVideoInfo(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
 	if (it == mVideoObject.end())
 	{
-		MError("Video not found! GetVideoInfo(id=%d,widthPtr=%x,heightPtr=%x,durationPtr=%x)", id, width, height, duration);
-		return -1;
+		MError("Video not found! GetVideoInfo(id=%d)", id);
+		return Size2(-1, -1);
 	}
+	Size2 s;
+
 	TVideoInstance &inst = it->second;
-	if (width) *width = inst.pVideoObject->pFrameOut->videoWidth;
-	if (height) *height = inst.pVideoObject->pFrameOut->videoHeight;
-	if (duration) *duration = inst.pVideoObject->pFrameOut->videoLength;
-	return inst.pVideoObject->State;
+	s.x = inst.pVideoObject->pFrameOut->videoWidth;
+	s.y = inst.pVideoObject->pFrameOut->videoHeight;
+	return s;
 }
 
-extern "C" int UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetVideoTexture(int id, void** texturePtr, float* currentTime)
+float VideoStreamIBManager::get_video_duration(int id)
+{
+	MDiagnostic("GetVideoInfo(id=%d)", id);
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! GetVideoInfo(id=%d)", id);
+		return -1;
+	}
+
+	TVideoInstance &inst = it->second;
+	return inst.pVideoObject->pFrameOut->videoLength;
+}
+
+Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 {
 	//MDiagnostic("GetVideoTexture(id=%d,texturePtr=%x)", id, texturePtr);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
 	if (it == mVideoObject.end())
 	{
-		MError("Video not found! GetVideoTexture(id=%d,texturePtr=%x)", id, texturePtr);
-		return -1;
+		MError("Video not found! GetVideoTexture(id=%d)", id);
+		return NULL;
 	}
 	TVideoInstance &inst = it->second;
-	if (texturePtr) *texturePtr = pDevice9 ? (void*)inst.pVideoTexture9 : (void*)inst.pVideoTexture11;
-	if (currentTime) *currentTime = (float)inst.currentTime;
-	return inst.pVideoObject->State;
+	return inst.pGLVideoTexture;
 }
 
 // Called from render thread
-extern "C" void UNITY_INTERFACE_API UnityRenderEvent(int eventID)
+void VideoStreamIBManager::render(float p_delta_tme)
 {
-	//MDiagnostic("UnityRenderEvent");
-	if (eventID = 1337515)
+	HWDecoderManager::RenderThreadUpdate();
+
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+
+	auto it = mVideoObject.begin();
+	while (it != mVideoObject.end())
 	{
-		HWDecoderManager::RenderThreadUpdate();
+		TVideoInstance &inst = it->second;
+		switch (inst.pVideoObject->State) {
+		case TVideoObject::sPlaying:
+		case TVideoObject::sPaused:
+			if (pDevice9) {
+				inst.pVideoTexture9 = (IDirect3DTexture9*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
 
-		std::lock_guard<std::mutex> scopeLock(videoMutex);
+				// Make it shared now if not already
+				if (inst.pRenderTexHandle == NULL) {
+					inst.pRenderTexHandle = (HANDLE)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetRenderTexHandle();
 
-		auto it = mVideoObject.begin();
-		while (it != mVideoObject.end())
-		{
-			TVideoInstance &inst = it->second;
-			switch (inst.pVideoObject->State) {
-			case TVideoObject::sPlaying:
-			case TVideoObject::sPaused:
-				if (pDevice9)
-					inst.pVideoTexture9 = (IDirect3DTexture9*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
-				else
-					inst.pVideoTexture11 = (ID3D11ShaderResourceView*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
-				inst.currentTime = inst.pVideoObject->syncTime;
-				break;
-			case TVideoObject::sShutdown:
-				//MDiagnostic("UnityRenderEvent - Shutdown %d", it->first);
-				if (inst.pVideoObject->TryWaitShutdown())
-				{
-					DestroyVideoInstance(inst);
-					it = mVideoObject.erase(it);
-					continue;
+					bool success = wglDXSetResourceShareHandleNV(inst.pVideoTexture9, inst.pRenderTexHandle);
+
+					// gl_texture_handle is the shared texture data, now identified by the g_GLTexture name
+					inst.pDXGLSharedHandle = wglDXRegisterObjectNV(pDevice9,
+						inst.pRenderTexHandle,
+						inst.pGLVideoTexture->get_rid().get_id(),
+						GL_TEXTURE_2D,
+						WGL_ACCESS_READ_ONLY_NV);
 				}
-				break;
-			};
-			++it;
-		}
-	}
-}
 
-extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc()
-{
-	return UnityRenderEvent;
+			}
+			else {
+				//inst.pVideoTexture11 = (ID3D11ShaderResourceView*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
+			}
+			inst.currentTime = inst.pVideoObject->syncTime;
+			break;
+		case TVideoObject::sShutdown:
+			//MDiagnostic("UnityRenderEvent - Shutdown %d", it->first);
+			if (inst.pVideoObject->TryWaitShutdown())
+			{
+				DestroyVideoInstance(inst);
+				it = mVideoObject.erase(it);
+				continue;
+			}
+			break;
+		};
+		++it;
+	}
+
 }

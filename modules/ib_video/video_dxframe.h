@@ -7,4 +7,5 @@ public:
 	static void Destroy(TVideoFrameOutput* vo);
 public:
 	virtual void* GetFrame()=0;
+	virtual void* GetRenderTexHandle() = 0;
 };

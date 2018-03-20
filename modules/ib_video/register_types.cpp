@@ -4,17 +4,17 @@
 
 #include "register_types.h"
 #include "class_db.h"
-#include "IB_video_protocol.h"
+#include "ib_video_stream.h"
 
-static VideoStreamIBSingleton *_streamIBVideoSingleton = NULL;
+static VideoStreamIBManager *_streamIBVideoSingleton = NULL;
 
-void register_IB_video_types() {
+void register_ib_video_types() {
 
-	ClassDB::register_class<ProtocolPID2>();
-	ClassDB::register_class<ProtocolPID2Connection>();
+	ClassDB::register_class<VideoStreamIBManager>();
+	ClassDB::register_class<DirectXIBVideoTexture>();
 
-	_streamIBVideoSingleton = memnew(VideoStreamIBSingleton());
+	_streamIBVideoSingleton = memnew(VideoStreamIBManager);
 }
 
-void unregister_IB_video_types() {
+void unregister_ib_video_types() {
 }

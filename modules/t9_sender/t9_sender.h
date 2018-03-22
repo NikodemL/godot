@@ -1,13 +1,11 @@
 // This is T9 binder for Godot
 
-#ifdnef __T9__SENDER__H_
+#ifndef __T9__SENDER__H_
 #define __T9__SENDER__H_
 
 #include "reference.h"
-#include "node.h"
-#include "viewport.h"
-
-class T9SenderManager;
+#include "scene/main/node.h"
+#include "scene/main/viewport.h"
 
 class T9Sender : public Node {
 	GDCLASS(T9Sender, Node);
@@ -27,6 +25,9 @@ class T9Sender : public Node {
 
 	int adapter_count;
 	AdapterDesc adapters[6];
+protected:
+	static void _bind_methods();
+
 public:
 	T9Sender();
 	virtual ~T9Sender();
@@ -43,7 +44,7 @@ public:
 	String get_adapter_desc(int id);
 
 	// Sets the brigtness of display
-	void set_brightness(int bright, int r, int g, int b, int cold);
+	void set_brightness(int bright = 255, int r = 255, int g = 255, int b = 255, int vr = 255, int cold = 0);
 
 	// Creates a sender data to a screen number. 1 is default screen number
 	void create_screen(int p_screen_number, int p_screen_width, int p_screen_height, bool p_is_virtual);
@@ -54,7 +55,8 @@ public:
 
 	// Should be called on interval to send contents of viewport texture after screen is created
 	void send_screen(Ref<ViewportTexture> texture);
-	void send_screen(Ref<Image> data);
+	void send_screen_data(Ref<Image> data);
+	void send_screen_color(float r, float g, float b);
 
 	// Destroys 
 	void destroy_screen();

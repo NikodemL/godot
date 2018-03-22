@@ -3,13 +3,13 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "class_db.h"
-#include "casino_PID2_protocol.h"
+#include "t9_sender.h"
 
 void register_t9_sender_types() {
 
-	//ClassDB::register_class<ProtocolPID2>();
+	ClassDB::register_class<T9Sender>();
 }
 
 void unregister_t9_sender_types() {
+
 }

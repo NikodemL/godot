@@ -17,8 +17,8 @@ typedef DWORD HSCPARAM;
 //Comunication Type define
 #define COMUNICATION_TYPE_INVALID	0x00	
 #define COMUNICATION_TYPE_NET		0x01	
-#define COMUNICATION_TYPE_COM		0x02	//串口发送
-#define COMUNICATION_TYPE_ANY		0xFF	//任一形式
+#define COMUNICATION_TYPE_COM		0x02	//麓庐偶脷路藰脣脥
+#define COMUNICATION_TYPE_ANY		0xFF	//膶脦艊禄膼脦臉藵
 
 
 //Block define
@@ -28,76 +28,76 @@ typedef DWORD HSCPARAM;
 #define BLOCK_SEND_CTRL			0x02
 #define BLOCK_ASYN_WRITEFUN		0x04
 #define BLOCK_RCV_ANSWER		0x08
-#define BLOCK_COEF_PIC			0x10	//逐点校正图片
+#define BLOCK_COEF_PIC			0x10	//脰膽碌膬膼艁艕媒脥慕膯卢
 
 #define UP_OLD_PROGRAM			0x01
 #define UP_NEW_PROGRAM			0x02
 #define UP_ALL_PROGRAM			0xff
 
 
-// 各种回调消息定义
-#define CBMSG_DROPFRAM				1		//网卡发送速度跟不上，出现丢帧，此时lParam无意义
+// 赂梅脰脰禄艠碌梅膸疟膸藰露篓艊暮
+#define CBMSG_DROPFRAM				1		//脥艡偶篓路藰脣脥脣女露膶赂煤藳禄脡膸艁卢艂枚膸脰露艦脰藝艁卢麓脣臉卤lParam脦泞艊芒艊暮
 
-#define CBMSG_RECEIVED_NIC_DATA		2		//从接受卡收到了网络数据，lParam，为指向SReceivedNicData的指针
+#define CBMSG_RECEIVED_NIC_DATA		2		//麓脫藵脫臉脺偶篓臉艕碌藵脕脣脥艡脗莽臉媒木脻艁卢lParam艁卢脦艦脰赂膸艌SReceivedNicData碌脛脰赂艕毛
 struct SReceivedNicData
 {
 	LPBYTE dataAddress;
 	int	   dataLen;
 };
 
-#define CBMSG_SAVE_HWParamToRcv		3		//保存参数到接受卡进度报告信息，
-											//lParam高16为状态信息，0正在进行，1成功，2失败，低8位为进度百分比。
+#define CBMSG_SAVE_HWParamToRcv		3		//卤艁麓膰藳脦臉媒碌藵藵脫臉脺偶篓藵艡露膶卤篓赂膰膼墓膸藰艁卢
+											//lParam赂脽16脦艦脳麓臍卢膼墓膸藰艁卢0艕媒脭脷藵艡膼膼艁卢1艂脡膮娄艁卢2臉搂掳脺艁卢碌脥8脦禄脦艦藵艡露膶掳女路脰卤膶藝艁
 
-#define CBMSG_Read_HWParamFromRcv	4		//从接收卡读取参数进度报告信息，
-											//lParam高8为状态信息，0正在进行，1成功，2失败。
-											//lParam次高8为卡型号
-											//lParam低16位的高八位为高版本号，低8位为低版本号。
+#define CBMSG_Read_HWParamFromRcv	4		//麓脫藵脫臉艕偶篓露脕膶藝藳脦臉媒藵艡露膶卤篓赂膰膼墓膸藰艁卢
+											//lParam赂脽8脦艦脳麓臍卢膼墓膸藰艁卢0艕媒脭脷藵艡膼膼艁卢1艂脡膮娄艁卢2臉搂掳脺藝艁
+											//lParam麓脦赂脽8脦艦偶篓膼脥艧墓
+											//lParam碌脥16脦禄碌脛赂脽掳脣脦禄脦艦赂脽掳膰卤木艧墓艁卢碌脥8脦禄脦艦碌脥掳膰卤木艧墓藝艁
 
-#define CBMSG_Read_FPGAFromRcv		5		//从接收卡读取FPGA程序进度报告信息，
-											//lParam高8位状态信息，0正在进行，1成功，2失败
-											//lParam次高8位为卡型号
-											//lParam低16位的高八位为高版本号，低8位为低版本号。
+#define CBMSG_Read_FPGAFromRcv		5		//麓脫藵脫臉艕偶篓露脕膶藝FPGA艂臍膼艌藵艡露膶卤篓赂膰膼墓膸藰艁卢
+											//lParam赂脽8脦禄脳麓臍卢膼墓膸藰艁卢0艕媒脭脷藵艡膼膼艁卢1艂脡膮娄艁卢2臉搂掳脺
+											//lParam麓脦赂脽8脦禄脦艦偶篓膼脥艧墓
+											//lParam碌脥16脦禄碌脛赂脽掳脣脦禄脦艦赂脽掳膰卤木艧墓艁卢碌脥8脦禄脦艦碌脥掳膰卤木艧墓藝艁
 
-#define CBMSG_Upgrade_FPGAFromRcv	6		//发送FPGA程序到接收卡的进度报告信息，
-											//lParam高8位为状态信息，0正在进行，1成功，2失败
-											//lParam次高8位为进度信息，1开始，2擦除，3写入，4校验，0和前一次相同
-											//lParam最低16位为卡号
+#define CBMSG_Upgrade_FPGAFromRcv	6		//路藰脣脥FPGA艂臍膼艌碌藵藵脫臉艕偶篓碌脛藵艡露膶卤篓赂膰膼墓膸藰艁卢
+											//lParam赂脽8脦禄脦艦脳麓臍卢膼墓膸藰艁卢0艕媒脭脷藵艡膼膼艁卢1艂脡膮娄艁卢2臉搂掳脺
+											//lParam麓脦赂脽8脦禄脦艦藵艡露膶膼墓膸藰艁卢1偶艦臉慕艁卢2藳脕艂媒艁卢3膼麓膶毛艁卢4膼艁艃茅艁卢0艧脥脟掳艊禄麓脦膸艜脥卢
+											//lParam脳卯碌脥16脦禄脦艦偶篓艧墓
 
-#define CBMSG_Detected_RCV_Card		7		//探测到了接受卡，
-											//lParam高16为状态信息，0开始探测，1成功，2失败，3探测到，次低八位为版本信息，低8位为参数卡序号（成功时为卡数量）
+#define CBMSG_Detected_RCV_Card		7		//臍藵藳芒碌藵脕脣藵脫臉脺偶篓艁卢
+											//lParam赂脽16脦艦脳麓臍卢膼墓膸藰艁卢0偶艦臉慕臍藵藳芒艁卢1艂脡膮娄艁卢2臉搂掳脺艁卢3臍藵藳芒碌藵艁卢麓脦碌脥掳脣脦禄脦艦掳膰卤木膼墓膸藰艁卢碌脥8脦禄脦艦藳脦臉媒偶篓膼艌艧墓艁篓艂脡膮娄臉卤脦艦偶篓臉媒脕偶艁漏
 
-#define CBMSG_AsynWriteFunCard_Rslt	8		//异步写功能卡结果
-											//lParam高为状态信息，0失败，1成功，2超时
+#define CBMSG_AsynWriteFunCard_Rslt	8		//艊臎藳藵膼麓膮娄脛脺偶篓藵谩膮疟
+											//lParam赂脽脦艦脳麓臍卢膼墓膸藰艁卢0臉搂掳脺艁卢1艂脡膮娄艁卢2艂卢臉卤
 
-#define CBMSG_SendCorrectCoef2Rcv   9       //发送校正数据到接收卡的进度信息，
-                                            //lParam高16位为状态信息，0正在进行，1成功，2失败
-                                            //lParam低16位为进度信息，0~100
+#define CBMSG_SendCorrectCoef2Rcv   9       //路藰脣脥膼艁艕媒臉媒木脻碌藵藵脫臉艕偶篓碌脛藵艡露膶膼墓膸藰艁卢
+                                            //lParam赂脽16脦禄脦艦脳麓臍卢膼墓膸藰艁卢0艕媒脭脷藵艡膼膼艁卢1艂脡膮娄艁卢2臉搂掳脺
+                                            //lParam碌脥16脦禄脦艦藵艡露膶膼墓膸藰艁卢0~100
 
-#define CBMSG_Sending_FPGA_OP		10		//发送卡操作进度报告信息，
-											//lParam高8位为状态信息，0正在进行，1成功，2失败
-											//lParam次高8位为进度信息，1开始，2擦除，3写入，4读取，0和前一次相同
-											//lParam最低16位无意义
+#define CBMSG_Sending_FPGA_OP		10		//路藰脣脥偶篓藳女脳梅藵艡露膶卤篓赂膰膼墓膸藰艁卢
+											//lParam赂脽8脦禄脦艦脳麓臍卢膼墓膸藰艁卢0艕媒脭脷藵艡膼膼艁卢1艂脡膮娄艁卢2臉搂掳脺
+											//lParam麓脦赂脽8脦禄脦艦藵艡露膶膼墓膸藰艁卢1偶艦臉慕艁卢2藳脕艂媒艁卢3膼麓膶毛艁卢4露脕膶藝艁卢0艧脥脟掳艊禄麓脦膸艜脥卢
+											//lParam脳卯碌脥16脦禄脦泞艊芒艊暮
 
-#define CBMSG_Open_WinpcapError		11		//Open WinPcapError, lParam指向出错提示的字符串(char*)
+#define CBMSG_Open_WinpcapError		11		//Open WinPcapError, lParam脰赂膸艌艂枚麓铆臍谩臉木碌脛脳脰路疟麓庐(char*)
 
-#define CBMSG_Save_HWParamToSend  12		//发送参数到发送卡的进度报告消息
-											//lParam高16为状态信息，0正在进行，1成功，2失败，低8位为进度百分比。
+#define CBMSG_Save_HWParamToSend  12		//路藰脣脥藳脦臉媒碌藵路藰脣脥偶篓碌脛藵艡露膶卤篓赂膰膸疟膸藰
+											//lParam赂脽16脦艦脳麓臍卢膼墓膸藰艁卢0艕媒脭脷藵艡膼膼艁卢1艂脡膮娄艁卢2臉搂掳脺艁卢碌脥8脦禄脦艦藵艡露膶掳女路脰卤膶藝艁
 
 
 /*************************************************
 * T9SenderCallback
-* 功能说明：
-    回调函数，参见各种回调消息定义
+* 膮娄脛脺脣碌膫梅艁艧
+    禄艠碌梅艧呕臉媒艁卢藳脦慕疟赂梅脰脰禄艠碌梅膸疟膸藰露篓艊暮
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 .   [in]	wParam
-	消息类型
+	膸疟膸藰艛艜膼脥
 .	[in]	lParam
-	消息值
+	膸疟膸藰脰碌
 .	[in]	data
-	其他
+	膯盲脣疟
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 
 *************************************************/
 typedef HRESULT (__stdcall *T9SenderCallback)(WPARAM wParam, LPARAM lParam, DWORD data);
@@ -107,81 +107,81 @@ extern "C"{
 
 /*************************************************
 * T9GetNetAdapterCount
-* 功能说明：
-    获取机器上已经安装的网卡数量
+* 膮娄脛脺脣碌膫梅艁艧
+    禄艅膶藝禄煤膯梅脡膸艊艃木颅掳藳脳掳碌脛脥艡偶篓臉媒脕偶
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 .   [out]	pCount
-	返回网卡数量
+	路碌禄艠脥艡偶篓臉媒脕偶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .   T9_S_OK
-	成功 
+	艂脡膮娄 
 *************************************************/
 T9API	T9GetNetAdapterCount(DWORD *pCount);
 
 
 /*************************************************
 * T9GetNetAdapterInfo
-* 功能说明：
-    获取网卡信息
+* 膮娄脛脺脣碌膫梅艁艧
+    禄艅膶藝脥艡偶篓膼墓膸藰
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	index
-	网卡索引号
+	脥艡偶篓脣梅艊媒艧墓
 .	[out]	pAdapterId
-	返回该网卡的id，pAdapterId指向的内存大小不得小于260个字节
+	路碌禄艠赂膫脥艡偶篓碌脛id艁卢pAdapterId脰赂膸艌碌脛脛脷麓膰麓贸膼藝藳禄碌膫膼藝脫脷260赂枚脳脰藵脷
 .	[in]	adapterIdBufLen
-    pAdapterId实际指向的内存大小
+    pAdapterId臉碌慕臉脰赂膸艌碌脛脛脷麓膰麓贸膼藝
 .   [out]	pAdapterDesp
-	返回该网卡的描述信息，pAdapterDesp指向的内存大小不得小于260个字节
+	路碌禄艠赂膫脥艡偶篓碌脛膫膷臉枚膼墓膸藰艁卢pAdapterDesp脰赂膸艌碌脛脛脷麓膰麓贸膼藝藳禄碌膫膼藝脫脷260赂枚脳脰藵脷
 .	[in]	adapterDespBufLen
-	adapterDespBufLen指向的内存大小
+	adapterDespBufLen脰赂膸艌碌脛脛脷麓膰麓贸膼藝
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_Adapter_Not_Exist
-	无法获取该网卡的信息
+	脦泞路篓禄艅膶藝赂膫脥艡偶篓碌脛膼墓膸藰
 .	T9E_Buffer_Overflow
-	pAdapterId或者pAdapterDesp指向的内存太小
+	pAdapterId禄艌艕脽pAdapterDesp脰赂膸艌碌脛脛脷麓膰臍芦膼藝
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9GetNetAdapterInfo(DWORD	index,
 							char	*pAdapterId,
-							DWORD	adapterIdBufLen,	//需大于或者等于260
+							DWORD	adapterIdBufLen,	//膼膷麓贸脫脷禄艌艕脽碌膶脫脷260
 							char	*pAdapterDesp,
-							DWORD	adapterDespBufLen);	//需大于或者等于260
+							DWORD	adapterDespBufLen);	//膼膷麓贸脫脷禄艌艕脽碌膶脫脷260
 
 
 /*************************************************
 * T9CreateScreen
-* 功能说明：
-    创建一个屏幕
+* 膮娄脛脺脣碌膫梅艁艧
+    麓麓藵篓艊禄赂枚膯脕脛禄
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .   [in]	number
-	新创建屏幕的编号
+	膼脗麓麓藵篓膯脕脛禄碌脛卤艜艧墓
 .	[in]	width
-	屏幕宽度					合理取值范围 1 - 1024*1024
+	膯脕脛禄偶铆露膶					艧膸艛铆膶藝脰碌路露脦搂 1 - 1024*1024
 .	[in]	height
-	屏幕高度					合理取值范围 1 - 1024*1024
+	膯脕脛禄赂脽露膶					艧膸艛铆膶藝脰碌路露脦搂 1 - 1024*1024
 .	[in]	bVirtual
-    是否是虚拟屏
+    臉脟路艅臉脟膼茅脛芒膯脕
 .	[in]	virtualType
-	虚拟屏类型				合理取值范围0~3       0 vpa_RA_G__B_RB   1 vpa_RA_B__G_RB   2 vpa_G_RA__RB_B   3 vpa_B_RA__RB_G
+	膼茅脛芒膯脕艛艜膼脥				艧膸艛铆膶藝脰碌路露脦搂0~3       0 vpa_RA_G__B_RB   1 vpa_RA_B__G_RB   2 vpa_G_RA__RB_B   3 vpa_B_RA__RB_G
 .	[in]	connectionType
-	接收卡的级联方向	合理取值范围0~3      0 cs_right_to_left    1 cs_left_to_right    2 cs_top_to_bottom  3 cs_bottom_to_top
-* 返回值说明：
+	藵脫臉艕偶篓碌脛慕露脕艦路藵膸艌	艧膸艛铆膶藝脰碌路露脦搂0~3      0 cs_right_to_left    1 cs_left_to_right    2 cs_top_to_bottom  3 cs_bottom_to_top
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_InvalidNumber
-	错误的屏编号，合理编号范围为1到MAX_SCREEN_NUMBER
+	麓铆脦贸碌脛膯脕卤艜艧墓艁卢艧膸艛铆卤艜艧墓路露脦搂脦艦1碌藵MAX_SCREEN_NUMBER
 .	T9E_ScreenAlreadyExist
-	该编号的屏已经创建
+	赂膫卤艜艧墓碌脛膯脕艊艃木颅麓麓藵篓
 .	T9E_NoImplement
-	功能未实现
+	膮娄脛脺脦麓臉碌膸脰
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9CreateScreen(DWORD	number,
 					   DWORD	width,
@@ -193,59 +193,59 @@ T9API	T9CreateScreen(DWORD	number,
 
 /*************************************************
 * T9DestroyScreen
-* 功能说明：
-	删除一个屏幕
+* 膮娄脛脺脣碌膫梅艁艧
+	脡木艂媒艊禄赂枚膯脕脛禄
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .   [in]	number
-	需要删除的屏幕的编号
+	膼膷艊艦脡木艂媒碌脛膯脕脛禄碌脛卤艜艧墓
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_InvalidScreen
-	未曾创建该编号的屏幕
+	脦麓脭艡麓麓藵篓赂膫卤艜艧墓碌脛膯脕脛禄
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9DestroyScreen(DWORD	number);
 
 /*************************************************
 * T9DestroyAllScreen
-* 功能说明：
-	删除所有屏幕
+* 膮娄脛脺脣碌膫梅艁艧
+	脡木艂媒脣暖脫膼膯脕脛禄
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9DestroyAllScreen();
 
 /*************************************************
 * T9GetScreenInfo
-* 功能说明：
-	根据屏幕id号获取屏幕信息
+* 膮娄脛脺脣碌膫梅艁艧
+	赂暖木脻膯脕脛禄id艧墓禄艅膶藝膯脕脛禄膼墓膸藰
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .   [in]	number
-	需要获取信息的屏幕编号
+	膼膷艊艦禄艅膶藝膼墓膸藰碌脛膯脕脛禄卤艜艧墓
 .   [out]	pWidth 
-	返回屏幕宽度
+	路碌禄艠膯脕脛禄偶铆露膶
 .   [out]	pHeight
-	返回屏幕高度
+	路碌禄艠膯脕脛禄赂脽露膶
 .   [out]	pbVirtual
-	返回屏幕是否是虚拟屏
+	路碌禄艠膯脕脛禄臉脟路艅臉脟膼茅脛芒膯脕
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_InvalidScreen
-	未曾创建该编号的屏幕
+	脦麓脭艡麓麓藵篓赂膫卤艜艧墓碌脛膯脕脛禄
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9GetScreenInfo(DWORD	number,
 						DWORD	*pWidth,
@@ -255,340 +255,340 @@ T9API	T9GetScreenInfo(DWORD	number,
 
 /*************************************************
 * T9GetScreenCount
-* 功能说明：
-	获取已经创建的屏幕数量
+* 膮娄脛脺脣碌膫梅艁艧
+	禄艅膶藝艊艃木颅麓麓藵篓碌脛膯脕脛禄臉媒脕偶
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .   [out]	pCount
-	已经创建的屏幕数量
+	艊艃木颅麓麓藵篓碌脛膯脕脛禄臉媒脕偶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9GetScreenCount(DWORD *pCount);
 
 
 /*************************************************
 * T9GetScreenNumber
-* 功能说明：
-	根据屏幕索引号获取屏幕id
+* 膮娄脛脺脣碌膫梅艁艧
+	赂暖木脻膯脕脛禄脣梅艊媒艧墓禄艅膶藝膯脕脛禄id
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .   [in]	index
-	屏幕索引号，索引号区间为[0, 屏幕数量减1]
+	膯脕脛禄脣梅艊媒艧墓艁卢脣梅艊媒艧墓脟艡慕盲脦艦[0, 膯脕脛禄臉媒脕偶慕艖1]
 .   [out]	pNumber
-	返回屏幕编号
+	路碌禄艠膯脕脛禄卤艜艧墓
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_InvalidIndex
-	无效屏幕索引号，参见index参数说明
+	脦泞膼搂膯脕脛禄脣梅艊媒艧墓艁卢藳脦慕疟index藳脦臉媒脣碌膫梅
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9GetScreenNumber(	DWORD	index,
 							DWORD	*pNumber);
 
 /*************************************************
 * T9SetScreenVirtualType
-* 功能说明：
-	设置虚拟屏幕的类型
+* 膮娄脛脺脣碌膫梅艁艧
+	脡膷脰膫膼茅脛芒膯脕脛禄碌脛艛艜膼脥
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .   [in]  number
-	需要设置的屏幕的屏幕号   
+	膼膷艊艦脡膷脰膫碌脛膯脕脛禄碌脛膯脕脛禄艧墓   
 
-.   [in]  virtualType					合理取值范围0~3       0 vpa_RA_G__B_RB   1 vpa_RA_B__G_RB   2 vpa_G_RA__RB_B   3 vpa_B_RA__RB_G
-	虚拟屏幕的类型
+.   [in]  virtualType					艧膸艛铆膶藝脰碌路露脦搂0~3       0 vpa_RA_G__B_RB   1 vpa_RA_B__G_RB   2 vpa_G_RA__RB_B   3 vpa_B_RA__RB_G
+	膼茅脛芒膯脕脛禄碌脛艛艜膼脥
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_InvalidScreen
-	未曾创建该编号的屏幕
+	脦麓脭艡麓麓藵篓赂膫卤艜艧墓碌脛膯脕脛禄
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SetScreenVirtualType(DWORD number, int virtualType);
 
 
 /*************************************************
 * T9SetScreenConnectionStyle
-* 功能说明：
-	设置虚拟屏幕的类型
+* 膮娄脛脺脣碌膫梅艁艧
+	脡膷脰膫膼茅脛芒膯脕脛禄碌脛艛艜膼脥
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .   [in]  number
-	需要设置的屏幕的屏幕号
+	膼膷艊艦脡膷脰膫碌脛膯脕脛禄碌脛膯脕脛禄艧墓
 
-.   [in]  connectionStyle				合理取值范围0~3      0 cs_right_to_left    1 cs_left_to_right    2 cs_top_to_bottom  3 cs_bottom_to_top
-	接收卡的级联方向
+.   [in]  connectionStyle				艧膸艛铆膶藝脰碌路露脦搂0~3      0 cs_right_to_left    1 cs_left_to_right    2 cs_top_to_bottom  3 cs_bottom_to_top
+	藵脫臉艕偶篓碌脛慕露脕艦路藵膸艌
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_InvalidScreen
-	未曾创建该编号的屏幕
+	脦麓脭艡麓麓藵篓赂膫卤艜艧墓碌脛膯脕脛禄
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SetScreenConnectionStyle(DWORD number, int connectionStyle);
 
 /*************************************************
 * T9SenderStart
-* 功能说明：
-   初始化网卡，开始发送图像数据
+* 膮娄脛脺脣碌膫梅艁艧
+   艂艖臉慕禄呕脥艡偶篓艁卢偶艦臉慕路藰脣脥脥慕膸艅臉媒木脻
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	comunicationType
-    通讯形式，网口或者串口，详见Comunication Type define
+    脥篓艃露膼脦臉藵艁卢脥艡偶脷禄艌艕脽麓庐偶脷艁卢膸臋慕疟Comunication Type define
 .	[in]	pParam
-	 根据发送数据的方式不同而不同，当以网口发送时，pParam为当前使用的网卡名称 ；以串口发送时 pParam为串口号
+	 赂暖木脻路藰脣脥臉媒木脻碌脛路藵臉藵藳禄脥卢露艡藳禄脥卢艁卢碌卤艊脭脥艡偶脷路藰脣脥臉卤艁卢pParam脦艦碌卤脟掳臉膮脫膫碌脛脥艡偶篓膫疟艂膯 艁禄艊脭麓庐偶脷路藰脣脥臉卤 pParam脦艦麓庐偶脷艧墓
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_NoScreen
-	还没有创建屏，需要先创建所有的屏才能开始发送
+	禄膮膫禄脫膼麓麓藵篓膯脕艁卢膼膷艊艦膸膶麓麓藵篓脣暖脫膼碌脛膯脕藳墓脛脺偶艦臉慕路藰脣脥
 .	T9E_OpenNICFailed
-	打开网卡失败
+	麓艌偶艦脥艡偶篓臉搂掳脺
 .	T9E_UNKNOWN
-	未知错误
+	脦麓脰艦麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SenderStart(DWORD comunicationType, LPVOID pParam);
 
 
 /*************************************************
 * T9SenderStop
-* 功能说明：
-    停止发送图像数据
+* 膮娄脛脺脣碌膫梅艁艧
+    脥艁脰膮路藰脣脥脥慕膸艅臉媒木脻
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SenderStop();
 
 /*************************************************
 * T9IsSenderRunning
-* 功能说明：
-	是否网络收发模块正在运行
+* 膮娄脛脺脣碌膫梅艁艧
+	臉脟路艅脥艡脗莽臉艕路藰脛艁偶茅艕媒脭脷脭脣膼膼
 
-* 参数说明： 
-	comunicationType 通讯形式，网口或者串口，详见Comunication Type define
+* 藳脦臉媒脣碌膫梅艁艧 
+	comunicationType 脥篓艃露膼脦臉藵艁卢脥艡偶脷禄艌艕脽麓庐偶脷艁卢膸臋慕疟Comunication Type define
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	正在运行
+	艕媒脭脷脭脣膼膼
 .	T9_E_FAILE
-	没有运行
+	膫禄脫膼脭脣膼膼
 *************************************************/
 T9API	T9IsSenderRunning(DWORD comunicationType);
 
 /*************************************************
 * T9SetBirghtness
-* 功能说明：
-      设置亮度
+* 膮娄脛脺脣碌膫梅艁艧
+      脡膷脰膫脕脕露膶
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	bright
-	亮度值
+	脕脕露膶脰碌
 .	[in]	bright_r
-	红色的亮度值
+	艧臎脡芦碌脛脕脕露膶脰碌
 .	[in]	bright_g
-	绿色的亮度值
+	脗臍脡芦碌脛脕脕露膶脰碌
 .	[in]	bright_b
-	蓝色的亮度值
+	艛露脡芦碌脛脕脕露膶脰碌
 .	[in]	bright_vr
-	透明度
+	脥赂膫梅露膶
 .	[in]	colorTempture
-	色温
-* 返回值说明：
+	脡芦脦脗
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SetBirghtness(BYTE bright, BYTE bright_r, BYTE bright_g, BYTE bright_b, BYTE bright_vr, WORD colorTempture);
 
 /*************************************************
 * T9SetIsUseRcvParam
-* 功能说明：
-      设置是否使用接收卡参数
+* 膮娄脛脺脣碌膫梅艁艧
+      脡膷脰膫臉脟路艅臉膮脫膫藵脫臉艕偶篓藳脦臉媒
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 .	[in]	bUseRcvParam
-	TRUE，使用接收卡参数，FALSE，使用计算机实时参数
+	TRUE艁卢臉膮脫膫藵脫臉艕偶篓藳脦臉媒艁卢FALSE艁卢臉膮脫膫慕膯脣膬禄煤臉碌臉卤藳脦臉媒
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-成功
+艂脡膮娄
 *************************************************/
 T9API	T9SetIsUseRcvParam(BOOL bUseRcvParam);
 
 /*************************************************
 * T9SetPcRealTimeParam
-* 功能说明：
-	改变计算机实时参数
+* 膮娄脛脺脣碌膫梅艁艧
+	赂脛卤盲慕膯脣膬禄煤臉碌臉卤藳脦臉媒
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	lpBuf
-	参数块内存地址 
+	藳脦臉媒偶茅脛脷麓膰碌艠脰路 
 .	[in]	bufLen
-	参数块内存长度
+	藳脦臉媒偶茅脛脷麓膰艂陇露膶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SetPcRealTimeParam(LPBYTE lpBuf, DWORD bufLen);
 
 /*************************************************
 * SetSendParamScreenNumber
-* 功能说明：
-	设置在哪个屏发送图像数据之前，需要先发送的屏参数据
+* 膮娄脛脺脣碌膫梅艁艧
+	脡膷脰膫脭脷脛脛赂枚膯脕路藰脣脥脥慕膸艅臉媒木脻脰庐脟掳艁卢膼膷艊艦膸膶路藰脣脥碌脛膯脕藳脦臉媒木脻
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	number
-	屏幕编号
+	膯脕脛禄卤艜艧墓
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_InvalidScreen
-	未曾创建该编号的屏幕
+	脦麓脭艡麓麓藵篓赂膫卤艜艧墓碌脛膯脕脛禄
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SetSendParamScreenNumber(DWORD number);
 
 
 /*************************************************
 * T9SendControlPack
-* 功能说明：
-    发送控制参数包
+* 膮娄脛脺脣碌膫梅艁艧
+    路藰脣脥偶艠脰膯藳脦臉媒掳眉
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	pBuf
-	参数包内存地址
+	藳脦臉媒掳眉脛脷麓膰碌艠脰路
 .	[in]	bufLen
-	参数包内存长度
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	藳脦臉媒掳眉脛脷麓膰艂陇露膶
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_SendThreadNotStart
-	发送线程没有启动
+	路藰脣脥膸脽艂臍膫禄脫膼膯么露呕
 .	T9E_ParamError
-	参数错误，指的传给该函数的参数错误，而不是pBuf内数据错误
+	藳脦臉媒麓铆脦贸艁卢脰赂碌脛麓芦赂艡赂膫艧呕臉媒碌脛藳脦臉媒麓铆脦贸艁卢露艡藳禄臉脟pBuf脛脷臉媒木脻麓铆脦贸
 .	T9_S_FALSE
-	由于内部阻塞，发送的控制命令被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛偶艠脰膯膫眉脕卯卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SendControlPack(LPBYTE pBuf, DWORD bufLen, BYTE portIndex);
 
 /*************************************************
 * T9SendRTCSetting
-* 功能说明：
-    发送RTC有关设置参数
+* 膮娄脛脺脣碌膫梅艁艧
+    路藰脣脥RTC脫膼膮艠脡膷脰膫藳脦臉媒
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	pBuf
-	参数包内存地址
+	藳脦臉媒掳眉脛脷麓膰碌艠脰路
 .	[in]	bufLen
-	参数包内存长度
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	藳脦臉媒掳眉脛脷麓膰艂陇露膶
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	E_FAIL
-	失败
+	臉搂掳脺
 .	T9_NOERROR
-	正确
+	艕媒膶路
 
 *************************************************/
 T9API	T9SendRTCSetting(IN LPBYTE pBuf, IN DWORD bufLen, IN BYTE portIndex);
 
 /*************************************************
 * T9Ctrl_DetectRcvCardEx
-* 功能说明：
-	探测接收卡
+* 膮娄脛脺脣碌膫梅艁艧
+	臍藵藳芒藵脫臉艕偶篓
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 .	[out] pRcvCount
-	返回探测到的接受卡数量
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	路碌禄艠臍藵藳芒碌藵碌脛藵脫臉脺偶篓臉媒脕偶
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 	T9E_ParamError
-	参数错
+	藳脦臉媒麓铆
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_DetectRcvCardEx(DWORD *pRcvCount, BYTE portIndex);
 
 /*************************************************
 * T9Ctrl_DetectRcvCardEx2
-* 功能说明：
-	探测接收卡
+* 膮娄脛脺脣碌膫梅艁艧
+	臍藵藳芒藵脫臉艕偶篓
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 	[in] rcvIndex
-	接收卡序号，取值范围[0~65536]
+	藵脫臉艕偶篓膼艌艧墓艁卢膶藝脰碌路露脦搂[0~65536]
 	[in] pBuf
-	内存地址，用来存储接收到的卡信息
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
-* 返回值说明：
+	脛脷麓膰碌艠脰路艁卢脫膫艛麓麓膰麓藰藵脫臉艕碌藵碌脛偶篓膼墓膸藰
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	E_FAIL
-	失败
+	臉搂掳脺
 .	T9E_ParamError
-	参数错
+	藳脦臉媒麓铆
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	NOERROR
-	正确
+	艕媒膶路
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_DetectRcvCardEx2(WORD rcvIndex, LPBYTE pBuf, BYTE portIndex);
 
 /*************************************************
 * T9Ctrl_DetectRcvCardEx3
-* 功能说明：
-	探测接收卡
+* 膮娄脛脺脣碌膫梅艁艧
+	臍藵藳芒藵脫臉艕偶篓
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 .	[out] pRcvCount
-	返回探测到的接受卡数量
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	路碌禄艠臍藵藳芒碌藵碌脛藵脫臉脺偶篓臉媒脕偶
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 	[in] startIndex
-	起始卡号
+	膯膽臉慕偶篓艧墓
 	[in] count
-	探测卡的数量
+	臍藵藳芒偶篓碌脛臉媒脕偶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 	T9E_ParamError
-	参数错
+	藳脦臉媒麓铆
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_DetectRcvCardEx3(DWORD *pRcvCount, BYTE portIndex, WORD startIndex, WORD count);
 
@@ -597,220 +597,220 @@ T9API	T9Ctrl_DetectRcvCardEx3(DWORD *pRcvCount, BYTE portIndex, WORD startIndex,
 
 /*************************************************
 * T9Ctrl_DetectRcvCard
-* 功能说明：
-	探测接收卡
+* 膮娄脛脺脣碌膫梅艁艧
+	臍藵藳芒藵脫臉艕偶篓
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 	rcvIndex
-	接收卡序号，取值范围[0~65536]
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
-	* 返回值说明：
+	藵脫臉艕偶篓膼艌艧墓艁卢膶藝脰碌路露脦搂[0~65536]
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
+	* 路碌禄艠脰碌脣碌膫梅艁艧
 	T9E_ParamError
-	参数错
+	藳脦臉媒麓铆
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_SendThreadNotStart
-	发送线程没有启动
+	路藰脣脥膸脽艂臍膫禄脫膼膯么露呕
 .	T9_S_FALSE
-	由于内部阻塞，发送的控制命令被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛偶艠脰膯膫眉脕卯卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_DetectRcvCard(WORD rcvIndex, BYTE portIndex);
 
 /*************************************************
 * T9ClearMackPacketCount
-* 功能说明：
-	清除接收卡网络包计数
+* 膮娄脛脺脣碌膫梅艁艧
+	脟暮艂媒藵脫臉艕偶篓脥艡脗莽掳眉慕膯臉媒
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 	rcvIndex
-	接收卡序号，取值范围[0~65536]
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	藵脫臉艕偶篓膼艌艧墓艁卢膶藝脰碌路露脦搂[0~65536]
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_SendThreadNotStart
-	发送线程没有启动
+	路藰脣脥膸脽艂臍膫禄脫膼膯么露呕
 .	T9_S_FALSE
-	由于内部阻塞，发送的控制命令被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛偶艠脰膯膫眉脕卯卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ClearMackPacketCount(WORD rcvIndex, BYTE portIndex);
 
 
 /*************************************************
 * T9Ctrl_DetectFunCard
-* 功能说明：
-	探测功能卡
+* 膮娄脛脺脣碌膫梅艁艧
+	臍藵藳芒膮娄脛脺偶篓
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 .	funCardIndex
-	功能卡序号，取值范围[0~254]
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
-* 返回值说明：
+	膮娄脛脺偶篓膼艌艧墓艁卢膶藝脰碌路露脦搂[0~254]
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_SendThreadNotStart
-	发送线程没有启动
+	路藰脣脥膸脽艂臍膫禄脫膼膯么露呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9_S_FALSE
-	由于内部阻塞，发送的控制命令被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛偶艠脰膯膫眉脕卯卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_DetectFunCard(int funCardIndex, BYTE portIndex);
 
 
 /*************************************************
 * T9Ctrl_DetectFunCardEx
-* 功能说明：
-	探测功能卡
+* 膮娄脛脺脣碌膫梅艁艧
+	臍藵藳芒膮娄脛脺偶篓
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 .	funCardIndex
-	功能卡序号，取值范围[0~254]
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	膮娄脛脺偶篓膼艌艧墓艁卢膶藝脰碌路露脦搂[0~254]
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 	[in] pBuf
-	内存地址，用来存储接收到的卡信息
+	脛脷麓膰碌艠脰路艁卢脫膫艛麓麓膰麓藰藵脫臉艕碌藵碌脛偶篓膼墓膸藰
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	数错误
+	臉媒麓铆脦贸
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_SendThreadNotStart
-	发送线程没有启动
+	路藰脣脥膸脽艂臍膫禄脫膼膯么露呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9_S_FALSE
-	由于内部阻塞，发送的控制命令被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛偶艠脰膯膫眉脕卯卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_DetectFunCardEx(int funCardIndex, BYTE portIndex, LPBYTE pBuf);
 
 
 /*************************************************
 * T9Ctrl_5036PixelCheck
-* 功能说明：
-	5036逐点检测
+* 膮娄脛脺脣碌膫梅艁艧
+	5036脰膽碌膬慕臎藳芒
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 	[in] lpByte
-	控制数据内存地址指针
+	偶艠脰膯臉媒木脻脛脷麓膰碌艠脰路脰赂艕毛
 	[in] bufLen
-	控制数据长度
+	偶艠脰膯臉媒木脻艂陇露膶
 	[in] cardIndex
-	卡序号         取值范围[0~2048]
+	偶篓膼艌艧墓         膶藝脰碌路露脦搂[0~2048]
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_SendThreadNotStart
-	发送线程没有启动
+	路藰脣脥膸脽艂臍膫禄脫膼膯么露呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9_S_FALSE
-	由于内部阻塞，发送的控制命令被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛偶艠脰膯膫眉脕卯卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_5036PixelCheck(LPBYTE lpByte, int bufLen, WORD cardIndex);
 
 /*************************************************
 * T9Ctrl_ExecFunPower
-* 功能说明：
-	功能卡电源控制
+* 膮娄脛脺脣碌膫梅艁艧
+	膮娄脛脺偶篓碌莽脭麓偶艠脰膯
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 	[in] lpByte
-	控制数据内存地址指针
+	偶艠脰膯臉媒木脻脛脷麓膰碌艠脰路脰赂艕毛
 	[in] bufLen
-	控制数据长度
+	偶艠脰膯臉媒木脻艂陇露膶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_SendThreadNotStart
-	发送线程没有启动
+	路藰脣脥膸脽艂臍膫禄脫膼膯么露呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9_S_FALSE
-	由于内部阻塞，发送的控制命令被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛偶艠脰膯膫眉脕卯卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_ExecFunPower(LPBYTE lpByte, int bufLen);
 
 /*************************************************
 * T9Ctrl_ReqParamAndVer
-* 功能说明：
-	探测功能卡
+* 膮娄脛脺脣碌膫梅艁艧
+	臍藵藳芒膮娄脛脺偶篓
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 	rcvIndex
-	接收卡序号，取值范围[0~65536]
+	藵脫臉艕偶篓膼艌艧墓艁卢膶藝脰碌路露脦搂[0~65536]
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_SendThreadNotStart
-	发送线程没有启动
+	路藰脣脥膸脽艂臍膫禄脫膼膯么露呕
 .	T9_S_FALSE
-	由于内部阻塞，发送的控制命令被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛偶艠脰膯膫眉脕卯卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_ReqParamAndVer(WORD rcvIndex);
 
 /*************************************************
 * T9Ctrl_FunCard_FlashOperation
-* 功能说明：，
-	功能卡Flash操作
+* 膮娄脛脺脣碌膫梅艁艧艁卢
+	膮娄脛脺偶篓Flash藳女脳梅
 
-* 参数说明：
+* 藳脦臉媒脣碌膫梅艁艧
 .	[in]	opType	
-	操作类型: 取值为FlashOperateType的值
+	藳女脳梅艛艜膼脥: 膶藝脰碌脦艦FlashOperateType碌脛脰碌
 .	[in]	highAddress
-	操作目的高位地址
+	藳女脳梅脛偶碌脛赂脽脦禄碌艠脰路
 .	[in]	lowAddress
-	操作目的低位地址
+	藳女脳梅脛偶碌脛碌脥脦禄碌艠脰路
 .	[in]	lpBuf
-	opType为flash_op_write，写入的内容，为256个字节长
+	opType脦艦flash_op_write艁卢膼麓膶毛碌脛脛脷膶脻艁卢脦艦256赂枚脳脰藵脷艂陇
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_SendThreadNotStart
-	发送线程没有启动
+	路藰脣脥膸脽艂臍膫禄脫膼膯么露呕
 .	T9_S_FALSE
-	由于内部阻塞，发送的控制命令被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛偶艠脰膯膫眉脕卯卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9Ctrl_FunCard_FlashOperation(BYTE	opType, 
 									  BYTE	highAddress,
@@ -820,143 +820,143 @@ T9API	T9Ctrl_FunCard_FlashOperation(BYTE	opType,
 
 /*************************************************
 * T9SendScreenPicture
-* 功能说明：
-    发送一副图像数据（直接发送方式）
+* 膮娄脛脺脣碌膫梅艁艧
+    路藰脣脥艊禄赂卤脥慕膸艅臉媒木脻艁篓脰卤藵脫路藰脣脥路藵臉藵艁漏
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	number
-	屏幕编号
+	膯脕脛禄卤艜艧墓
 .	[in]	pBuf
-	图像数据内存地址
+	脥慕膸艅臉媒木脻脛脷麓膰碌艠脰路
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_InvalidScreen
-	未曾创建该编号的屏幕
+	脦麓脭艡麓麓藵篓赂膫卤艜艧墓碌脛膯脕脛禄
 .	T9E_NoScreenBufPool
-	没有创建改屏幕的图像内存缓冲池
+	膫禄脫膼麓麓藵篓赂脛膯脕脛禄碌脛脥慕膸艅脛脷麓膰禄艧艂暮艂艠
 .	T9_S_FALSE
-	由于内部阻塞，发送的图像数据被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛脥慕膸艅臉媒木脻卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SendScreenPicture(DWORD	number,
 							LPBYTE	pBuf);
 
 /*************************************************
 * T9SendScreenCorrectCoef
-* 功能说明：
-   发送逐点校正系数
+* 膮娄脛脺脣碌膫梅艁艧
+   路藰脣脥脰膽碌膬膼艁艕媒膸碌臉媒
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	number
-	屏幕编号
+	膯脕脛禄卤艜艧墓
 .	[in]	pBuf
-	逐点校正系数地址
+	脰膽碌膬膼艁艕媒膸碌臉媒碌艠脰路
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_InvalidScreen
-	未曾创建该编号的屏幕
+	脦麓脭艡麓麓藵篓赂膫卤艜艧墓碌脛膯脕脛禄
 .	T9E_NoScreenBufPool
-	没有创建改屏幕的图像内存缓冲池
+	膫禄脫膼麓麓藵篓赂脛膯脕脛禄碌脛脥慕膸艅脛脷麓膰禄艧艂暮艂艠
 .	T9_S_FALSE
-	由于内部阻塞，发送的图像数据被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛脥慕膸艅臉媒木脻卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SendScreenCorrectCoef(DWORD	number,
 								LPBYTE	pBuf);
 /*************************************************
 * T9SendScreenBlackPicture
-* 功能说明：
-    发送一幅黑色的图像给屏幕
+* 膮娄脛脺脣碌膫梅艁艧
+    路藰脣脥艊禄路暖艧脷脡芦碌脛脥慕膸艅赂艡膯脕脛禄
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	number
-	屏幕编号
+	膯脕脛禄卤艜艧墓
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_InvalidScreen
-	未曾创建该编号的屏幕
+	脦麓脭艡麓麓藵篓赂膫卤艜艧墓碌脛膯脕脛禄
 .	T9E_NoScreenBufPool
-	没有创建改屏幕的图像内存缓冲池
+	膫禄脫膼麓麓藵篓赂脛膯脕脛禄碌脛脥慕膸艅脛脷麓膰禄艧艂暮艂艠
 .	T9_S_FALSE
-	由于内部阻塞，发送的图像数据被抛弃
+	脫脡脫脷脛脷藳偶脳膷膶疟艁卢路藰脣脥碌脛脥慕膸艅臉媒木脻卤禄墓脳膯煤
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SendScreenBlackPicture(DWORD	number);
 
 /*************************************************
 * T9SetCallBackWnd
-* 功能说明：
-    设置接受底层模块通知的窗口句柄，发送模块通过窗口消息的方式通知上层它的各种信息
+* 膮娄脛脺脣碌膫梅艁艧
+    脡膷脰膫藵脫臉脺碌脳藳膬脛艁偶茅脥篓脰艦碌脛麓掳偶脷木盲卤煤艁卢路藰脣脥脛艁偶茅脥篓膮媒麓掳偶脷膸疟膸藰碌脛路藵臉藵脥篓脰艦脡膸藳膬脣眉碌脛赂梅脰脰膼墓膸藰
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	hWnd
-	窗口句柄
+	麓掳偶脷木盲卤煤
 .	[in]	msgId
-	发送模块给窗口发送窗口消息的ID号
+	路藰脣脥脛艁偶茅赂艡麓掳偶脷路藰脣脥麓掳偶脷膸疟膸藰碌脛ID艧墓
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 // T9API	T9SetCallBackWnd(HWND hWnd, DWORD msgId);
 
 
 /*************************************************
 * T9SetCallBackFun
-* 功能说明：
-    设置回调函数，发送模块调用回调函数通知上层各种信息
+* 膮娄脛脺脣碌膫梅艁艧
+    脡膷脰膫禄艠碌梅艧呕臉媒艁卢路藰脣脥脛艁偶茅碌梅脫膫禄艠碌梅艧呕臉媒脥篓脰艦脡膸藳膬赂梅脰脰膼墓膸藰
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	pCallbackFun
-	回调函数指针，如果pCallbackFun等于NULL，清除回调函数设定
+	禄艠碌梅艧呕臉媒脰赂艕毛艁卢膶莽膮疟pCallbackFun碌膶脫脷NULL艁卢脟暮艂媒禄艠碌梅艧呕臉媒脡膷露篓
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SetCallBackFun(T9SenderCallback pCallbackFun);
 
 /*************************************************
 * T9WriteHWParamToRcvCard
-* 功能说明：
-    发送参数到接收卡
+* 膮娄脛脺脣碌膫梅艁艧
+    路藰脣脥藳脦臉媒碌藵藵脫臉艕偶篓
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	pBuf
-	硬件参数内存地址
+	脫藳慕牛藳脦臉媒脛脷麓膰碌艠脰路
 .	[in]	bufLen
-	硬件参数内存长度
+	脫藳慕牛藳脦臉媒脛脷麓膰艂陇露膶
 .	[in]	scrnIndex
-	屏幕索引号
-.	[in]	cardCount，取值范围[1~2047]
-	卡数量
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	膯脕脛禄脣梅艊媒艧墓
+.	[in]	cardCount艁卢膶藝脰碌路露脦搂[1~2047]
+	偶篓臉媒脕偶
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	markedOnly
-	？？？
+	艁偶艁偶艁偶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9WriteHWParamToRcvCard(LPBYTE	pBuf, 
 								DWORD	bufLen, 
@@ -969,32 +969,32 @@ T9API	T9WriteHWParamToRcvCard(LPBYTE	pBuf,
 
 /*************************************************
 * T9WriteControlAreaToRcvCard
-* 功能说明：
-    发送参数到接收卡
+* 膮娄脛脺脣碌膫梅艁艧
+    路藰脣脥藳脦臉媒碌藵藵脫臉艕偶篓
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	pBuf
-	硬件参数内存地址
+	脫藳慕牛藳脦臉媒脛脷麓膰碌艠脰路
 .	[in]	bufLen
-	硬件参数内存长度
+	脫藳慕牛藳脦臉媒脛脷麓膰艂陇露膶
 .	[in]	scrnIndex
-	屏幕索引号
+	膯脕脛禄脣梅艊媒艧墓
 .	[in]	skipCount
-	跳过前面的卡不设置，skipCount为跳过的卡数量
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	臍艡膮媒脟掳膫膰碌脛偶篓藳禄脡膷脰膫艁卢skipCount脦艦臍艡膮媒碌脛偶篓臉媒脕偶
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	markedOnly
-	？？？
+	艁偶艁偶艁偶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9WriteControlAreaToRcvCard(LPBYTE	pBuf, 
 									DWORD	bufLen, 
@@ -1007,26 +1007,26 @@ T9API	T9WriteControlAreaToRcvCard(LPBYTE	pBuf,
 
 /*************************************************
 * T9WriteHWParamToModule
-* 功能说明：
-    发送参数到模组
+* 膮娄脛脺脣碌膫梅艁艧
+    路藰脣脥藳脦臉媒碌藵脛艁脳茅
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	pBuf
-	硬件参数内存地址
+	脫藳慕牛藳脦臉媒脛脷麓膰碌艠脰路
 .	[in]	bufLen
-	硬件参数内存长度
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	脫藳慕牛藳脦臉媒脛脷麓膰艂陇露膶
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9WriteHWParamToModule(	LPBYTE	pBuf, 
 								DWORD	bufLen, 
@@ -1034,127 +1034,127 @@ T9API	T9WriteHWParamToModule(	LPBYTE	pBuf,
 
 /*************************************************
 * T9WriteHWParamToFunCard
-* 功能说明：
-	发送参数到功能卡
+* 膮娄脛脺脣碌膫梅艁艧
+	路藰脣脥藳脦臉媒碌藵膮娄脛脺偶篓
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	pBuf
-	硬件参数内存地址
+	脫藳慕牛藳脦臉媒脛脷麓膰碌艠脰路
 .	[in]	bufLen
-	硬件参数内存长度
+	脫藳慕牛藳脦臉媒脛脷麓膰艂陇露膶
 .	[in]	scrnIndex
-	屏幕索引号
+	膯脕脛禄脣梅艊媒艧墓
 .	[in]	skipCount
-	跳过前面的卡不设置，skipCount为跳过的卡数量
-.	[in]	funIndex，取值范围[0~254]
-	卡数量
+	臍艡膮媒脟掳膫膰碌脛偶篓藳禄脡膷脰膫艁卢skipCount脦艦臍艡膮媒碌脛偶篓臉媒脕偶
+.	[in]	funIndex艁卢膶藝脰碌路露脦搂[0~254]
+	偶篓臉媒脕偶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9WriteHWParamToFunCard(LPBYTE pBuf, DWORD bufLen, int funIndex);
 
 /*************************************************
 * T9ReadHWParamToFile
-* 功能说明：
-    从接受卡中读回参数存入指定文件中
+* 膮娄脛脺脣碌膫梅艁艧
+    麓脫藵脫臉脺偶篓脰膼露脕禄艠藳脦臉媒麓膰膶毛脰赂露篓脦脛慕牛脰膼
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	pFileName
-	保存参数文件的路径名
-.	[in]	cardIndex，取值范围[0~254]
-	接收卡号
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	卤艁麓膰藳脦臉媒脦脛慕牛碌脛脗路木露膫疟
+.	[in]	cardIndex艁卢膶藝脰碌路露脦搂[0~254]
+	藵脫臉艕偶篓艧墓
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_NicReadTimeOut
-	读数据超时
+	露脕臉媒木脻艂卢臉卤
 .	T9E_NoNicDataReceived
-	有数据未读出
+	脫膼臉媒木脻脦麓露脕艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ReadHWParamToFile(char *pFileName, WORD cardIndex, BYTE portIndex);
 
 /*************************************************
 * T9ReadHWParamToBuffer
-* 功能说明：
-    从接受卡中读回参数存入指定文件中
+* 膮娄脛脺脣碌膫梅艁艧
+    麓脫藵脫臉脺偶篓脰膼露脕禄艠藳脦臉媒麓膰膶毛脰赂露篓脦脛慕牛脰膼
 
-* 参数说明： 
-.	[in]	cardIndex，取值范围[0~254]
-	接收卡号
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 藳脦臉媒脣碌膫梅艁艧 
+.	[in]	cardIndex艁卢膶藝脰碌路露脦搂[0~254]
+	藵脫臉艕偶篓艧墓
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	lpBuffer
-	存储参数文件的内存指针
+	麓膰麓藰藳脦臉媒脦脛慕牛碌脛脛脷麓膰脰赂艕毛
 .	[in,out]	*pBufLen
-	内存长度，调用后返回实际读取的长度
+	脛脷麓膰艂陇露膶艁卢碌梅脫膫艧贸路碌禄艠臉碌慕臉露脕膶藝碌脛艂陇露膶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_NicReadTimeOut
-	读数据超时
+	露脕臉媒木脻艂卢臉卤
 .	T9E_NoNicDataReceived
-	有数据未读出
+	脫膼臉媒木脻脦麓露脕艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ReadHWParamToBuffer(WORD cardIndex, BYTE portIndex, LPBYTE lpBuffer, UINT *pBufLen);
 
 /*************************************************
 * T9ReadFlashToBuffer
-* 功能说明：
-    读取flash到内存中
+* 膮娄脛脺脣碌膫梅艁艧
+    露脕膶藝flash碌藵脛脷麓膰脰膼
 
-* 参数说明： 
-.	[in]	cardIndex，取值范围[0~254]
-	接收卡号
+* 藳脦臉媒脣碌膫梅艁艧 
+.	[in]	cardIndex艁卢膶藝脰碌路露脦搂[0~254]
+	藵脫臉艕偶篓艧墓
 .	[in]	hAddress
-	高地址
+	赂脽碌艠脰路
 .	[in]	lAddress
-	低地址
+	碌脥碌艠脰路
 .	[in]	dataLen
-	数据长度
+	臉媒木脻艂陇露膶
 .	[in]	pBuffer
-	接收内存地址
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	藵脫臉艕脛脷麓膰碌艠脰路
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	bCallBack
-	是否需要回调
+	臉脟路艅膼膷艊艦禄艠碌梅
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_NicReadTimeOut
-	读数据超时
+	露脕臉媒木脻艂卢臉卤
 .	T9E_NoNicDataReceived
-	有数据未读出
+	脫膼臉媒木脻脦麓露脕艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ReadFlashToBuffer(WORD	rcvIndex, 
 							BYTE	hAddress,
@@ -1166,108 +1166,108 @@ T9API	T9ReadFlashToBuffer(WORD	rcvIndex,
 
 /*************************************************
 * T9UpgradeRcvCardFPGA2
-* 功能说明：
-	升级T9接收卡FPGA程序
+* 膮娄脛脺脣碌膫梅艁艧
+	脡媒慕露T9藵脫臉艕偶篓FPGA艂臍膼艌
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	lpBuffer
-	FPGA程序
+	FPGA艂臍膼艌
 .	[in]	bufLen
-	FPGA程序字节数
+	FPGA艂臍膼艌脳脰藵脷臉媒
 .	[in]	cardIndex
-	升级的卡号，[0~2047]时为制定卡，为0xffff时，升级所有卡
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	脡媒慕露碌脛偶篓艧墓艁卢[0~2047]臉卤脦艦脰膯露篓偶篓艁卢脦艦0xffff臉卤艁卢脡媒慕露脣暖脫膼偶篓
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	flags
-	？？？
+	艁偶艁偶艁偶
 .	[in]	bQ9
-	是否是Q9卡
-* 返回值说明：
+	臉脟路艅臉脟Q9偶篓
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9UpgradeRcvCardFPGA2(LPBYTE lpBuffer, DWORD bufLen, WORD cardIndex, BYTE portIndex, BYTE flags, BOOL bQ9);
 
-//升级接收卡的不同程序版本
+//脡媒慕露藵脫臉艕偶篓碌脛藳禄脥卢艂臍膼艌掳膰卤木
 T9API	T9UpgradeRcvCardFPGA2Ex(LPBYTE lpBuffer, DWORD bufLen, WORD cardIndex, BYTE portIndex, BYTE flags, BOOL bQ9, BYTE programVersion);
 
 /*************************************************
 * T9ReadRcvCardFPGA2
-* 功能说明：
-    从接受卡中读回FPGA存入指定文件中
+* 膮娄脛脺脣碌膫梅艁艧
+    麓脫藵脫臉脺偶篓脰膼露脕禄艠FPGA麓膰膶毛脰赂露篓脦脛慕牛脰膼
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	lpBuffer
-	保存FPGA程序的内存地址
+	卤艁麓膰FPGA艂臍膼艌碌脛脛脷麓膰碌艠脰路
 .	[in]	bufLen
-	保存FPGA程序的内存长度
+	卤艁麓膰FPGA艂臍膼艌碌脛脛脷麓膰艂陇露膶
 .	[in]	cardIndex
-	接收卡索引号，取值范围[0~254]
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	藵脫臉艕偶篓脣梅艊媒艧墓艁卢膶藝脰碌路露脦搂[0~254]
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	bQ9
-	是否是Q9卡
-* 返回值说明：
+	臉脟路艅臉脟Q9偶篓
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_VerifyFailed
-	校验失败
+	膼艁艃茅臉搂掳脺
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_NicReadTimeOut
-	读数据超时
+	露脕臉媒木脻艂卢臉卤
 .	T9E_NoNicDataReceived
-	有数据未读出
+	脫膼臉媒木脻脦麓露脕艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_TooLittleBuffer
-	分配的内存太小
+	路脰墓盲碌脛脛脷麓膰臍芦膼藝
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ReadRcvCardFPGA2(LPBYTE lpBuffer, DWORD *pBufLen, WORD cardIndex, BYTE portIndex, BOOL bQ9);
 
-//读取接收卡的不同程序版本
+//露脕膶藝藵脫臉艕偶篓碌脛藳禄脥卢艂臍膼艌掳膰卤木
 T9API	T9ReadRcvCardFPGA2Ex(LPBYTE lpBuffer, DWORD *pBufLen, WORD cardIndex, BYTE portIndex, BOOL bQ9, BYTE programVersion);
 
 /*************************************************
 * T9ClearCCCoefData
-* 功能说明：
-    清除逐点亮度校正系数
+* 膮娄脛脺脣碌膫梅艁艧
+    脟暮艂媒脰膽碌膬脕脕露膶膼艁艕媒膸碌臉媒
 
-* 参数说明： 
-	无参数
+* 藳脦臉媒脣碌膫梅艁艧 
+	脦泞藳脦臉媒
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ClearCCCoefData();
 
 /*************************************************
 * T9AddCCCoef
-* 功能说明：
-    添加一张接收卡的亮度逐点校正数据
+* 膮娄脛脺脣碌膫梅艁艧
+    臍铆慕脫艊禄艕墓藵脫臉艕偶篓碌脛脕脕露膶脰膽碌膬膼艁艕媒臉媒木脻
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	rcvIndex
-	接收卡序号，从0开始计数
+	藵脫臉艕偶篓膼艌艧墓艁卢麓脫0偶艦臉慕慕膯臉媒
 .	[in]	lpCCCoefBuf
-	逐点校正数据	
+	脰膽碌膬膼艁艕媒臉媒木脻	
 .	[in]	bufLen
-	校正数据内存长度
+	膼艁艕媒臉媒木脻脛脷麓膰艂陇露膶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9AddCCCoef(WORD rcvIndex, LPBYTE lpCCCoefBuf, int bufLen);
 
@@ -1275,16 +1275,16 @@ T9API	T9AddCCCoef16(WORD rcvIndex, BYTE dataGroup, int moduleIndex, LPBYTE lpCCC
 
 /*************************************************
 * T9WriteCCCoefToRcvCard
-* 功能说明：
-    将逐点亮度校正数据存入接收卡中
+* 膮娄脛脺脣碌膫梅艁艧
+    藵芦脰膽碌膬脕脕露膶膼艁艕媒臉媒木脻麓膰膶毛藵脫臉艕偶篓脰膼
 
-* 参数说明： 
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 藳脦臉媒脣碌膫梅艁艧 
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 
 T9API	T9WriteCCCoefToRcvCard(BYTE portIndex);
@@ -1293,16 +1293,16 @@ T9API	T9WriteCCCoefToRcvCardMoudle(BYTE portIndex);
 
 /*************************************************
 * T9LoadRcvCCCoef
-* 功能说明：
-    将卡中预存的逐点亮度校正系数载入sd ram
+* 膮娄脛脺脣碌膫梅艁艧
+    藵芦偶篓脰膼脭陇麓膰碌脛脰膽碌膬脕脕露膶膼艁艕媒膸碌臉媒脭艠膶毛sd ram
 
-* 参数说明： 
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 藳脦臉媒脣碌膫梅艁艧 
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9LoadRcvCCCoef(BYTE portIndex);
 T9API	T9LoadRcvCurrent(BYTE portIndex);
@@ -1310,54 +1310,54 @@ T9API	T9LoadRcvCurrent(BYTE portIndex);
 
 /*************************************************
 * T9ClearChromaCCoefData
-* 功能说明：
-    清除逐点色度校正系数
+* 膮娄脛脺脣碌膫梅艁艧
+    脟暮艂媒脰膽碌膬脡芦露膶膼艁艕媒膸碌臉媒
 
-* 参数说明： 
-	无参数
+* 藳脦臉媒脣碌膫梅艁艧 
+	脦泞藳脦臉媒
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ClearChromaCCoefData();
 
 /*************************************************
 * T9AddChromaCCoef16
-* 功能说明：
-    添加一张接收卡的逐点色度校正数据
+* 膮娄脛脺脣碌膫梅艁艧
+    臍铆慕脫艊禄艕墓藵脫臉艕偶篓碌脛脰膽碌膬脡芦露膶膼艁艕媒臉媒木脻
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	rcvIndex
-	接收卡序号，从0开始计数
+	藵脫臉艕偶篓膼艌艧墓艁卢麓脫0偶艦臉慕慕膯臉媒
 .	[in]	lpCCCoefBuf
-	逐点校正数据	
+	脰膽碌膬膼艁艕媒臉媒木脻	
 .	[in]	bufLen
-	校正数据内存长度
+	膼艁艕媒臉媒木脻脛脷麓膰艂陇露膶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9AddChromaCCoef16(WORD rcvIndex, LPBYTE lpCCCoefBuf, int bufLen);
 T9API	T9AddChromaCCoef8(WORD rcvIndex, LPBYTE lpCCCoefBuf, int bufLen, BOOL b5A);
 
-T9API	T9AddMoudleChromaCCoef16(WORD rcvIndex, BYTE dataGroup, int moduleIndex, CRect moudleRc, LPBYTE lpCCCoefBuf, int bufLen);
+//T9API	T9AddMoudleChromaCCoef16(WORD rcvIndex, BYTE dataGroup, int moduleIndex, CRect moudleRc, LPBYTE lpCCCoefBuf, int bufLen);
 
 /*************************************************
 * T9WriteChromaCCoefToRcvCard
-* 功能说明：
-    将逐点色度校正数据存入接收卡中
+* 膮娄脛脺脣碌膫梅艁艧
+    藵芦脰膽碌膬脡芦露膶膼艁艕媒臉媒木脻麓膰膶毛藵脫臉艕偶篓脰膼
 
-* 参数说明： 
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 藳脦臉媒脣碌膫梅艁艧 
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9WriteChromaCCoefToRcvCard(BYTE portIndex);
 
@@ -1365,85 +1365,85 @@ T9API	T9WriteChromaCCoefToRcvCardMoudle(BYTE portIndex);
 
 /*************************************************
 * T9LoadRcvChromaCCoef
-* 功能说明：
-    将卡中预存的逐点色度校正系数载入sd ram
+* 膮娄脛脺脣碌膫梅艁艧
+    藵芦偶篓脰膼脭陇麓膰碌脛脰膽碌膬脡芦露膶膼艁艕媒膸碌臉媒脭艠膶毛sd ram
 
-* 参数说明： 
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 藳脦臉媒脣碌膫梅艁艧 
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9LoadRcvChromaCCoef(BYTE portIndex);
 
 /*************************************************
 * T9ReadRcvCardFPGA
-* 功能说明：
-    从接受卡中读回FPGA程序存入指定文件中
+* 膮娄脛脺脣碌膫梅艁艧
+    麓脫藵脫臉脺偶篓脰膼露脕禄艠FPGA艂臍膼艌麓膰膶毛脰赂露篓脦脛慕牛脰膼
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	pFileName
-	保存参数文件的路径名
+	卤艁麓膰藳脦臉媒脦脛慕牛碌脛脗路木露膫疟
 .	[in]	cardIndex
-	接收卡索引号，取值范围[0~254]
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+	藵脫臉艕偶篓脣梅艊媒艧墓艁卢膶藝脰碌路露脦搂[0~254]
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_VerifyFailed
-	校验失败
+	膼艁艃茅臉搂掳脺
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_NicReadTimeOut
-	读数据超时
+	露脕臉媒木脻艂卢臉卤
 .	T9E_NoNicDataReceived
-	有数据未读出
+	脫膼臉媒木脻脦麓露脕艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9E_OpenFileError
-	打开文件出错
+	麓艌偶艦脦脛慕牛艂枚麓铆
 .	T9E_InvalidFile
-	非法文件
+	路脟路篓脦脛慕牛
 .	T9E_ReadFileError
-	读文件出错
+	露脕脦脛慕牛艂枚麓铆
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ReadRcvCardFPGA(char *pFileName, WORD cardIndex, BYTE portIndex);
 
 
 /*************************************************
 * T9AsynWriteFunCard
-* 功能说明：
-    异步写功能卡数据
+* 膮娄脛脺脣碌膫梅艁艧
+    艊臎藳藵膼麓膮娄脛脺偶篓臉媒木脻
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	funCardIndex
-	功能卡序号
+	膮娄脛脺偶篓膼艌艧墓
 .	[in]	pBuffer
-	写入的数据内存地址
+	膼麓膶毛碌脛臉媒木脻脛脷麓膰碌艠脰路
 .	[in]	bufLen
-	写入的数据长度
+	膼麓膶毛碌脛臉媒木脻艂陇露膶
 .	[in]	highAddress
-	高位地址
+	赂脽脦禄碌艠脰路
 .	[in]	lowAddress
-	地位地址
+	碌艠脦禄碌艠脰路
 .	[in]	timeOut
-	最长允许发送的时间，单位：毫秒
+	脳卯艂陇脭臉膼铆路藰脣脥碌脛臉卤慕盲艁卢碌膭脦禄艁艧艧脕膫毛
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9AsynWriteFunCard(	int		funCardIndex,
 							LPBYTE	pBuffer,
@@ -1454,28 +1454,28 @@ T9API	T9AsynWriteFunCard(	int		funCardIndex,
 
 /*************************************************
 * T9StroageErase
-* 功能说明：
-    擦除接收卡上Flash存储空间里的数据
+* 膮娄脛脺脣碌膫梅艁艧
+    藳脕艂媒藵脫臉艕偶篓脡膸Flash麓膰麓藰偶艕慕盲艛膹碌脛臉媒木脻
 
-* 参数说明：
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 藳脦臉媒脣碌膫梅艁艧
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	rcvIndex
-	接收卡序号
+	藵脫臉艕偶篓膼艌艧墓
 .	[in]	startBlock
-	开始擦除的扇区索引号
+	偶艦臉慕藳脕艂媒碌脛脡膶脟艡脣梅艊媒艧墓
 .	[in]	blockCount
-	擦除的扇区数量
+	藳脕艂媒碌脛脡膶脟艡臉媒脕偶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9StroageErase(BYTE		portIndex,
 					   WORD		rcvIndex,
@@ -1484,30 +1484,30 @@ T9API	T9StroageErase(BYTE		portIndex,
 
 /*************************************************
 * T9StroageWritePage
-* 功能说明：
-    向接收卡上Flash存储空间里写入一个page的数据
+* 膮娄脛脺脣碌膫梅艁艧
+    膸艌藵脫臉艕偶篓脡膸Flash麓膰麓藰偶艕慕盲艛膹膼麓膶毛艊禄赂枚page碌脛臉媒木脻
 
-* 参数说明：
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 藳脦臉媒脣碌膫梅艁艧
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	rcvIndex
-	接收卡序号
+	藵脫臉艕偶篓膼艌艧墓
 .	[in]	pageIndex
-	页面序号
+	艊艂膫膰膼艌艧墓
 .	[in]	pBuffer
-	指向将写入扇区的数据的起始地址
+	脰赂膸艌藵芦膼麓膶毛脡膶脟艡碌脛臉媒木脻碌脛膯膽臉慕碌艠脰路
 .	[in]	pageSize
-	page大小
+	page麓贸膼藝
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9StroageWritePage(	BYTE	portIndex,
 							WORD	rcvIndex,
@@ -1517,32 +1517,32 @@ T9API	T9StroageWritePage(	BYTE	portIndex,
 
 /*************************************************
 * T9StroageWriteSeciton
-* 功能说明：
-    向接收卡上Flash存储空间里写入一个扇区的数据
+* 膮娄脛脺脣碌膫梅艁艧
+    膸艌藵脫臉艕偶篓脡膸Flash麓膰麓藰偶艕慕盲艛膹膼麓膶毛艊禄赂枚脡膶脟艡碌脛臉媒木脻
 
-* 参数说明：
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 藳脦臉媒脣碌膫梅艁艧
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	rcvIndex
-	接收卡序号
+	藵脫臉艕偶篓膼艌艧墓
 .	[in]	sectionIndex
-	扇区卡序号
+	脡膶脟艡偶篓膼艌艧墓
 .	[in]	sectionSize
-	扇区大小
+	脡膶脟艡麓贸膼藝
 .	[in]	pBuffer
-	指向将写入扇区的数据的起始地址
+	脰赂膸艌藵芦膼麓膶毛脡膶脟艡碌脛臉媒木脻碌脛膯膽臉慕碌艠脰路
 .	[in]	timeout
-	超过timeout时间没有写完算超时
+	艂卢膮媒timeout臉卤慕盲膫禄脫膼膼麓脥臋脣膬艂卢臉卤
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9StroageWriteSeciton(	BYTE	portIndex,
 								WORD	rcvIndex,
@@ -1554,85 +1554,85 @@ T9API	T9StroageWriteSeciton(	BYTE	portIndex,
 
 /*************************************************
 * T9SendDelayPacket
-* 功能说明：
-    插入一个延时数据包
+* 膮娄脛脺脣碌膫梅艁艧
+    藳暮膶毛艊禄赂枚艃脫臉卤臉媒木脻掳眉
 
-* 参数说明： 
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	packetSize
-	接收卡序号
+	藵脫臉艕偶篓膼艌艧墓
 .	[in]	bAsyn
-	是否加入到队列中
+	臉脟路艅慕脫膶毛碌藵露脫脕膼脰膼
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9E_NICNotInitialized
-	网卡没有初始化
+	脥艡偶篓膫禄脫膼艂艖臉慕禄呕
 .	T9E_OutOfMemeroy
-	内存溢出
+	脛脷麓膰艊莽艂枚
 .	T9E_ParamError
-	参数错误
+	藳脦臉媒麓铆脦贸
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SendDelayPacket(DWORD packetSize, BOOL bAsyn);
 
 /*************************************************
 * T9SetLineSpace
-* 功能说明：
-	设置发送数据时的行间隙
-* 参数说明： 
+* 膮娄脛脺脣碌膫梅艁艧
+	脡膷脰膫路藰脣脥臉媒木脻臉卤碌脛膼膼慕盲膸露
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	lineSpace
-	行间隙点数
+	膼膼慕盲膸露碌膬臉媒
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 // T9API	T9SetLineSpace(int lineSpace);
 
 
 // /*************************************************
 // * T9SetBigModuleMode
-// * 功能说明：
-// 	设置为大模组模式
-// * 参数说明： 
+// * 膮娄脛脺脣碌膫梅艁艧
+// 	脡膷脰膫脦艦麓贸脛艁脳茅脛艁臉藵
+// * 藳脦臉媒脣碌膫梅艁艧 
 // .	[in]	bigModuleMode
-// 	大模组模式：详见BigMoudule_Mode定义
+// 	麓贸脛艁脳茅脛艁臉藵艁艧膸臋慕疟BigMoudule_Mode露篓艊暮
 // 
-// * 返回值说明：
+// * 路碌禄艠脰碌脣碌膫梅艁艧
 // .	T9_S_OK
-// 	成功
+// 	艂脡膮娄
 // *************************************************/
 // T9API	T9SetBigModuleMode(int bigModuleMode);
 
 
 /*************************************************
 * T9ClearSendCache
-* 功能说明：
-	清除发送缓存
-* 参数说明： 
+* 膮娄脛脺脣碌膫梅艁艧
+	脟暮艂媒路藰脣脥禄艧麓膰
+* 藳脦臉媒脣碌膫梅艁艧 
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ClearSendCache();
 
 
 /*************************************************
 * T9SetScreenHollow
-* 功能说明：
-	清除发送缓存
-* 参数说明： 
+* 膮娄脛脺脣碌膫梅艁艧
+	脟暮艂媒路藰脣脥禄艧麓膰
+* 藳脦臉媒脣碌膫梅艁艧 
 .	[in]	scrnNumber
-	屏幕序号
+	膯脕脛禄膼艌艧墓
 .	[in]	bNeedHollow
-	是否抠屏
+	臉脟路艅偶女膯脕
 .	[in]	senderRegion
-	抠屏区域
+	偶女膯脕脟艡脫艌
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SetScreenHollow(int		scrnNumber,
 						  BOOL		bNeedHollow,
@@ -1640,41 +1640,41 @@ T9API	T9SetScreenHollow(int		scrnNumber,
 
 /*************************************************
 * T9SendParam
-* 功能说明：
-	发送实时参数到接受卡上
-* 参数说明： 
+* 膮娄脛脺脣碌膫梅艁艧
+	路藰脣脥臉碌臉卤藳脦臉媒碌藵藵脫臉脺偶篓脡膸
+* 藳脦臉媒脣碌膫梅艁艧 
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9SendParam();
 
 /*************************************************
 * T9ReadModuleInfo
-* 功能说明：
-	获取模组信息
-* 参数说明： 
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 膮娄脛脺脣碌膫梅艁艧
+	禄艅膶藝脛艁脳茅膼墓膸藰
+* 藳脦臉媒脣碌膫梅艁艧 
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	rcvIndex
-	接收卡序号
+	藵脫臉艕偶篓膼艌艧墓
 .	[in]	moduleIndex
-	模组序号
+	脛艁脳茅膼艌艧墓
 .	[in]	pBasicInfoBuf
-	指向存储模组基本信息的内存
+	脰赂膸艌麓膰麓藰脛艁脳茅禄暖卤木膼墓膸藰碌脛脛脷麓膰
 .	[in,out]	pBasicLen
-	指定pBasicInfoBuf指向的内存长度，并返回实际使用的长度
+	脰赂露篓pBasicInfoBuf脰赂膸艌碌脛脛脷麓膰艂陇露膶艁卢藳藰路碌禄艠臉碌慕臉臉膮脫膫碌脛艂陇露膶
 .	[in]		pMaintainInfoBuf
-	指向存储维修记录的内存
+	脰赂膸艌麓膰麓藰脦卢膼泞慕脟脗慕碌脛脛脷麓膰
 .	[in,out]	maintainBufLen
-	指定pMaintainInfoBuf指向的内存长度，并返回实际使用的长度
+	脰赂露篓pMaintainInfoBuf脰赂膸艌碌脛脛脷麓膰艂陇露膶艁卢藳藰路碌禄艠臉碌慕臉臉膮脫膫碌脛艂陇露膶
 .	[in]	pWatcher
-	？？？
+	艁偶艁偶艁偶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9ReadModuleInfo(BYTE	portIndex,
 						 int	rcvIndex,
@@ -1688,28 +1688,28 @@ T9API	T9ReadModuleInfo(BYTE	portIndex,
 
 /*************************************************
 * T9WriteModuleInfo
-* 功能说明：
-	获取模组信息
-* 参数说明： 
-.	[in]	portIndex，取值范围[0~3]
-	发送卡网口号，如果是网口发送模式，给0xff
+* 膮娄脛脺脣碌膫梅艁艧
+	禄艅膶藝脛艁脳茅膼墓膸藰
+* 藳脦臉媒脣碌膫梅艁艧 
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+	路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	rcvIndex
-	接收卡序号
+	藵脫臉艕偶篓膼艌艧墓
 .	[in]	moduleIndex
-	模组序号
+	脛艁脳茅膼艌艧墓
 .	[in]	pBasicInfoBuf
-	指向存储模组基本信息的内存
+	脰赂膸艌麓膰麓藰脛艁脳茅禄暖卤木膼墓膸藰碌脛脛脷麓膰
 .	[in]	basicLen
-	指定pBasicInfoBuf指向的内存长度
+	脰赂露篓pBasicInfoBuf脰赂膸艌碌脛脛脷麓膰艂陇露膶
 .	[in]	pMaintainInfoBuf
-	指向存储维修记录的内存
+	脰赂膸艌麓膰麓藰脦卢膼泞慕脟脗慕碌脛脛脷麓膰
 .	[in]	maintainBufLen
-	指定pMaintainInfoBuf指向的内存长度
+	脰赂露篓pMaintainInfoBuf脰赂膸艌碌脛脛脷麓膰艂陇露膶
 .	[in]	pWatcher
-	？？？
-* 返回值说明：
+	艁偶艁偶艁偶
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-	成功
+	艂脡膮娄
 *************************************************/
 T9API	T9WriteModuleInfo(BYTE	portIndex,
 						 int	rcvIndex,
@@ -1782,29 +1782,29 @@ T9API	T9GetAllPixelDetectInfo(WORD portIndex,
 
 /*************************************************
 * T9GetAllPixelDetectInfoEx
-* 功能说明：
-设置发送卡的版本号
-* 参数说明： 
-.	[in]	portIndex，取值范围[0~3]
-    发送卡网口号，如果是网口发送模式，给0xff
+* 膮娄脛脺脣碌膫梅艁艧
+脡膷脰膫路藰脣脥偶篓碌脛掳膰卤木艧墓
+* 藳脦臉媒脣碌膫梅艁艧 
+.	[in]	portIndex艁卢膶藝脰碌路露脦搂[0~3]
+    路藰脣脥偶篓脥艡偶脷艧墓艁卢膶莽膮疟臉脟脥艡偶脷路藰脣脥脛艁臉藵艁卢赂艡0xff
 .	[in]	openOrBroken
-	开路或者短路
+	偶艦脗路禄艌艕脽露臍脗路
 .	[in]	pWidth
-	获取屏的宽度
+	禄艅膶藝膯脕碌脛偶铆露膶
 .	[in]	pHeight
-	获取屏的高度
+	禄艅膶藝膯脕碌脛赂脽露膶
 .	[in]	pInvalidRcv
-	探测出错的接收卡
+	臍藵藳芒艂枚麓铆碌脛藵脫臉艕偶篓
 .	[in]	lpBuf
-	存储逐点校正数据的内存块
+	麓膰麓藰脰膽碌膬膼艁艕媒臉媒木脻碌脛脛脷麓膰偶茅
 .	[in]	bufLen
-	存储逐点校正数据的内存块长度
+	麓膰麓藰脰膽碌膬膼艁艕媒臉媒木脻碌脛脛脷麓膰偶茅艂陇露膶
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-    成功
+    艂脡膮娄
 .	T9E_OutOfMemeroy
-    pBuf长度不够，需要的字节数=宽度x高度
+    pBuf艂陇露膶藳禄膮禄艁卢膼膷艊艦碌脛脳脰藵脷臉媒=偶铆露膶x赂脽露膶
 *************************************************/
 T9API	T9GetAllPixelDetectInfoEx(	WORD	portIndex,
 									BYTE	openOrBroken,
@@ -1819,20 +1819,20 @@ T9API	T9ReleaseBuffer(LPBYTE lpBuf);
 
 /*************************************************
 * T9SetSendingCardTypeVersion
-* 功能说明：
-	设置发送卡的版本号
-* 参数说明： 
+* 膮娄脛脺脣碌膫梅艁艧
+	脡膷脰膫路藰脣脥偶篓碌脛掳膰卤木艧墓
+* 藳脦臉媒脣碌膫梅艁艧 
 
-* 返回值说明：
+* 路碌禄艠脰碌脣碌膫梅艁艧
 .	T9_S_OK
-成功
+艂脡膮娄
 *************************************************/
 T9API	T9SetSendingCardTypeVersion(int type, int majorVersion, int minorVersion);
 
 T9API	T9EnableCorrect(BOOL bEnable, WORD rcvIndex, BYTE portIndex);
 T9API	T9EnableChromaCorrect(BOOL bEnable, WORD rcvIndex, BYTE portIndex);
 
-//读写发送卡Flash
+//露脕膼麓路藰脣脥偶篓Flash
 T9API	T9ReadSendingFlash(DWORD startAddress, LPBYTE pBuffer, DWORD bufLen, int scIndex, BOOL bSecondFlash);
 T9API	T9WriteSendingFlash(DWORD startAddress, LPBYTE pBuffer, DWORD bufLen, int scIndex, BOOL bSecondFlash);
 T9API	T9WriteSendingFlash1(LPVOID	pWatcher, DWORD startAddress, LPBYTE pBuffer, DWORD bufLen, int scIndex, BOOL bSecondFlash);
@@ -1866,14 +1866,14 @@ T9API	T9SetSendingCardParam(LPVOID pWatcher, int cardIndex, LPBYTE lpBuffer, int
 
 /*************************************************
 * T9RcvParam_Load 
-* 功能说明：(Description)
-读取接受卡参数(Load Receiving Card parameters)
-* 参数说明：(parameters)
+* 膮娄脛脺脣碌膫梅艁艧(Description)
+露脕膶藝藵脫臉脺偶篓藳脦臉媒(Load Receiving Card parameters)
+* 藳脦臉媒脣碌膫梅艁艧(parameters)
 [in]	pFile
-接收卡参数文件(Receiving Card parameters)
+藵脫臉艕偶篓藳脦臉媒脦脛慕牛(Receiving Card parameters)
 [out]	phRcvParam
-返回探测到接收卡参数句柄(Return Receiving Card Parameters Handle)
-* 返回值说明：(return)
+路碌禄艠臍藵藳芒碌藵藵脫臉艕偶篓藳脦臉媒木盲卤煤(Return Receiving Card Parameters Handle)
+* 路碌禄艠脰碌脣碌膫梅艁艧(return)
 great than or equal 0, success, if less than 0, error
 *************************************************/
 T9API T9RcvParam_Load(wchar_t *pFile, HRCVPARAM *phRcvParam);
@@ -1881,26 +1881,26 @@ T9API T9RcvParam_Load(wchar_t *pFile, HRCVPARAM *phRcvParam);
 
 /*************************************************
 * T9RcvParam_Release 
-* 功能说明：(Description)
-释放接收卡参数(Release Receiving Card parameters)
-* 参数说明：(parameters)
+* 膮娄脛脺脣碌膫梅艁艧(Description)
+臉脥路墓藵脫臉艕偶篓藳脦臉媒(Release Receiving Card parameters)
+* 藳脦臉媒脣碌膫梅艁艧(parameters)
 [in]	hRcvParam
-接收卡参数文件句柄(Handle of Receiving Card parameters)
-* 返回值说明：(return)
+藵脫臉艕偶篓藳脦臉媒脦脛慕牛木盲卤煤(Handle of Receiving Card parameters)
+* 路碌禄艠脰碌脣碌膫梅艁艧(return)
 great than or equal 0, success, if less than 0, error
 *************************************************/
 T9API T9RcvParam_Release(HRCVPARAM hRcvParam);
 
 /*************************************************
 * T9RcvParam_Clone 
-* 功能说明：(Description)
-克隆接收卡参数(Clone Receiving Card parameters)
-* 参数说明：(parameters)
+* 膮娄脛脺脣碌膫梅艁艧(Description)
+偶脣脗藝藵脫臉艕偶篓藳脦臉媒(Clone Receiving Card parameters)
+* 藳脦臉媒脣碌膫梅艁艧(parameters)
 [in]	hRcvParam
-接收卡参数文件句柄(Handle of Receiving Card parameters)
+藵脫臉艕偶篓藳脦臉媒脦脛慕牛木盲卤煤(Handle of Receiving Card parameters)
 [in,out]	phRcvParam
-指向接收卡参数文件句柄，返回被克隆回来接收卡参数句柄(Point to the handle of Receiving Card parameters, which use to receive the new created parameters)
-* 返回值说明：(return)
+脰赂膸艌藵脫臉艕偶篓藳脦臉媒脦脛慕牛木盲卤煤艁卢路碌禄艠卤禄偶脣脗藝禄艠艛麓藵脫臉艕偶篓藳脦臉媒木盲卤煤(Point to the handle of Receiving Card parameters, which use to receive the new created parameters)
+* 路碌禄艠脰碌脣碌膫梅艁艧(return)
 great than or equal 0, success, if less than 0, error
 *************************************************/
 T9API T9RcvParam_Clone(HRCVPARAM hRcvParam, HRCVPARAM *phRcvParam);

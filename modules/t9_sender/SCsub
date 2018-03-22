@@ -3,4 +3,6 @@ Import('env')
 
 module_env = env.Clone()
 module_env.add_source_files(env.modules_sources,"*.cpp") # just add all cpp files to the build
-module_env.Append(LIBPATH="lib")
+#module_env.Append(LIBPATH="modules/t9_sender")
+
+

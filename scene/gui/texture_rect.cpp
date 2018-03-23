@@ -41,7 +41,8 @@ void TextureRect::_notification(int p_what) {
 		switch (stretch_mode) {
 			case STRETCH_SCALE_ON_EXPAND: {
 				Size2 s = expand ? get_size() : texture->get_size();
-				draw_texture_rect(texture, Rect2(Point2(), s), false);
+				Size2 tex_size = texture->get_size();
+				draw_texture_rect_region(texture, Rect2(Point2(), s), Rect2(src_position * tex_size, src_size * tex_size));
 			} break;
 			case STRETCH_SCALE: {
 				draw_texture_rect(texture, Rect2(Point2(), get_size()), false);
@@ -108,10 +109,17 @@ void TextureRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_expand"), &TextureRect::has_expand);
 	ClassDB::bind_method(D_METHOD("set_stretch_mode", "stretch_mode"), &TextureRect::set_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureRect::get_stretch_mode);
+	ClassDB::bind_method(D_METHOD("set_src_position", "src_position"), &TextureRect::set_src_position);
+	ClassDB::bind_method(D_METHOD("get_src_position"), &TextureRect::get_src_position);
+	ClassDB::bind_method(D_METHOD("set_src_size", "src_size"), &TextureRect::set_src_size);
+	ClassDB::bind_method(D_METHOD("get_src_size"), &TextureRect::get_src_size);
+
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "src_position"), "set_src_position", "get_src_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "src_size"), "set_src_size", "get_src_size");
 
 	BIND_ENUM_CONSTANT(STRETCH_SCALE_ON_EXPAND);
 	BIND_ENUM_CONSTANT(STRETCH_SCALE);
@@ -156,6 +164,24 @@ void TextureRect::set_stretch_mode(StretchMode p_mode) {
 	update();
 }
 
+void TextureRect::set_src_position(Size2 p_src_position) {
+	src_position = p_src_position;
+	update();
+}
+
+Size2 TextureRect::get_src_position() const {
+	return src_position;
+}
+
+void TextureRect::set_src_size(Size2 p_src_size) {
+	src_size = p_src_size;
+	update();
+}
+
+Size2 TextureRect::get_src_size() const {
+	return src_size;
+}
+
 TextureRect::StretchMode TextureRect::get_stretch_mode() const {
 
 	return stretch_mode;
@@ -166,6 +192,8 @@ TextureRect::TextureRect() {
 	expand = false;
 	set_mouse_filter(MOUSE_FILTER_PASS);
 	stretch_mode = STRETCH_SCALE_ON_EXPAND;
+	src_position = Size2(0, 0);
+	src_size = Size2(1, 1);
 }
 
 TextureRect::~TextureRect() {

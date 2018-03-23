@@ -25,6 +25,8 @@ class T9Sender : public Node {
 
 	int adapter_count;
 	AdapterDesc adapters[6];
+
+	unsigned char* buffer_data;
 protected:
 	static void _bind_methods();
 

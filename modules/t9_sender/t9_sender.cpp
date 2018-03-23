@@ -14,15 +14,17 @@ T9Sender::T9Sender() : adapters() {
 	screen_width = 0;
 	screen_height = 0;
 	adapter_count = 0;
+	buffer_data = NULL;
 }
 
 T9Sender::~T9Sender() {
+	if (!is_init)
+		return;
+
 	if (is_running) {
-		WARN_PRINT("Destructing sender while still running");
 		stop();
 	}
 	if (!is_destroyed) {
-		WARN_PRINT("Destructing sender with created screen");
 		destroy_screen();
 	}
 }
@@ -108,8 +110,9 @@ void T9Sender::create_screen(int p_screen_number, int p_screen_width, int p_scre
 	screen_width = p_screen_width;
 	screen_height = p_screen_height;
 	screen_number = p_screen_number;
+
+	buffer_data = new unsigned char[screen_width * screen_height * 4];
 	is_created = true;
-	
 }
 
 void T9Sender::start(int adapter_id) {
@@ -141,8 +144,17 @@ void T9Sender::stop() {
 }
 
 void T9Sender::send_screen(Ref<ViewportTexture> texture) {
-	send_screen_data(texture->get_data());
+	Ref<Image> data = texture->get_data();
+	if (data.is_valid()) {
+		send_screen_data(data);
+	}
+	else {
+		ERR_PRINT("Failed to send screen, invalid data");
+	}
 }
+
+
+
 
 void T9Sender::send_screen_data(Ref<Image> data) {
 
@@ -151,8 +163,25 @@ void T9Sender::send_screen_data(Ref<Image> data) {
 	ERR_FAIL_COND(!is_running);
 
 	auto d = data->get_data();
-	// TODO: check format
-	T9SendScreenPicture(screen_number, (LPBYTE)d.read().ptr());
+
+	// We need to reorder data to correct format
+	auto read = d.read();
+	unsigned char* src_data = (unsigned char*)read.ptr();
+	unsigned char* dst_data = buffer_data;
+
+	for (int i = 0; i < screen_width; i++) {
+		for (int j = 0; j < screen_height; j++) {
+			int row_dst_idx = (screen_height - i - 1) * screen_height;
+			int row_src_idx = i * screen_height;
+
+			dst_data[(row_dst_idx + j) * 4 + 0] = src_data[(row_src_idx + j) * 4 + 2];
+			dst_data[(row_dst_idx + j) * 4 + 1] = src_data[(row_src_idx + j) * 4 + 1];
+			dst_data[(row_dst_idx + j) * 4 + 2] = src_data[(row_src_idx + j) * 4 + 0];
+			dst_data[(row_dst_idx + j) * 4 + 3] = src_data[(row_src_idx + j) * 4 + 3];
+		}
+	}
+
+	T9SendScreenPicture(screen_number, (LPBYTE)dst_data);
 }
 
 float clamp(float x) {
@@ -170,19 +199,18 @@ void T9Sender::send_screen_color(float r, float g, float b) {
 	unsigned char g_ = (char)(clamp(g) * 255.0f);
 	unsigned char b_ = (char)(clamp(b) * 255.0f);
 
-	unsigned char* data = new unsigned char[screen_width*screen_height * 4];
+	unsigned char* data = buffer_data;
 	for (int i = 0; i < screen_width; i++) {
 		for (int j = 0; j < screen_height; j++) {
-			data[(i*screen_height + j) * 4 + 0] = r_;
-			data[(i*screen_height + j) * 4 + 1] = g_;
-			data[(i*screen_height + j) * 4 + 2] = b_;
-			data[(i*screen_height + j) * 4 + 3] = 255;
+			int row_idx = i * screen_height;
+			data[(row_idx + j) * 4 + 0] = b_;
+			data[(row_idx + j) * 4 + 1] = g_;
+			data[(row_idx + j) * 4 + 2] = r_;
+			data[(row_idx + j) * 4 + 3] = 255;
 		}
 	}
 	// TODO: check format
-	T9SendScreenPicture(screen_number, (LPBYTE)data);
-
-	delete[] data;
+	T9SendScreenPicture(screen_number, (LPBYTE)buffer_data);
 }
 
 void T9Sender::destroy_screen() {
@@ -191,6 +219,7 @@ void T9Sender::destroy_screen() {
 
 	T9DestroyScreen(screen_number);
 	is_created = false;
+	delete[] buffer_data;
 	screen_number = 0;
 }
 

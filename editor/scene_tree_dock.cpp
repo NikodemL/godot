@@ -1185,7 +1185,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
 		String old_name = former_names[ni];
 		String new_name = new_parent->validate_child_name(node);
-		
+
 		// name was modified, fix the path renames
 		if (old_name.casecmp_to(new_name) != 0) {
 
@@ -1197,8 +1197,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			Vector<StringName> fixed_new_names;
 
 			// Get last name and replace with fixed new name
-			for (int a = 0; a < (unfixed_new_names.size() - 1); a++)
-			{
+			for (int a = 0; a < (unfixed_new_names.size() - 1); a++) {
 				fixed_new_names.push_back(unfixed_new_names[a]);
 			}
 			fixed_new_names.push_back(new_name);

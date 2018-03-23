@@ -902,7 +902,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 
 	if (!r_rem_anims)
 		r_rem_anims = &rem_anims;
-		
+
 	if (!p_base) {
 
 		p_base = edited_scene;
@@ -912,20 +912,20 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 		return;
 
 	// Renaming node paths used in script instances
-   if (p_base->get_script_instance()) {
+	if (p_base->get_script_instance()) {
 
-      ScriptInstance *si = p_base->get_script_instance();
+		ScriptInstance *si = p_base->get_script_instance();
 
-      if (si) {
+		if (si) {
 
-         List<PropertyInfo> properties;
-         si->get_property_list(&properties);
+			List<PropertyInfo> properties;
+			si->get_property_list(&properties);
 
-         for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			
+			for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+
 				String propertyname = E->get().name;
-            Variant p = p_base->get(propertyname);
-            if (p.get_type() == Variant::NODE_PATH) {
+				Variant p = p_base->get(propertyname);
+				if (p.get_type() == Variant::NODE_PATH) {
 
 					// Goes through all paths to check if its matching
 					for (List<Pair<NodePath, NodePath> >::Element *E = p_renames->front(); E; E = E->next()) {
@@ -937,7 +937,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 
 						// if old path detected, then it needs to be replaced with the new one
 						if (p == rel_path_old) {
-						
+
 							editor_data->get_undo_redo().add_do_property(p_base, propertyname, rel_path_new);
 							editor_data->get_undo_redo().add_undo_property(p_base, propertyname, rel_path_old);
 
@@ -945,13 +945,13 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 							break;
 						}
 					}
-            }
-         }
-      }
-   }
+				}
+			}
+		}
+	}
 
 	bool autorename_animation_tracks = bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true));
-	
+
 	if (autorename_animation_tracks && Object::cast_to<AnimationPlayer>(p_base)) {
 
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_base);

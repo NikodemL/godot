@@ -534,3 +534,7 @@ void VideoStreamIBManager::render(float p_delta_tme)
 	}
 
 }
+
+void DirectXIBVideoTexture::_bind_methods() {
+
+}

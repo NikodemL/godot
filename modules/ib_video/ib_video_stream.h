@@ -41,7 +41,8 @@ public:
 
 	DirectXIBVideoTexture();
 	~DirectXIBVideoTexture();
-
+protected:
+	static void _bind_methods();
 private:
 	void register_shared_texture_DX(int id);
 
@@ -62,6 +63,8 @@ class VideoStreamIBManager : public Reference {
 	LPDIRECT3DSURFACE9 d3dSurface;
 
 	HANDLE glDXHandle;
+protected:
+	static void _bind_methods();
 public:
 	VideoStreamIBManager() {
 		singleton = this;

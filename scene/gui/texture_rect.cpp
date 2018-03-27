@@ -39,50 +39,52 @@ void TextureRect::_notification(int p_what) {
 		if (texture.is_null())
 			return;
 
+		Rect2 src_rect = Rect2();
+		src_rect.size = texture->get_size() / Size2(hframes, vframes);
+		src_rect.position.x = float(frame % hframes) * src_rect.size.x;
+		src_rect.position.y = float(frame / hframes) * src_rect.size.y;
+
+		if (hflip)
+			src_rect.size.x = -src_rect.size.x;
+		if (vflip)
+			src_rect.size.y = -src_rect.size.y;
+
 		switch (stretch_mode) {
 			case STRETCH_SCALE_ON_EXPAND: {
-				Size2 tex_size = texture->get_size();
 
-				Size2 s = expand ? get_size() : tex_size;
-				Rect2 rect = Rect2(Point2(), s / Size2(hframes, vframes));
-
-				Rect2 src_rect = Rect2();
-				src_rect.size = tex_size / Size2(hframes, vframes);
-				src_rect.position.x = float(frame % hframes) * src_rect.size.x;
-				src_rect.position.y = float(frame / hframes) * src_rect.size.y;
-
-				if (hflip)
-					src_rect.size.x = -src_rect.size.x;
-				if (vflip)
-					src_rect.size.y = -src_rect.size.y;
-
-				draw_texture_rect_region(texture, rect, src_rect);
+				Size2 s = expand ? get_size() : texture->get_size() / Size2(hframes, vframes);
+				draw_texture_rect_region(texture, Rect2(Point2(), s), src_rect);
 			} break;
 			case STRETCH_SCALE: {
-				draw_texture_rect(texture, Rect2(Point2(), get_size()), false);
+				draw_texture_rect_region(texture, Rect2(Point2(), get_size()), src_rect);
 			} break;
 			case STRETCH_TILE: {
 				draw_texture_rect(texture, Rect2(Point2(), get_size()), true);
 			} break;
 			case STRETCH_KEEP: {
-				draw_texture_rect(texture, Rect2(Point2(), texture->get_size()), false);
 
+				Size2 s = texture->get_size() / Size2(hframes, vframes);
+				draw_texture_rect_region(texture, Rect2(Point2(), s), src_rect);
 			} break;
 			case STRETCH_KEEP_CENTERED: {
 
-				Vector2 ofs = (get_size() - texture->get_size()) / 2;
-				draw_texture_rect(texture, Rect2(ofs, texture->get_size()), false);
+				Size2 ofs = (get_size() - (texture->get_size() / Size2(hframes, vframes))) / 2;
+				Size2 s = texture->get_size() / Size2(hframes, vframes);
+
+				draw_texture_rect_region(texture, Rect2(ofs, s), src_rect);
 			} break;
 			case STRETCH_KEEP_ASPECT_CENTERED:
 			case STRETCH_KEEP_ASPECT: {
 
 				Size2 size = get_size();
-				int tex_width = texture->get_width() * size.height / texture->get_height();
+				Size2 tex_size = texture->get_size() / Size2(hframes, vframes); 
+
+				int tex_width = tex_size.x * size.height / tex_size.y;
 				int tex_height = size.height;
 
 				if (tex_width > size.width) {
 					tex_width = size.width;
-					tex_height = texture->get_height() * tex_width / texture->get_width();
+					tex_height = tex_size.y * tex_width / tex_size.x;
 				}
 
 				int ofs_x = 0;
@@ -93,16 +95,26 @@ void TextureRect::_notification(int p_what) {
 					ofs_y += (size.height - tex_height) / 2;
 				}
 
-				draw_texture_rect(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height));
+				draw_texture_rect_region(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height), src_rect);
 			} break;
 			case STRETCH_KEEP_ASPECT_COVERED: {
+
 				Size2 size = get_size();
-				Size2 tex_size = texture->get_size();
+				Size2 tex_size = texture->get_size() / Size2(hframes, vframes);
+
 				Size2 scaleSize(size.width / tex_size.width, size.height / tex_size.height);
 				float scale = scaleSize.width > scaleSize.height ? scaleSize.width : scaleSize.height;
 				Size2 scaledTexSize = tex_size * scale;
 				Point2 ofs = ((scaledTexSize - size) / scale).abs() / 2.0f;
-				draw_texture_rect_region(texture, Rect2(Point2(), size), Rect2(ofs, size / scale));
+
+				Rect2 rect = Rect2(ofs, size / scale);
+
+				if (hflip)
+					rect.size.x = -rect.size.x;
+				if (vflip)
+					rect.size.y = -rect.size.y;
+
+				draw_texture_rect_region(texture, Rect2(Point2(), size), rect);
 			} break;
 		}
 	}
@@ -111,7 +123,7 @@ void TextureRect::_notification(int p_what) {
 Size2 TextureRect::get_minimum_size() const {
 
 	if (!expand && !texture.is_null())
-		return texture->get_size();
+		return texture->get_size() / Size2(hframes, vframes);
 	else
 		return Size2();
 }
@@ -249,6 +261,9 @@ void TextureRect::set_vframes(int p_amount) {
 
 	ERR_FAIL_COND(p_amount < 1);
 	vframes = p_amount;
+
+	set_size(texture->get_size() / Size2(hframes, vframes));
+
 	update();
 	item_rect_changed();
 	_change_notify();
@@ -262,6 +277,9 @@ void TextureRect::set_hframes(int p_amount) {
 
 	ERR_FAIL_COND(p_amount < 1);
 	hframes = p_amount;
+
+	set_size(texture->get_size() / Size2(hframes, vframes));
+
 	update();
 	item_rect_changed();
 	_change_notify();

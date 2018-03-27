@@ -42,10 +42,12 @@ void TextureRect::_notification(int p_what) {
 		switch (stretch_mode) {
 			case STRETCH_SCALE_ON_EXPAND: {
 				Size2 tex_size = texture->get_size();
+
 				Size2 s = expand ? get_size() : tex_size;
+				Rect2 rect = Rect2(Point2(), s / Size2(hframes, vframes));
 
 				Rect2 src_rect = Rect2();
-				src_rect.size = tex_size / Size2(hframes, vframes);;
+				src_rect.size = tex_size / Size2(hframes, vframes);
 				src_rect.position.x = float(frame % hframes) * src_rect.size.x;
 				src_rect.position.y = float(frame / hframes) * src_rect.size.y;
 
@@ -54,7 +56,7 @@ void TextureRect::_notification(int p_what) {
 				if (vflip)
 					src_rect.size.y = -src_rect.size.y;
 
-				draw_texture_rect_region(texture, Rect2(Point2(), s), src_rect);
+				draw_texture_rect_region(texture, rect, src_rect);
 			} break;
 			case STRETCH_SCALE: {
 				draw_texture_rect(texture, Rect2(Point2(), get_size()), false);

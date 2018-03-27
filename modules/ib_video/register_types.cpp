@@ -6,7 +6,7 @@
 #include "class_db.h"
 #include "ib_video_stream.h"
 
-static VideoStreamIBManager *_streamIBVideoSingleton = NULL;
+extern VideoStreamIBManager *_streamIBVideoSingleton = NULL;
 
 void register_ib_video_types() {
 

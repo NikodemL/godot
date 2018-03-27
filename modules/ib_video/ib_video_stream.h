@@ -22,11 +22,14 @@ class DirectXIBVideoTexture : public Texture {
 	RID texture;
 	Image::Format format;
 	int w, h;
+	bool is_locked;
 
 	int id;
 public:
 	virtual int get_width() const override;
 	virtual int get_height() const override;
+
+	// Must lock/unlock resource before using it
 	virtual RID get_rid() const override;
 
 	virtual bool has_alpha() const override;
@@ -82,7 +85,10 @@ public:
 	Size2 get_video_info_size(int id);
 	float get_video_duration(int id);
 	Ref<DirectXIBVideoTexture> get_video_texture(int id);
-	float get_vide_current_time(int id);
+	float get_video_current_time(int id);
+
+	bool lock_video(int id);
+	void unlock_video(int id);
 
 	// Will initiali
 

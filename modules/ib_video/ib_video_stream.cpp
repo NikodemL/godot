@@ -26,6 +26,10 @@ int DirectXIBVideoTexture::get_height() const {
 }
 
 RID DirectXIBVideoTexture::get_rid() const {
+	if (is_locked == false)
+	{
+		print_error("You must explicitly lock texture before using it");
+	}
 	return texture;
 }
 
@@ -34,7 +38,7 @@ bool DirectXIBVideoTexture::has_alpha() const {
 }
 
 void DirectXIBVideoTexture::set_flags(uint32_t p_flags) {
-	ERR_FAIL(false && "Cannot set flags for DX texture");
+	print_error("Cannot set flags for DX texture");
 }
 uint32_t DirectXIBVideoTexture::get_flags() const {
 	return FLAG_VIDEO_SURFACE;
@@ -45,6 +49,7 @@ DirectXIBVideoTexture::DirectXIBVideoTexture() {
 	w = 0;
 	h = 0;
 	id = 0;
+	is_locked = false;
 
 	texture = VS::get_singleton()->texture_create();
 }
@@ -227,6 +232,8 @@ void VideoStreamIBManager::init() {
 		return;
 	}
 }
+
+VideoStreamIBManager* VideoStreamIBManager::singleton = NULL;
 
 void VideoStreamIBManager::release() {
 
@@ -411,6 +418,52 @@ float VideoStreamIBManager::get_video_duration(int id)
 	return inst.pVideoObject->pFrameOut->videoLength;
 }
 
+bool VideoStreamIBManager::lock_video(int id) {
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! GetVideoTexture(id=%d)", id);
+		return NULL;
+	}
+	TVideoInstance &inst = it->second;
+
+	if (inst.pGLVideoTexture->is_locked == false) {
+		MError("Video not locked before accessed");
+		return false;
+	}
+
+	if (FAILED(wglDXLockObjectsNV(glDXHandle, 1, &inst.pDXGLSharedHandle))) {
+		MError("Failed to lock video");
+		return false;
+	}
+	inst.pGLVideoTexture->is_locked = true;
+	return true;
+}
+
+void VideoStreamIBManager::unlock_video(int id) {
+	std::lock_guard<std::mutex> scopeLock(videoMutex);
+	auto it = mVideoObject.find(id);
+	if (it == mVideoObject.end())
+	{
+		MError("Video not found! GetVideoTexture(id=%d)", id);
+		return;
+	}
+	TVideoInstance &inst = it->second;
+
+	if (inst.pGLVideoTexture->is_locked == false) {
+		MError("Video not locked before unlocked");
+		return;
+	}
+
+	if (FAILED(wglDXUnlockObjectsNV(glDXHandle, 1, &inst.pDXGLSharedHandle))) {
+		MError("Failed to lock video");
+		return;
+	}
+
+	inst.pGLVideoTexture->is_locked = false;
+}
+
 Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 {
 	//MDiagnostic("GetVideoTexture(id=%d,texturePtr=%x)", id, texturePtr);
@@ -422,6 +475,11 @@ Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 		return NULL;
 	}
 	TVideoInstance &inst = it->second;
+
+	if (inst.pGLVideoTexture->is_locked == false) {
+		MError("Video not locked before accessed");
+		return NULL;
+	}
 	return inst.pGLVideoTexture;
 }
 

@@ -1040,7 +1040,7 @@ void FileSystemDock::_file_option(int p_option) {
 			// first try to grab directory from selected file, so that it works for searched files
 			int idx = files->get_current();
 
-			if (idx >= 0 && idx < files->get_item_count()) {
+			if (idx > 0 && idx < files->get_item_count()) {
 				path = files->get_item_metadata(idx);
 				path = path.get_base_dir();
 			}

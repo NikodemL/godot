@@ -538,3 +538,29 @@ void VideoStreamIBManager::render(float p_delta_tme)
 void DirectXIBVideoTexture::_bind_methods() {
 
 }
+
+void VideoStreamIBManager::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("init"), &VideoStreamIBManager::init);
+	ClassDB::bind_method(D_METHOD("set_log_level", "level"), &VideoStreamIBManager::set_log_level);
+	ClassDB::bind_method(D_METHOD("release"), &VideoStreamIBManager::release);
+
+	ClassDB::bind_method(D_METHOD("update", "delta_time"), &VideoStreamIBManager::update);
+	ClassDB::bind_method(D_METHOD("render", "delta_time"), &VideoStreamIBManager::render);
+	ClassDB::bind_method(D_METHOD("create_video"), &VideoStreamIBManager::create_video);
+	ClassDB::bind_method(D_METHOD("open_video", "id", "filename", "options"), &VideoStreamIBManager::open_video);
+
+	// We do not bind as such, too many parameters
+	//ClassDB::bind_method(D_METHOD("configure_video", "id", "filename", "options"), &VideoStreamIBManager::configure_video);
+	ClassDB::bind_method(D_METHOD("get_video_state", "id"), &VideoStreamIBManager::get_video_state);
+	ClassDB::bind_method(D_METHOD("play_video", "id", "loop"), &VideoStreamIBManager::play_video);
+	ClassDB::bind_method(D_METHOD("pause_video", "id"), &VideoStreamIBManager::pause_video);
+	ClassDB::bind_method(D_METHOD("seek_video", "id"), &VideoStreamIBManager::seek_video);
+	ClassDB::bind_method(D_METHOD("close_video", "id"), &VideoStreamIBManager::close_video);
+	ClassDB::bind_method(D_METHOD("get_video_info_size", "id"), &VideoStreamIBManager::get_video_info_size);
+	ClassDB::bind_method(D_METHOD("get_video_duration", "id"), &VideoStreamIBManager::get_video_duration);
+	ClassDB::bind_method(D_METHOD("lock_video", "id"), &VideoStreamIBManager::lock_video);
+	ClassDB::bind_method(D_METHOD("unlock_video", "id"), &VideoStreamIBManager::unlock_video);
+	ClassDB::bind_method(D_METHOD("get_video_texture", "id"), &VideoStreamIBManager::get_video_texture);
+	//ClassDB::bind_method(D_METHOD("get_video_current_time", "id"), &VideoStreamIBManager::get_video_current_time);
+}

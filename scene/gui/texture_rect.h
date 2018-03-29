@@ -55,12 +55,21 @@ private:
 	bool expand;
 	Ref<Texture> texture;
 	StretchMode stretch_mode;
-	Size2 src_position;
-	Size2 src_size;
+
+	bool hflip;
+	bool vflip;
+
+	int frame;
+
+	int vframes;
+	int hframes;
+
 protected:
 	void _notification(int p_what);
 	virtual Size2 get_minimum_size() const;
 	static void _bind_methods();
+
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_texture(const Ref<Texture> &p_tex);
@@ -72,11 +81,20 @@ public:
 	void set_stretch_mode(StretchMode p_mode);
 	StretchMode get_stretch_mode() const;
 
-	void set_src_position(Size2 p_src_position);
-	Size2 get_src_position() const;
+	void set_hflip(bool p_hflip);
+	bool has_hflip() const;
 
-	void set_src_size(Size2 p_src_size);
-	Size2 get_src_size() const;
+	void set_vflip(bool p_vflip);
+	bool has_vflip() const;
+
+	void set_frame(int p_frame);
+	int get_frame() const;
+
+	void set_vframes(int p_amount);
+	int get_vframes() const;
+
+	void set_hframes(int p_amount);
+	int get_hframes() const;
 
 	TextureRect();
 	~TextureRect();

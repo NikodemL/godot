@@ -903,9 +903,6 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 	if (!r_rem_anims)
 		r_rem_anims = &rem_anims;
 
-	if (!bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true)))
-		return;
-
 	if (!p_base) {
 
 		p_base = edited_scene;
@@ -914,7 +911,48 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 	if (!p_base)
 		return;
 
-	if (Object::cast_to<AnimationPlayer>(p_base)) {
+	// Renaming node paths used in script instances
+	if (p_base->get_script_instance()) {
+
+		ScriptInstance *si = p_base->get_script_instance();
+
+		if (si) {
+
+			List<PropertyInfo> properties;
+			si->get_property_list(&properties);
+
+			for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+
+				String propertyname = E->get().name;
+				Variant p = p_base->get(propertyname);
+				if (p.get_type() == Variant::NODE_PATH) {
+
+					// Goes through all paths to check if its matching
+					for (List<Pair<NodePath, NodePath> >::Element *E = p_renames->front(); E; E = E->next()) {
+
+						NodePath root_path = p_base->get_path();
+
+						NodePath rel_path_old = root_path.rel_path_to(E->get().first);
+						NodePath rel_path_new = root_path.rel_path_to(E->get().second);
+
+						// if old path detected, then it needs to be replaced with the new one
+						if (p == rel_path_old) {
+
+							editor_data->get_undo_redo().add_do_property(p_base, propertyname, rel_path_new);
+							editor_data->get_undo_redo().add_undo_property(p_base, propertyname, rel_path_old);
+
+							p_base->set(propertyname, rel_path_new);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	bool autorename_animation_tracks = bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true));
+
+	if (autorename_animation_tracks && Object::cast_to<AnimationPlayer>(p_base)) {
 
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_base);
 		List<StringName> anims;
@@ -1145,7 +1183,30 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			editor_data->get_undo_redo().add_do_method(new_parent, "move_child", node, p_position_in_parent + inc);
 
 		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
+		String old_name = former_names[ni];
 		String new_name = new_parent->validate_child_name(node);
+
+		// name was modified, fix the path renames
+		if (old_name.casecmp_to(new_name) != 0) {
+
+			// Fix the to name to have the new name
+			NodePath old_new_name = path_renames[ni].second;
+			NodePath new_path;
+
+			Vector<StringName> unfixed_new_names = old_new_name.get_names();
+			Vector<StringName> fixed_new_names;
+
+			// Get last name and replace with fixed new name
+			for (int a = 0; a < (unfixed_new_names.size() - 1); a++) {
+				fixed_new_names.push_back(unfixed_new_names[a]);
+			}
+			fixed_new_names.push_back(new_name);
+
+			NodePath fixed_node_path = NodePath(fixed_new_names, true);
+
+			path_renames[ni].second = fixed_node_path;
+		}
+
 		editor_data->get_undo_redo().add_do_method(sed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(new_parent), new_name, -1);
 		editor_data->get_undo_redo().add_undo_method(sed, "live_debug_reparent_node", NodePath(String(edited_scene->get_path_to(new_parent)) + "/" + new_name), edited_scene->get_path_to(node->get_parent()), node->get_name(), node->get_index());
 
@@ -1536,10 +1597,12 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 			return;
 		}
 
+		// Sometimes the file is cached and doesn't get reloaded from disk when using EditorNode::get_singleton()->reload_scene
+		bool overwriting_loaded_resource = ResourceCache::has(p_file);
+
 		int flg = 0;
 		if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 			flg |= ResourceSaver::FLAG_COMPRESS;
-
 		err = ResourceSaver::save(p_file, sdata, flg);
 		if (err != OK) {
 			accept->get_ok()->set_text(TTR("I see.."));
@@ -1547,7 +1610,19 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 			accept->popup_centered_minsize();
 			return;
 		}
+
+		// Forces reload from file so that next step doesn't use the cached resource file
+		// TODO: Resource saver should invalidate cache?
+		if (overwriting_loaded_resource) {
+			Resource *cached_resource = ResourceCache::get(p_file);
+			cached_resource->reload_from_file();
+		}
+
 		_replace_with_branch_scene(p_file, base);
+
+		// If this scene was already opened in the editor previously, or if child instances of this scene already exist, the scene needs to be reloaded so that it all updates properly
+		EditorNode::get_singleton()->reload_scene(p_file);
+
 	} else {
 		accept->get_ok()->set_text(TTR("I see.."));
 		accept->set_text(TTR("Error duplicating scene to save it."));

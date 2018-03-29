@@ -1520,7 +1520,7 @@ Node *Node::get_node(const NodePath &p_path) const {
 
 	Node *node = _get_node(p_path);
 	if (!node) {
-		ERR_EXPLAIN("Node not found: " + p_path);
+		ERR_EXPLAIN("Node not found: " + p_path + " Origin: " + this->get_filename() + " : " + this->get_name() );
 		ERR_FAIL_COND_V(!node, NULL);
 	}
 	return node;

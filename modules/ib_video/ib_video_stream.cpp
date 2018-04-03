@@ -154,7 +154,7 @@ void DestroyVideoInstance(TVideoInstance& inst)
 	TFFMPEGVideoObject::Destroy(inst.pVideoObject);
 
 	if (inst.pDXGLSharedHandle) {
-		wglDXUnregisterObjectNV(pDevice9, inst.pDXGLSharedHandle);
+		wglDXUnregisterObjectNV(glDXHandle, inst.pDXGLSharedHandle);
 		inst.pDXGLSharedHandle = NULL;
 	}
 }

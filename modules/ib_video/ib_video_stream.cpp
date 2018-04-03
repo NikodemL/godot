@@ -136,7 +136,7 @@ struct TVideoInstance {
 int nextVideoId = 1000;
 std::map<int, TVideoInstance> mVideoObject;
 std::mutex videoMutex;
-IDirect3DDevice9* pDevice9 = 0;
+IDirect3DDevice9Ex* pDevice9 = 0;
 ID3D11Device* pDevice11 = 0;
 
 void InitVideoInstance(TVideoInstance &inst)
@@ -191,6 +191,23 @@ void VideoStreamIBManager::update(float p_delta_time) {
 void VideoStreamIBManager::init() {
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 
+	if (pDevice9) {
+		print_error("Init already called, cannot create a new device");
+		return;
+	}
+
+	// Init WGL
+	wglDXOpenDeviceNV = (PFNWGLDXOPENDEVICENVPROC)wglGetProcAddress("wglDXOpenDeviceNV");
+	wglDXCloseDeviceNV = (PFNWGLDXCLOSEDEVICENVPROC)wglGetProcAddress("wglDXCloseDeviceNV");
+
+	wglDXRegisterObjectNV = (PFNWGLDXREGISTEROBJECTNVPROC)wglGetProcAddress("wglDXRegisterObjectNV");
+	wglDXUnregisterObjectNV = (PFNWGLDXUNREGISTEROBJECTNVPROC)wglGetProcAddress("wglDXUnregisterObjectNV");
+
+	wglDXLockObjectsNV = (PFNWGLDXLOCKOBJECTSNVPROC)wglGetProcAddress("wglDXLockObjectsNV");
+	wglDXUnlockObjectsNV = (PFNWGLDXUNLOCKOBJECTSNVPROC)wglGetProcAddress("wglDXUnlockObjectsNV");
+
+	wglDXSetResourceShareHandleNV = (PFNWGLDXSETRESOURCESHAREHANDLENVPROC)wglGetProcAddress("wglDXSetResourceShareHandleNV");
+
 	InitTimer();
 
 	// Create a dummy window for DX device
@@ -218,14 +235,14 @@ void VideoStreamIBManager::init() {
 		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,
 		&d3dpp,
 		NULL,
-		&d9device);
+		&pDevice9);
 
 	// TODO: Do we need to acquire render target like this ...
-	hr = d9device->GetRenderTarget(0, &d3dSurface);
+	hr = pDevice9->GetRenderTarget(0, &d3dSurface);
 
 
 	// We now need to initialize OpenGL extensions
-	glDXHandle = wglDXOpenDeviceNV(d9device);
+	glDXHandle = wglDXOpenDeviceNV(pDevice9);
 
 	if (!glDXHandle) {
 		print_error("Could not open DX device");
@@ -237,9 +254,9 @@ VideoStreamIBManager* VideoStreamIBManager::singleton = NULL;
 
 void VideoStreamIBManager::release() {
 
-	if (d9device) {
-		d9device->Release();
-		d9device = NULL;
+	if (pDevice9) {
+		pDevice9->Release();
+		pDevice9 = NULL;
 	}
 
 	if (d3d) {
@@ -428,8 +445,11 @@ bool VideoStreamIBManager::lock_video(int id) {
 	}
 	TVideoInstance &inst = it->second;
 
-	if (inst.pGLVideoTexture->is_locked == false) {
-		MError("Video not locked before accessed");
+	if (inst.pDXGLSharedHandle == NULL)
+		return false;
+
+	if (inst.pGLVideoTexture->is_locked == true) {
+		MError("Video already locked before accessed");
 		return false;
 	}
 
@@ -501,17 +521,22 @@ void VideoStreamIBManager::render(float p_delta_tme)
 				inst.pVideoTexture9 = (IDirect3DTexture9*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
 
 				// Make it shared now if not already
-				if (inst.pRenderTexHandle == NULL) {
+				if (inst.pVideoTexture9 != NULL && inst.pRenderTexHandle == NULL) {
 					inst.pRenderTexHandle = (HANDLE)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetRenderTexHandle();
 
 					bool success = wglDXSetResourceShareHandleNV(inst.pVideoTexture9, inst.pRenderTexHandle);
 
 					// gl_texture_handle is the shared texture data, now identified by the g_GLTexture name
-					inst.pDXGLSharedHandle = wglDXRegisterObjectNV(pDevice9,
-						inst.pRenderTexHandle,
-						inst.pGLVideoTexture->get_rid().get_id(),
+					uint32_t gl_id = inst.pGLVideoTexture->get_rid().get_id();
+					inst.pDXGLSharedHandle = wglDXRegisterObjectNV(glDXHandle,
+						inst.pVideoTexture9,
+						gl_id,
 						GL_TEXTURE_2D,
 						WGL_ACCESS_READ_ONLY_NV);
+
+					if (inst.pDXGLSharedHandle == NULL) {
+						print_error("Failed to create DX GL handle");
+					}
 				}
 
 			}

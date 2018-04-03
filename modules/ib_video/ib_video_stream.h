@@ -58,7 +58,6 @@ class VideoStreamIBManager : public Reference {
 	static VideoStreamIBManager* singleton;
 
 	LPDIRECT3D9EX d3d;
-	LPDIRECT3DDEVICE9EX d9device;
 	HWND hWndDX;
 	LPDIRECT3DSURFACE9 d3dSurface;
 
@@ -67,6 +66,10 @@ protected:
 	static void _bind_methods();
 public:
 	VideoStreamIBManager() {
+		if (singleton != NULL) {
+			print_error("Creating a second instance of video stream manager!");
+			return;
+		}
 		singleton = this;
 	}
 
@@ -88,8 +91,10 @@ public:
 	Size2 get_video_info_size(int id);
 	float get_video_duration(int id);
 	Ref<DirectXIBVideoTexture> get_video_texture(int id);
-	float get_video_current_time(int id);
 
+	//float get_video_current_time(int id);
+
+	// Returns false if video is not ready yet
 	bool lock_video(int id);
 	void unlock_video(int id);
 

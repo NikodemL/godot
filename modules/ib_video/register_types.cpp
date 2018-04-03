@@ -6,14 +6,10 @@
 #include "class_db.h"
 #include "ib_video_stream.h"
 
-extern VideoStreamIBManager *_streamIBVideoSingleton = NULL;
-
 void register_ib_video_types() {
 
 	ClassDB::register_class<VideoStreamIBManager>();
 	ClassDB::register_class<DirectXIBVideoTexture>();
-
-	_streamIBVideoSingleton = memnew(VideoStreamIBManager);
 }
 
 void unregister_ib_video_types() {

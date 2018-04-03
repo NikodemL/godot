@@ -48,7 +48,7 @@ Dxva2Decoder::Dxva2Decoder() : m_Dxva2Context(NULL)
 	
 }
 
-extern IDirect3DDevice9* pDevice9;
+extern IDirect3DDevice9Ex* pDevice9;
 extern ID3D11Device* pDevice11;
 #define SAFE_RELEASE(x) if(x){x->Release();x=0;}
 

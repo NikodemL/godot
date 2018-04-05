@@ -26,10 +26,6 @@ int DirectXIBVideoTexture::get_height() const {
 }
 
 RID DirectXIBVideoTexture::get_rid() const {
-	if (is_locked == false)
-	{
-		print_error("You must explicitly lock texture before using it");
-	}
 	return texture;
 }
 
@@ -49,7 +45,6 @@ DirectXIBVideoTexture::DirectXIBVideoTexture() {
 	w = 0;
 	h = 0;
 	id = 0;
-	is_locked = false;
 
 	texture = VS::get_singleton()->texture_create();
 }
@@ -103,7 +98,8 @@ void LogHelperVA(int level, const char* fmt, va_list args)
 		LogEntry le;
 		le.level = level;
 		vsprintf_s(le.str, localFmt, args);
-		logBuffer.push(le);
+		//logBuffer.push(le);
+		print_line(le.str);
 	}
 }
 
@@ -152,11 +148,6 @@ void DestroyVideoInstance(TVideoInstance& inst)
 		TWASAPIVideoAudioOutput::Destroy(inst.pVideoObject->pAudioOut);
 	TDXVideoFrameOutput::Destroy(inst.pVideoObject->pFrameOut);
 	TFFMPEGVideoObject::Destroy(inst.pVideoObject);
-
-	if (inst.pDXGLSharedHandle) {
-		wglDXUnregisterObjectNV(glDXHandle, inst.pDXGLSharedHandle);
-		inst.pDXGLSharedHandle = NULL;
-	}
 }
 
 void ForceShutdownVideos(int saveState = 0)
@@ -186,10 +177,35 @@ void VideoStreamIBManager::update(float p_delta_time) {
 	{
 		print_line(String(le.str));
 	}
+
+	// Register the render
+	VS::get_singleton()->request_frame_drawn_callback(this, "render", Variant(p_delta_time));
 }
+
+void MessageCallback(GLenum source,
+	GLenum type,
+	GLuint id,
+	GLenum severity,
+	GLsizei length,
+	const GLchar* message,
+	const void* userParam)
+{
+	MLog("GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+		type, severity, message);
+}
+
+
 
 void VideoStreamIBManager::init() {
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
+
+	glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)wglGetProcAddress("glDebugMessageCallback");
+
+	// During init, enable debug output
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback((GLDEBUGPROC)MessageCallback, 0);
 
 	if (pDevice9) {
 		print_error("Init already called, cannot create a new device");
@@ -240,7 +256,6 @@ void VideoStreamIBManager::init() {
 	// TODO: Do we need to acquire render target like this ...
 	hr = pDevice9->GetRenderTarget(0, &d3dSurface);
 
-
 	// We now need to initialize OpenGL extensions
 	glDXHandle = wglDXOpenDeviceNV(pDevice9);
 
@@ -283,6 +298,8 @@ int VideoStreamIBManager::create_video()
 
 	nextVideoId += 1;
 	mVideoObject.insert(std::pair<int, TVideoInstance>(inst.id, inst));
+
+	inst.pVideoObject->useHwAccel = true;
 	return inst.id;
 }
 
@@ -435,55 +452,6 @@ float VideoStreamIBManager::get_video_duration(int id)
 	return inst.pVideoObject->pFrameOut->videoLength;
 }
 
-bool VideoStreamIBManager::lock_video(int id) {
-	std::lock_guard<std::mutex> scopeLock(videoMutex);
-	auto it = mVideoObject.find(id);
-	if (it == mVideoObject.end())
-	{
-		MError("Video not found! GetVideoTexture(id=%d)", id);
-		return NULL;
-	}
-	TVideoInstance &inst = it->second;
-
-	if (inst.pDXGLSharedHandle == NULL)
-		return false;
-
-	if (inst.pGLVideoTexture->is_locked == true) {
-		MError("Video already locked before accessed");
-		return false;
-	}
-
-	if (FAILED(wglDXLockObjectsNV(glDXHandle, 1, &inst.pDXGLSharedHandle))) {
-		MError("Failed to lock video");
-		return false;
-	}
-	inst.pGLVideoTexture->is_locked = true;
-	return true;
-}
-
-void VideoStreamIBManager::unlock_video(int id) {
-	std::lock_guard<std::mutex> scopeLock(videoMutex);
-	auto it = mVideoObject.find(id);
-	if (it == mVideoObject.end())
-	{
-		MError("Video not found! GetVideoTexture(id=%d)", id);
-		return;
-	}
-	TVideoInstance &inst = it->second;
-
-	if (inst.pGLVideoTexture->is_locked == false) {
-		MError("Video not locked before unlocked");
-		return;
-	}
-
-	if (FAILED(wglDXUnlockObjectsNV(glDXHandle, 1, &inst.pDXGLSharedHandle))) {
-		MError("Failed to lock video");
-		return;
-	}
-
-	inst.pGLVideoTexture->is_locked = false;
-}
-
 Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 {
 	//MDiagnostic("GetVideoTexture(id=%d,texturePtr=%x)", id, texturePtr);
@@ -496,19 +464,32 @@ Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 	}
 	TVideoInstance &inst = it->second;
 
-	if (inst.pGLVideoTexture->is_locked == false) {
-		MError("Video not locked before accessed");
+	if (inst.pDXGLSharedHandle == NULL)
 		return NULL;
-	}
+
 	return inst.pGLVideoTexture;
 }
 
 // Called from render thread
 void VideoStreamIBManager::render(float p_delta_tme)
 {
-	HWDecoderManager::RenderThreadUpdate();
-
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
+
+	// Unlock all videos so they can be used ny DX
+	auto it2 = mVideoObject.begin();
+	while (it2 != mVideoObject.end())
+	{
+		TVideoInstance &inst = it2->second;
+		if (inst.pDXGLSharedHandle != NULL)
+		{
+			wglDXUnlockObjectsNV(glDXHandle, 1, &inst.pDXGLSharedHandle);
+		}
+
+		++it2;
+	}
+
+	// Update the render targets
+	HWDecoderManager::RenderThreadUpdate();
 
 	auto it = mVideoObject.begin();
 	while (it != mVideoObject.end())
@@ -519,7 +500,7 @@ void VideoStreamIBManager::render(float p_delta_tme)
 		case TVideoObject::sPaused:
 			if (pDevice9) {
 				inst.pVideoTexture9 = (IDirect3DTexture9*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
-
+				
 				// Make it shared now if not already
 				if (inst.pVideoTexture9 != NULL && inst.pRenderTexHandle == NULL) {
 					inst.pRenderTexHandle = (HANDLE)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetRenderTexHandle();
@@ -541,14 +522,21 @@ void VideoStreamIBManager::render(float p_delta_tme)
 
 			}
 			else {
+				MDiagnostic("Unsupported device");
 				//inst.pVideoTexture11 = (ID3D11ShaderResourceView*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
 			}
 			inst.currentTime = inst.pVideoObject->syncTime;
 			break;
 		case TVideoObject::sShutdown:
-			//MDiagnostic("UnityRenderEvent - Shutdown %d", it->first);
+			MDiagnostic("UnityRenderEvent - Shutdown %d", it->first);
 			if (inst.pVideoObject->TryWaitShutdown())
 			{
+				if (inst.pDXGLSharedHandle != NULL)
+				{
+					wglDXUnregisterObjectNV(glDXHandle, inst.pDXGLSharedHandle);
+					inst.pDXGLSharedHandle = NULL;
+				}
+
 				DestroyVideoInstance(inst);
 				it = mVideoObject.erase(it);
 				continue;
@@ -556,6 +544,19 @@ void VideoStreamIBManager::render(float p_delta_tme)
 			break;
 		};
 		++it;
+	}
+
+	// Lock targets
+	auto it3 = mVideoObject.begin();
+	while (it3 != mVideoObject.end())
+	{
+		TVideoInstance &inst = it3->second;
+		if (inst.pDXGLSharedHandle != NULL)
+		{
+			wglDXLockObjectsNV(glDXHandle, 1, &inst.pDXGLSharedHandle);
+		}
+
+		++it3;
 	}
 
 }
@@ -584,8 +585,6 @@ void VideoStreamIBManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close_video", "id"), &VideoStreamIBManager::close_video);
 	ClassDB::bind_method(D_METHOD("get_video_info_size", "id"), &VideoStreamIBManager::get_video_info_size);
 	ClassDB::bind_method(D_METHOD("get_video_duration", "id"), &VideoStreamIBManager::get_video_duration);
-	ClassDB::bind_method(D_METHOD("lock_video", "id"), &VideoStreamIBManager::lock_video);
-	ClassDB::bind_method(D_METHOD("unlock_video", "id"), &VideoStreamIBManager::unlock_video);
 	ClassDB::bind_method(D_METHOD("get_video_texture", "id"), &VideoStreamIBManager::get_video_texture);
 	//ClassDB::bind_method(D_METHOD("get_video_current_time", "id"), &VideoStreamIBManager::get_video_current_time);
 }

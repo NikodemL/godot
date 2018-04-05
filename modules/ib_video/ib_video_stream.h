@@ -22,7 +22,6 @@ class DirectXIBVideoTexture : public Texture {
 	RID texture;
 	Image::Format format;
 	int w, h;
-	bool is_locked;
 
 	int id;
 public:
@@ -62,6 +61,10 @@ class VideoStreamIBManager : public Reference {
 	LPDIRECT3DSURFACE9 d3dSurface;
 
 	HANDLE glDXHandle;
+
+private:
+	void render(float p_delta_time);
+
 protected:
 	static void _bind_methods();
 public:
@@ -75,9 +78,9 @@ public:
 
 	VideoStreamIBManager* get_singleton() { return singleton; }
 
-	// Global update 
+	// Global update (from render thread)
 	void update(float p_delta_time);
-	void render(float p_delta_time);
+	
 
 	int create_video();
 	int open_video(int id, String file_name, String options);
@@ -91,14 +94,6 @@ public:
 	Size2 get_video_info_size(int id);
 	float get_video_duration(int id);
 	Ref<DirectXIBVideoTexture> get_video_texture(int id);
-
-	//float get_video_current_time(int id);
-
-	// Returns false if video is not ready yet
-	bool lock_video(int id);
-	void unlock_video(int id);
-
-	// Will initiali
 
 	void init();
 	void set_log_level(int level);

@@ -64,7 +64,7 @@ class VideoStreamIBManager : public Reference {
 
 private:
 	void render(float p_delta_time);
-
+	void init_in_render(float p_unused);
 protected:
 	static void _bind_methods();
 public:

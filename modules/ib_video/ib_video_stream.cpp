@@ -1,6 +1,5 @@
 #include "ib_video_stream.h"
 #include <d3d9.h>
-#include <d3dx9.h>
 #include <d3d11.h>
 #include <map>
 #include <mutex>
@@ -120,24 +119,25 @@ struct TVideoInstance {
 	int id;
 	TVideoObject* pVideoObject;
 	IDirect3DTexture9* pVideoTexture9;
-	//ID3D11ShaderResourceView* pVideoTexture11;
+
+	// Render texture handle from DX
+	HANDLE pRenderTexHandle;
+
+	// Sharing handle (with wgl share)
+	HANDLE pDXGLSharedHandle = NULL;
 
 	double currentTime;
 	Ref<DirectXIBVideoTexture> pGLVideoTexture;
 
-	HANDLE pRenderTexHandle;
-	HANDLE pDXGLSharedHandle;
-
-
+	GLuint glTexture = 0;
 };
 
-//int nextVideoId = 1000;
-//std::map<int, TVideoInstance> mVideoObject;
+int nextVideoId = 1000;
+std::map<int, TVideoInstance> mVideoObject;
 std::mutex videoMutex;
 IDirect3DDevice9Ex* pDevice9 = 0;
 ID3D11Device* pDevice11 = 0;
 
-/*
 void InitVideoInstance(TVideoInstance &inst)
 {
 	inst.pVideoObject = TFFMPEGVideoObject::Create();
@@ -165,7 +165,7 @@ void ForceShutdownVideos(int saveState = 0)
 		DestroyVideoInstance(inst);
 		it = mVideoObject.erase(it);
 	}
-}*/
+}
 
 void VideoStreamIBManager::set_log_level(int level) {
 	logLevel = (level < 0) ? (0) : ((level > 3) ? (3) : (level));
@@ -198,26 +198,19 @@ void MessageCallback(GLenum source,
 		type, severity, message);
 }
 
-// Test purpuse only
+// DX device globals
 IDirect3DSurface9*  g_pSurfaceRenderTarget = NULL;
 IDirect3DSurface9*  g_pSharedSurface = NULL;
 HANDLE              g_hSharedSurface = NULL;
-
-IDirect3DTexture9*  g_pSharedTexture = NULL;
-HANDLE              g_hSharedTexture = NULL;
-LPDIRECT3DVERTEXBUFFER9 g_pVB = NULL;
-
 HANDLE              g_hDX9Device = NULL;
-HANDLE              g_hGLSharedTexture = NULL;
-GLuint              g_GLTexture = NULL;
+LPDIRECT3D9EX		g_D3D = NULL;
+HWND				g_hWndDX = NULL;
+
 
 #define SCREEN_WIDTH 300
 #define SCREEN_HEIGHT 300
 
-bool g_AnyRenders = false;
 bool g_IsInit = false;
-
-Ref<DirectXIBVideoTexture> h_SharedTextureWrapper = NULL;
 
 struct CUSTOMVERTEX {
 	float x, y, z;
@@ -246,7 +239,7 @@ void VideoStreamIBManager::init() {
 void VideoStreamIBManager::init_in_render(float p_unused) {
 	if (g_IsInit)
 		return;
-	g_IsInit = true;
+	
 
 	glewInit();
 
@@ -262,21 +255,7 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 		return;
 	}
 
-	/*
-	// Init WGL
-	wglDXOpenDeviceNV = (PFNWGLDXOPENDEVICENVPROC)wglGetProcAddress("wglDXOpenDeviceNV");
-	wglDXCloseDeviceNV = (PFNWGLDXCLOSEDEVICENVPROC)wglGetProcAddress("wglDXCloseDeviceNV");
-
-	wglDXRegisterObjectNV = (PFNWGLDXREGISTEROBJECTNVPROC)wglGetProcAddress("wglDXRegisterObjectNV");
-	wglDXUnregisterObjectNV = (PFNWGLDXUNREGISTEROBJECTNVPROC)wglGetProcAddress("wglDXUnregisterObjectNV");
-
-	wglDXLockObjectsNV = (PFNWGLDXLOCKOBJECTSNVPROC)wglGetProcAddress("wglDXLockObjectsNV");
-	wglDXUnlockObjectsNV = (PFNWGLDXUNLOCKOBJECTSNVPROC)wglGetProcAddress("wglDXUnlockObjectsNV");
-
-	wglDXSetResourceShareHandleNV = (PFNWGLDXSETRESOURCESHAREHANDLENVPROC)wglGetProcAddress("wglDXSetResourceShareHandleNV");
-	
 	InitTimer();
-	*/
 
 	WNDCLASSEX wc;
 	ZeroMemory(&wc, sizeof(WNDCLASSEX));
@@ -290,7 +269,7 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 
 
 	// Create a dummy window for DX device
-	hWndDX = CreateWindowEx(NULL, "WindowClass", "DX - Shared Resource",
+	g_hWndDX = CreateWindowEx(NULL, "WindowClass", "DX - Shared Resource",
 		WS_OVERLAPPEDWINDOW, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
 		NULL, NULL, GetModuleHandle(NULL), NULL);
 
@@ -300,19 +279,19 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
 	d3dpp.Windowed = TRUE;
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.hDeviceWindow = hWndDX;
+	d3dpp.hDeviceWindow = g_hWndDX;
 	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
 	d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
 
 	HRESULT hr = S_OK;
 
 	// A D3D9EX device is required to create the 
-	Direct3DCreate9Ex(D3D_SDK_VERSION, &d3d);
+	Direct3DCreate9Ex(D3D_SDK_VERSION, &g_D3D);
 
 	// The interop definition states D3DCREATE_MULTITHREADED is required, but it may vary by vendor
-	hr = d3d->CreateDeviceEx(D3DADAPTER_DEFAULT,
+	hr = g_D3D->CreateDeviceEx(D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL,
-		hWndDX,
+		g_hWndDX,
 		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,
 		&d3dpp,
 		NULL,
@@ -323,48 +302,7 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 
 	D3DSURFACE_DESC rtDesc;
 	g_pSurfaceRenderTarget->GetDesc(&rtDesc);
-
-	// g_pSharedTexture should be able to be opened in OGL via the WGL_NV_DX_interop extension
-	// Vendor support for various textures/surfaces may vary
-	hr = pDevice9->CreateTexture(rtDesc.Width,
-		rtDesc.Height,
-		1,
-		0,
-		rtDesc.Format,
-		D3DPOOL_DEFAULT,
-		&g_pSharedTexture,
-		&g_hSharedTexture);
-
-	// We want access to the underlying surface of this texture
-	if (g_pSharedTexture)
-	{
-		hr = g_pSharedTexture->GetSurfaceLevel(0, &g_pSharedSurface);
-	}
-
-	hr = pDevice9->SetRenderState(D3DRS_LIGHTING, FALSE);
-	hr = pDevice9->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-
-	CUSTOMVERTEX vertices[] =
-	{
-		{ 2.0f, -2.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255) },
-		{ 0.0f,  2.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 0) },
-		{ -2.0f, -2.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 0) },
-	};
-
-	hr = pDevice9->CreateVertexBuffer(9 * sizeof(CUSTOMVERTEX),
-		0,
-		CUSTOMFVF,
-		D3DPOOL_DEFAULT,
-		&g_pVB,
-		NULL);
-
-	VOID* pVoid;
-	hr = g_pVB->Lock(0, 0, (void**)&pVoid, 0);
-	memcpy(pVoid, vertices, sizeof(vertices));
-	hr = g_pVB->Unlock();
-
-
+	
 	// We now need to initialize OpenGL extensions
 	g_hDX9Device = wglDXOpenDeviceNV(pDevice9);
 
@@ -373,25 +311,7 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 		return;
 	}
 
-	// Create a video texture that is linked
-	Ref<DirectXIBVideoTexture> ibVideoTexture = memnew(DirectXIBVideoTexture);
-	ibVideoTexture->register_shared_texture_DX(1);
-	h_SharedTextureWrapper = ibVideoTexture;
-	g_GLTexture = VS::get_singleton()->texture_get_texid(ibVideoTexture->get_rid());
-
-
-	// This registers a resource that was created as shared in DX with its shared handle
-	bool success = wglDXSetResourceShareHandleNV(g_pSharedTexture, g_hSharedTexture);
-
-	// g_hGLSharedTexture is the shared texture data, now identified by the g_GLTexture name
-	g_hGLSharedTexture = wglDXRegisterObjectNV(g_hDX9Device,
-		g_pSharedTexture,
-		g_GLTexture,
-		GL_TEXTURE_2D,
-		WGL_ACCESS_READ_ONLY_NV);
-
-	// Lock the shared surface
-	wglDXLockObjectsNV(g_hDX9Device, 1, &g_hGLSharedTexture);
+	g_IsInit = true;
 }
 
 VideoStreamIBManager* VideoStreamIBManager::singleton = NULL;
@@ -403,16 +323,14 @@ void VideoStreamIBManager::release() {
 		pDevice9 = NULL;
 	}
 
-	if (d3d) {
-		d3d->Release();
-		d3d = NULL;
+	if (g_D3D) {
+		g_D3D->Release();
+		g_D3D = NULL;
 	}
 }
 
 int VideoStreamIBManager::create_video()
 {
-	return 0;
-	/*
 	MDiagnostic("CreateVideo(), nextVideoId = %d", nextVideoId);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	// Fail if no valid GFX device is set
@@ -431,13 +349,12 @@ int VideoStreamIBManager::create_video()
 	mVideoObject.insert(std::pair<int, TVideoInstance>(inst.id, inst));
 
 	inst.pVideoObject->useHwAccel = true;
-	return inst.id;*/
+	return inst.id;
 }
 
 int VideoStreamIBManager::configure_video(int id, unsigned int streamBufferVideoChunks, unsigned int streamBufferAudioChunks,
 	unsigned int decodeBufferVideoFrames, unsigned int decodeBufferAudioMs, bool presentImmediately, float avSyncOffset, int decodeThreads, bool useHwAccel) {
 	return 1;
-	/*
 	MDiagnostic("ConfigureVideo(id=%d,streamBufferVideoChunks=%d,streamBufferAudioChunks=%d,decodeBufferVideoFrames=%d,decodeBufferAudioMs=%d, presentImmediately=%d, avSyncOffset=%f, decodeThreads=%d, useHwAccell=%d)", id, streamBufferVideoChunks, streamBufferAudioChunks, decodeBufferVideoFrames, decodeBufferAudioMs, presentImmediately, avSyncOffset, decodeThreads, useHwAccel);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -455,13 +372,11 @@ int VideoStreamIBManager::configure_video(int id, unsigned int streamBufferVideo
 	inst.pVideoObject->avSyncOffset = avSyncOffset;
 	inst.pVideoObject->numDecodeThreads = decodeThreads;
 	inst.pVideoObject->useHwAccel = useHwAccel;
-	return (int)inst.pVideoObject->State;*/
+	return (int)inst.pVideoObject->State;
 }
 
 int VideoStreamIBManager::open_video(int id, String fileName, String options)
 {
-	return 1;
-	/*
 	MDiagnostic("OpenVideo(id=%d,fileName=%s)", id, fileName.ascii());
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -474,13 +389,11 @@ int VideoStreamIBManager::open_video(int id, String fileName, String options)
 	strcpy_s(inst.pVideoObject->fileName, fileName.ascii());
 	strcpy_s(inst.pVideoObject->options, options.ascii());
 	inst.pVideoObject->Initialize();
-	return (int)inst.pVideoObject->State;*/
+	return (int)inst.pVideoObject->State;
 }
 
 int VideoStreamIBManager::get_video_state(int id)
 {
-	return 1;
-	/*
 	//MDiagnostic("GetVideoState(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -492,13 +405,11 @@ int VideoStreamIBManager::get_video_state(int id)
 	if ((int)inst.pVideoObject->State == TVideoObject::sShutdown)
 		return -1;
 
-	return (int)inst.pVideoObject->State;*/
+	return (int)inst.pVideoObject->State;
 }
 
 int VideoStreamIBManager::play_video(int id, int loopCount)
 {
-	return 1;
-	/*
 	MDiagnostic("PlayVideo(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -510,12 +421,11 @@ int VideoStreamIBManager::play_video(int id, int loopCount)
 	TVideoInstance &inst = it->second;
 	inst.pVideoObject->loopCount = loopCount;
 	inst.pVideoObject->Play();
-	return inst.pVideoObject->State;*/
+	return inst.pVideoObject->State;
 }
 
 int VideoStreamIBManager::pause_video(int id)
 {
-	return 1;/*
 	MDiagnostic("PauseVideo(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -526,13 +436,11 @@ int VideoStreamIBManager::pause_video(int id)
 	}
 	TVideoInstance &inst = it->second;
 	inst.pVideoObject->Play();
-	return inst.pVideoObject->State;*/
+	return inst.pVideoObject->State;
 }
 
 int VideoStreamIBManager::seek_video(int id, float time)
 {
-	return 1;
-	/*
 	MDiagnostic("SeekVideo(id=%d,time=%f)", id, time);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -543,13 +451,11 @@ int VideoStreamIBManager::seek_video(int id, float time)
 	}
 	TVideoInstance &inst = it->second;
 	inst.pVideoObject->Seek(time);
-	return inst.pVideoObject->State;*/
+	return inst.pVideoObject->State;
 }
 
 int VideoStreamIBManager::close_video(int id)
 {
-	return 1;
-	/*
 	MDiagnostic("CloseVideo(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -560,13 +466,11 @@ int VideoStreamIBManager::close_video(int id)
 	}
 	TVideoInstance &inst = it->second;
 	inst.pVideoObject->RequestShutdown();
-	return inst.pVideoObject->State;*/
+	return inst.pVideoObject->State;
 }
 
 Size2 VideoStreamIBManager::get_video_info_size(int id)
 {
-	return Size2(1, 1);
-	/*
 	MDiagnostic("GetVideoInfo(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -580,13 +484,11 @@ Size2 VideoStreamIBManager::get_video_info_size(int id)
 	TVideoInstance &inst = it->second;
 	s.x = inst.pVideoObject->pFrameOut->videoWidth;
 	s.y = inst.pVideoObject->pFrameOut->videoHeight;
-	return s;*/
+	return s;
 }
 
 float VideoStreamIBManager::get_video_duration(int id)
 {
-	return 1;
-	/*
 	MDiagnostic("GetVideoInfo(id=%d)", id);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -597,15 +499,11 @@ float VideoStreamIBManager::get_video_duration(int id)
 	}
 
 	TVideoInstance &inst = it->second;
-	return inst.pVideoObject->pFrameOut->videoLength;*/
+	return inst.pVideoObject->pFrameOut->videoLength;
 }
 
 Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 {
-	if (!g_AnyRenders)
-		return NULL;
-	return h_SharedTextureWrapper;
-	/*
 	//MDiagnostic("GetVideoTexture(id=%d,texturePtr=%x)", id, texturePtr);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -619,7 +517,7 @@ Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 	if (inst.pDXGLSharedHandle == NULL)
 		return NULL;
 
-	return inst.pGLVideoTexture;*/
+	return inst.pGLVideoTexture;
 }
 
 // Called from render thread
@@ -628,58 +526,6 @@ void VideoStreamIBManager::render(float p_delta_tme)
 	if (!g_IsInit)
 		return;
 
-	// Lock the shared surface
-	wglDXUnlockObjectsNV(g_hDX9Device, 1, &g_hGLSharedTexture);
-
-	// Set up transformations
-	D3DXMATRIX matView;
-	D3DXMatrixLookAtLH(&matView,
-		&D3DXVECTOR3(0.0f, 0.0f, -10.0f),
-		&D3DXVECTOR3(0.0f, 0.0f, 0.0f),
-		&D3DXVECTOR3(0.0f, 1.0f, 0.0f));
-	pDevice9->SetTransform(D3DTS_VIEW, &matView);
-
-	D3DXMATRIX matProjection;
-	D3DXMatrixPerspectiveFovLH(&matProjection,
-		D3DXToRadian(45),
-		(FLOAT)SCREEN_WIDTH / (FLOAT)SCREEN_HEIGHT,
-		1.0f,
-		25.0f);
-	pDevice9->SetTransform(D3DTS_PROJECTION, &matProjection);
-
-	D3DXMATRIX matTranslate;
-	D3DXMatrixTranslation(&matTranslate, 0.0f, 0.0f, 0.0f);
-
-	D3DXMATRIX matRotate;
-	static float rot = 0;
-	rot += 0.01;
-	D3DXMatrixRotationZ(&matRotate, rot);
-
-	D3DXMATRIX matTransform = matRotate * matTranslate;
-
-	HRESULT hr = S_OK;
-	hr = pDevice9->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(40, 40, 60), 1.0f, 0);
-
-	// Draw a spinning triangle
-	hr = pDevice9->BeginScene();
-
-	hr = pDevice9->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
-	hr = pDevice9->SetFVF(CUSTOMFVF);
-	hr = pDevice9->SetTransform(D3DTS_WORLD, &matTransform);
-	hr = pDevice9->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
-
-
-	// StretchRect between two D3DPOOL_DEFAULT surfaces will be a GPU Blt.
-	// Note that GetRenderTargetData() cannot be used because it is intended to copy from GPU to CPU.
-	hr = pDevice9->StretchRect(g_pSurfaceRenderTarget, NULL, g_pSharedSurface, NULL, D3DTEXF_NONE);
-
-	hr = pDevice9->EndScene();
-
-	// Lock the shared surface
-	wglDXLockObjectsNV(g_hDX9Device, 1, &g_hGLSharedTexture);
-	g_AnyRenders = true;
-
-	/*
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 
 	
@@ -690,7 +536,7 @@ void VideoStreamIBManager::render(float p_delta_tme)
 		TVideoInstance &inst = it2->second;
 		if (inst.pDXGLSharedHandle != NULL)
 		{
-			wglDXUnlockObjectsNV(glDXHandle, 1, &inst.pDXGLSharedHandle);
+			wglDXUnlockObjectsNV(g_hDX9Device, 1, &inst.pDXGLSharedHandle);
 		}
 
 		++it2;
@@ -716,10 +562,11 @@ void VideoStreamIBManager::render(float p_delta_tme)
 					bool success = wglDXSetResourceShareHandleNV(inst.pVideoTexture9, inst.pRenderTexHandle);
 
 					// gl_texture_handle is the shared texture data, now identified by the g_GLTexture name
-					uint32_t gl_id = inst.pGLVideoTexture->get_rid().get_id();
-					inst.pDXGLSharedHandle = wglDXRegisterObjectNV(glDXHandle,
+					inst.glTexture = VS::get_singleton()->texture_get_texid(inst.pGLVideoTexture->get_rid());
+					 
+					inst.pDXGLSharedHandle = wglDXRegisterObjectNV(g_hDX9Device,
 						inst.pVideoTexture9,
-						gl_id,
+						inst.glTexture,
 						GL_TEXTURE_2D,
 						WGL_ACCESS_READ_ONLY_NV);
 
@@ -741,7 +588,7 @@ void VideoStreamIBManager::render(float p_delta_tme)
 			{
 				if (inst.pDXGLSharedHandle != NULL)
 				{
-					wglDXUnregisterObjectNV(glDXHandle, inst.pDXGLSharedHandle);
+					wglDXUnregisterObjectNV(g_hDX9Device, inst.pDXGLSharedHandle);
 					inst.pDXGLSharedHandle = NULL;
 				}
 
@@ -761,12 +608,16 @@ void VideoStreamIBManager::render(float p_delta_tme)
 		TVideoInstance &inst = it3->second;
 		if (inst.pDXGLSharedHandle != NULL)
 		{
-			wglDXLockObjectsNV(glDXHandle, 1, &inst.pDXGLSharedHandle);
+			wglDXLockObjectsNV(g_hDX9Device, 1, &inst.pDXGLSharedHandle);
 		}
 
 		++it3;
-	}*/
+	}
 
+}
+
+bool VideoStreamIBManager::is_init() {
+	return g_IsInit;
 }
 
 void DirectXIBVideoTexture::_bind_methods() {
@@ -776,6 +627,7 @@ void DirectXIBVideoTexture::_bind_methods() {
 void VideoStreamIBManager::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("init"), &VideoStreamIBManager::init);
+	ClassDB::bind_method(D_METHOD("is_init"), &VideoStreamIBManager::is_init);
 	ClassDB::bind_method(D_METHOD("init_in_render", "unused"), &VideoStreamIBManager::init_in_render);
 	ClassDB::bind_method(D_METHOD("set_log_level", "level"), &VideoStreamIBManager::set_log_level);
 	ClassDB::bind_method(D_METHOD("release"), &VideoStreamIBManager::release);

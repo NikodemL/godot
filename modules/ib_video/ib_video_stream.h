@@ -56,12 +56,6 @@ class VideoStreamIBManager : public Reference {
 
 	static VideoStreamIBManager* singleton;
 
-	LPDIRECT3D9EX d3d;
-	HWND hWndDX;
-	LPDIRECT3DSURFACE9 d3dSurface;
-
-	HANDLE glDXHandle;
-
 private:
 	void render(float p_delta_time);
 	void init_in_render(float p_unused);
@@ -96,6 +90,7 @@ public:
 	Ref<DirectXIBVideoTexture> get_video_texture(int id);
 
 	void init();
+	bool is_init();
 	void set_log_level(int level);
 	void release();
 

@@ -22,23 +22,17 @@ void CurvedLabel::_notification(int p_what) {
 		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
 		int text_size_y = font->get_height();
-		int space_w = font->get_char_size(' ').width;
 
 		if (text_size_y < 1) {
 			text_size_y = 1;
 		}
 
 		float text_size_x = 0;
-		int text_w = 0;
 		for (int i = 0; i < text.length(); i++) {
 			CharType c = text[i];
 			int char_width = font->get_char_size(c).width;
-			text_w += char_width;
+			text_size_x += char_width;
 		}
-
-		int line_width = text_w + (text.length() - 1) * space_w;
-		if (line_width > text_size_x)
-			text_size_x = line_width;
 
 		if (text_size_x < 1)
 			text_size_x = 1;
@@ -50,7 +44,7 @@ void CurvedLabel::_notification(int p_what) {
 
 			// Maximum font size so we don't overscale text
 			if (text_size_y * expand_scale > max_font_size) {
-				expand_scale = max_font_size / text_size_y;
+				expand_scale = (float)max_font_size / text_size_y;
 			}
 		}
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/* Wrapper for PID protocol 2.0 to be accessible by Godot scription      */
+/* Wrapper for Curved Label to be accessible by Godot script             */
 /*************************************************************************/
 
 void register_curved_label_types();

@@ -240,15 +240,7 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 	if (g_IsInit)
 		return;
 	
-
 	glewInit();
-
-	glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)wglGetProcAddress("glDebugMessageCallback");
-
-	// During init, enable debug output
-	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback((GLDEBUGPROC)MessageCallback, 0);
 
 	if (pDevice9) {
 		print_error("Init already called, cannot create a new device");
@@ -302,7 +294,7 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 
 	D3DSURFACE_DESC rtDesc;
 	g_pSurfaceRenderTarget->GetDesc(&rtDesc);
-	
+
 	// We now need to initialize OpenGL extensions
 	g_hDX9Device = wglDXOpenDeviceNV(pDevice9);
 
@@ -310,7 +302,7 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 		print_error("Could not open DX device");
 		return;
 	}
-
+	
 	g_IsInit = true;
 }
 
@@ -347,30 +339,27 @@ int VideoStreamIBManager::create_video()
 
 	nextVideoId += 1;
 	mVideoObject.insert(std::pair<int, TVideoInstance>(inst.id, inst));
-
-	inst.pVideoObject->useHwAccel = true;
 	return inst.id;
 }
 
-int VideoStreamIBManager::configure_video(int id, unsigned int streamBufferVideoChunks, unsigned int streamBufferAudioChunks,
-	unsigned int decodeBufferVideoFrames, unsigned int decodeBufferAudioMs, bool presentImmediately, float avSyncOffset, int decodeThreads, bool useHwAccel) {
+int VideoStreamIBManager::configure_video(int id, bool presentImmediately,  bool useHwAccel) {
 	return 1;
-	MDiagnostic("ConfigureVideo(id=%d,streamBufferVideoChunks=%d,streamBufferAudioChunks=%d,decodeBufferVideoFrames=%d,decodeBufferAudioMs=%d, presentImmediately=%d, avSyncOffset=%f, decodeThreads=%d, useHwAccell=%d)", id, streamBufferVideoChunks, streamBufferAudioChunks, decodeBufferVideoFrames, decodeBufferAudioMs, presentImmediately, avSyncOffset, decodeThreads, useHwAccel);
+	//MDiagnostic("ConfigureVideo(id=%d,streamBufferVideoChunks=%d,streamBufferAudioChunks=%d,decodeBufferVideoFrames=%d,decodeBufferAudioMs=%d, presentImmediately=%d, avSyncOffset=%f, decodeThreads=%d, useHwAccell=%d)", id, streamBufferVideoChunks, streamBufferAudioChunks, decodeBufferVideoFrames, decodeBufferAudioMs, presentImmediately, avSyncOffset, decodeThreads, useHwAccel);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
 	if (it == mVideoObject.end())
 	{
-		MError("Video not found! ConfigureVideo(id=%d,streamBufferVideoChunks=%d,streamBufferAudioChunks=%d,decodeBufferVideoFrames=%d,decodeBufferAudioMs=%d)", id, streamBufferVideoChunks, streamBufferAudioChunks, decodeBufferVideoFrames, decodeBufferAudioMs);
+		MError("Video not found! ConfigureVideo(id=%d)", id);
 		return -1;
 	}
 	TVideoInstance &inst = it->second;
-	inst.pVideoObject->streamBufferVideoChunks = streamBufferVideoChunks;
-	inst.pVideoObject->streamBufferAudioChunks = streamBufferAudioChunks;
-	inst.pVideoObject->decodeBufferVideoFrames = decodeBufferVideoFrames;
-	inst.pVideoObject->decodeBufferAudioMs = decodeBufferAudioMs;
+	//inst.pVideoObject->streamBufferVideoChunks = streamBufferVideoChunks;
+	//inst.pVideoObject->streamBufferAudioChunks = streamBufferAudioChunks;
+	//inst.pVideoObject->decodeBufferVideoFrames = decodeBufferVideoFrames;
+	//inst.pVideoObject->decodeBufferAudioMs = decodeBufferAudioMs;
 	inst.pVideoObject->presentImmediately = presentImmediately;
-	inst.pVideoObject->avSyncOffset = avSyncOffset;
-	inst.pVideoObject->numDecodeThreads = decodeThreads;
+	//inst.pVideoObject->avSyncOffset = avSyncOffset;
+	//inst.pVideoObject->numDecodeThreads = decodeThreads;
 	inst.pVideoObject->useHwAccel = useHwAccel;
 	return (int)inst.pVideoObject->State;
 }
@@ -638,7 +627,7 @@ void VideoStreamIBManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_video", "id", "filename", "options"), &VideoStreamIBManager::open_video);
 
 	// We do not bind as such, too many parameters
-	//ClassDB::bind_method(D_METHOD("configure_video", "id", "filename", "options"), &VideoStreamIBManager::configure_video);
+	ClassDB::bind_method(D_METHOD("configure_video", "id", "present_immediatelly", "use_hardware"), &VideoStreamIBManager::configure_video);
 	ClassDB::bind_method(D_METHOD("get_video_state", "id"), &VideoStreamIBManager::get_video_state);
 	ClassDB::bind_method(D_METHOD("play_video", "id", "loop"), &VideoStreamIBManager::play_video);
 	ClassDB::bind_method(D_METHOD("pause_video", "id"), &VideoStreamIBManager::pause_video);

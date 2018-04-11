@@ -78,8 +78,7 @@ public:
 
 	int create_video();
 	int open_video(int id, String file_name, String options);
-	int configure_video(int id, unsigned int streamBufferVideoChunks, unsigned int streamBufferAudioChunks, unsigned int decodeBufferVideoFrames,
-		unsigned int decodeBufferAudioMs, bool presentImmediately, float avSyncOffset, int decodeThreads, bool useHwAccel);
+	int configure_video(int id, bool presentImmediately, bool useHwAccel);
 	int get_video_state(int id);
 	int play_video(int id, int loopCount);
 	int pause_video(int id);

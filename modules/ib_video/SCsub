@@ -1,0 +1,10 @@
+# SCsub
+Import('env')
+
+module_env = env.Clone()
+module_env.add_source_files(env.modules_sources,"*.cpp")
+module_env.Append(CPPPATH="ffmpeg/win32/include")
+
+# Hardcoded paths ...
+module_env.Append(CPPPATH="C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include")
+module_env.Append(LIBPATH= "C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86")

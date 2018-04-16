@@ -30,10 +30,5 @@ namespace Godot
         {
             return (int)Math.Floor(s);
         }    
-
-        public static int RoundToInt(real_t s)
-        {
-            return (int)Math.Round(s);
-        }
     }
 }

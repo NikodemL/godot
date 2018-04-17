@@ -262,8 +262,6 @@ void TextureRect::set_vframes(int p_amount) {
 	ERR_FAIL_COND(p_amount < 1);
 	vframes = p_amount;
 
-	set_size(texture->get_size() / Size2(hframes, vframes));
-
 	update();
 	item_rect_changed();
 	_change_notify();
@@ -277,8 +275,6 @@ void TextureRect::set_hframes(int p_amount) {
 
 	ERR_FAIL_COND(p_amount < 1);
 	hframes = p_amount;
-
-	set_size(texture->get_size() / Size2(hframes, vframes));
 
 	update();
 	item_rect_changed();

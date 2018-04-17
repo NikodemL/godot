@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "networked_multiplayer_enet.h"
+#include "io/ip.h"
 #include "io/marshalls.h"
 #include "os/os.h"
 
@@ -92,26 +93,39 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	connection_status = CONNECTION_CONNECTED;
 	return OK;
 }
-Error NetworkedMultiplayerENet::create_client(const IP_Address &p_ip, int p_port, int p_in_bandwidth, int p_out_bandwidth) {
+Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth) {
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
 
 	host = enet_host_create(NULL /* create a client host */,
 			1 /* only allow 1 outgoing connection */,
 			SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
-			p_in_bandwidth /* 56K modem with 56 Kbps downstream bandwidth */,
-			p_out_bandwidth /* 56K modem with 14 Kbps upstream bandwidth */);
+			p_in_bandwidth /* limit incoming bandwith if > 0 */,
+			p_out_bandwidth /* limit outgoing bandwith if > 0 */);
 
 	ERR_FAIL_COND_V(!host, ERR_CANT_CREATE);
 
 	_setup_compressor();
 
+	IP_Address ip;
+	if (p_address.is_valid_ip_address()) {
+		ip = p_address;
+	} else {
+#ifdef GODOT_ENET
+		ip = IP::get_singleton()->resolve_hostname(p_address);
+#else
+		ip = IP::get_singleton()->resolve_hostname(p_address, IP::TYPE_IPV4);
+#endif
+
+		ERR_FAIL_COND_V(!ip.is_valid(), ERR_CANT_RESOLVE);
+	}
+
 	ENetAddress address;
 #ifdef GODOT_ENET
-	enet_address_set_ip(&address, p_ip.get_ipv6(), 16);
+	enet_address_set_ip(&address, ip.get_ipv6(), 16);
 #else
-	ERR_FAIL_COND_V(!p_ip.is_ipv4(), ERR_INVALID_PARAMETER);
-	address.host = *(uint32_t *)p_ip.get_ipv4();
+	ERR_FAIL_COND_V(!ip.is_ipv4(), ERR_INVALID_PARAMETER);
+	address.host = *(uint32_t *)ip.get_ipv4();
 #endif
 	address.port = p_port;
 
@@ -674,18 +688,48 @@ void NetworkedMultiplayerENet::_setup_compressor() {
 
 void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
 
-	//do none
+	// Nothing to do
+}
+
+IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
+
+	ERR_FAIL_COND_V(!peer_map.has(p_peer_id), IP_Address());
+	ERR_FAIL_COND_V(!is_server() && p_peer_id != 1, IP_Address());
+	ERR_FAIL_COND_V(peer_map[p_peer_id] == NULL, IP_Address());
+
+	IP_Address out;
+#ifdef GODOT_ENET
+	out.set_ipv6((uint8_t *)&(peer_map[p_peer_id]->address.host));
+#else
+	out.set_ipv4((uint8_t *)&(peer_map[p_peer_id]->address.host));
+#endif
+
+	return out;
+}
+
+int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
+
+	ERR_FAIL_COND_V(!peer_map.has(p_peer_id), 0);
+	ERR_FAIL_COND_V(!is_server() && p_peer_id != 1, 0);
+	ERR_FAIL_COND_V(peer_map[p_peer_id] == NULL, 0);
+#ifdef GODOT_ENET
+	return peer_map[p_peer_id]->address.port;
+#else
+	return peer_map[p_peer_id]->address.port;
+#endif
 }
 
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("create_client", "ip", "port", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("close_connection"), &NetworkedMultiplayerENet::close_connection);
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
+	ClassDB::bind_method(D_METHOD("get_peer_address"), &NetworkedMultiplayerENet::get_peer_address);
+	ClassDB::bind_method(D_METHOD("get_peer_port"), &NetworkedMultiplayerENet::get_peer_port);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
 

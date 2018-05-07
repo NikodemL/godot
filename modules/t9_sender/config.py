@@ -2,7 +2,7 @@
 
 def can_build(platform):
     # Disable build by default
-    return False
+    return True
 
 def configure(env):
 	env.Append(LINKFLAGS=['modules/t9_sender/T9Sender.lib'])

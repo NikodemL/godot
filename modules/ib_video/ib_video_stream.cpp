@@ -506,6 +506,11 @@ Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 	if (inst.pDXGLSharedHandle == NULL)
 		return NULL;
 
+	inst.pGLVideoTexture->w = inst.pVideoObject->pFrameOut->videoWidth;
+	inst.pGLVideoTexture->h = inst.pVideoObject->pFrameOut->videoHeight;
+
+	VisualServer::get_singleton()->texture_set_size_override(inst.pGLVideoTexture->texture, inst.pGLVideoTexture->w, inst.pGLVideoTexture->h);
+	
 	return inst.pGLVideoTexture;
 }
 

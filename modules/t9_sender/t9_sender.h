@@ -27,6 +27,10 @@ class T9Sender : public Node {
 	AdapterDesc adapters[6];
 
 	unsigned char* buffer_data;
+
+	// For fast framebuffer transfer
+	unsigned int pbo_objects[2];
+	int pbo_current_index;
 protected:
 	static void _bind_methods();
 
@@ -59,6 +63,12 @@ public:
 	void send_screen(Ref<ViewportTexture> texture);
 	void send_screen_data(Ref<Image> data);
 	void send_screen_color(float r, float g, float b);
+
+	void init_in_render(float unused);
+	void send_front_framebuffer_in_render(float unused);
+
+	// Optimized send framebuffer methods
+	void send_front_framebuffer();
 
 	// Destroys 
 	void destroy_screen();

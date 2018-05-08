@@ -1,9 +1,8 @@
-
 #include "t9_sender.h"
 #include <windows.h>
 #include "T9CommonDefine.h"
 #include "t9sendapi.h"
-
+#include <glad/glad.h>
 
 T9Sender::T9Sender() : adapters() {
 	is_init = false;
@@ -15,6 +14,8 @@ T9Sender::T9Sender() : adapters() {
 	screen_height = 0;
 	adapter_count = 0;
 	buffer_data = NULL;
+
+	pbo_current_index = 0;
 }
 
 T9Sender::~T9Sender() {
@@ -61,10 +62,21 @@ bool T9Sender::init() {
 		}
 	}
 
+	VS::get_singleton()->request_frame_drawn_callback(this, "init_in_render", Variant(0.0f));
+
 	is_init = true;
 	return true;
 }
 
+void T9Sender::init_in_render(float unsued) {
+	glGenBuffers(2, pbo_objects);
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_objects[0]);
+	glBufferData(GL_PIXEL_PACK_BUFFER, 256 * 256 * 4, 0, GL_STREAM_READ);
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_objects[1]);
+	glBufferData(GL_PIXEL_PACK_BUFFER, 256 * 256 * 4, 0, GL_STREAM_READ);
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+}
 
 int T9Sender::get_adapter_count() {
 	ERR_FAIL_COND_V(!is_init, 0);
@@ -153,8 +165,19 @@ void T9Sender::send_screen(Ref<ViewportTexture> texture) {
 	}
 }
 
+void flip_image(unsigned char* src_data, unsigned char* dst_data, int screen_width, int screen_height) {
+	for (int i = 0; i < screen_width; i++) {
+		for (int j = 0; j < screen_height; j++) {
+			int row_dst_idx = (screen_height - i - 1) * screen_height;
+			int row_src_idx = i * screen_height;
 
-
+			dst_data[(row_dst_idx + j) * 4 + 0] = src_data[(row_src_idx + j) * 4 + 2];
+			dst_data[(row_dst_idx + j) * 4 + 1] = src_data[(row_src_idx + j) * 4 + 1];
+			dst_data[(row_dst_idx + j) * 4 + 2] = src_data[(row_src_idx + j) * 4 + 0];
+			dst_data[(row_dst_idx + j) * 4 + 3] = src_data[(row_src_idx + j) * 4 + 3];
+		}
+	}
+}
 
 void T9Sender::send_screen_data(Ref<Image> data) {
 
@@ -169,19 +192,72 @@ void T9Sender::send_screen_data(Ref<Image> data) {
 	unsigned char* src_data = (unsigned char*)read.ptr();
 	unsigned char* dst_data = buffer_data;
 
-	for (int i = 0; i < screen_width; i++) {
-		for (int j = 0; j < screen_height; j++) {
-			int row_dst_idx = (screen_height - i - 1) * screen_height;
-			int row_src_idx = i * screen_height;
-
-			dst_data[(row_dst_idx + j) * 4 + 0] = src_data[(row_src_idx + j) * 4 + 2];
-			dst_data[(row_dst_idx + j) * 4 + 1] = src_data[(row_src_idx + j) * 4 + 1];
-			dst_data[(row_dst_idx + j) * 4 + 2] = src_data[(row_src_idx + j) * 4 + 0];
-			dst_data[(row_dst_idx + j) * 4 + 3] = src_data[(row_src_idx + j) * 4 + 3];
-		}
-	}
+	flip_image(src_data, dst_data, screen_width, screen_height);
 
 	T9SendScreenPicture(screen_number, (LPBYTE)dst_data);
+}
+
+void checkError()
+{
+	GLenum error;
+	while (true) {
+		error = glGetError();
+
+		if (error != GL_NO_ERROR) {
+			ERR_PRINT("OpenGL error");
+			continue;
+		}
+		break;
+	}
+}
+
+void T9Sender::send_front_framebuffer()
+{
+	VS::get_singleton()->request_frame_drawn_callback(this, "send_front_framebuffer_in_render", Variant(0.0f));
+}
+
+void T9Sender::send_front_framebuffer_in_render(float unsued)
+{
+	// "index" is used to read pixels from framebuffer to a PBO
+	// "nextIndex" is used to update pixels in the other PBO
+	pbo_current_index = (pbo_current_index + 1) % 2;
+	int next_index = (pbo_current_index + 1) % 2;
+
+	checkError();
+
+	// set the target framebuffer to read
+	glReadBuffer(GL_FRONT);
+
+	checkError();
+
+	// read pixels from framebuffer to PBO
+	// glReadPixels() should return immediately.
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_objects[pbo_current_index]);
+	checkError();
+
+	glReadPixels(0, 0, screen_width, screen_width, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+	checkError();
+	// map the PBO to process its data by CPU
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_objects[next_index]);
+	checkError();
+	GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER,
+		GL_READ_ONLY);
+	checkError();
+	if (ptr)
+	{
+		// T9 expects top-down row format, we have it down-top
+		flip_image(ptr, buffer_data, screen_width, screen_height);
+
+		T9SendScreenPicture(screen_number, buffer_data);
+		checkError();
+		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+		checkError();
+	}
+
+
+	// back to conventional pixel operation
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+	checkError();
 }
 
 float clamp(float x) {
@@ -221,6 +297,8 @@ void T9Sender::destroy_screen() {
 	is_created = false;
 	delete[] buffer_data;
 	screen_number = 0;
+
+	glDeleteBuffers(2, pbo_objects);
 }
 
 void T9Sender::_bind_methods() {
@@ -235,4 +313,8 @@ void T9Sender::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("send_screen", "texture"), &T9Sender::send_screen);
 	ClassDB::bind_method(D_METHOD("send_screen_data", "data"), &T9Sender::send_screen_data);
 	ClassDB::bind_method(D_METHOD("send_screen_color", "r", "g", "b"), &T9Sender::send_screen_color);
+	ClassDB::bind_method(D_METHOD("send_front_framebuffer"), &T9Sender::send_front_framebuffer);
+
+	ClassDB::bind_method(D_METHOD("send_front_framebuffer_in_render", "unused"), &T9Sender::send_front_framebuffer_in_render);
+	ClassDB::bind_method(D_METHOD("init_in_render", "unused"), &T9Sender::init_in_render);
 }

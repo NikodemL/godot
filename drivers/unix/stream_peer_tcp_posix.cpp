@@ -124,14 +124,11 @@ void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port,
 	sock_type = p_sock_type;
 	sockfd = p_sockfd;
 #ifndef NO_FCNTL
-	if (fcntl(sockfd, F_SETFL, O_NONBLOCK) < 0) {
-		WARN_PRINT("Error setting socket as non blocking");
-	}
+	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 #else
 	int bval = 1;
-	if (ioctl(sockfd, FIONBIO, &bval) < 0) {
-		WARN_PRINT("Error setting socket as non blocking");
-	}
+	ioctl(sockfd, FIONBIO, &bval);
+
 #endif
 	status = STATUS_CONNECTING;
 
@@ -153,14 +150,10 @@ Error StreamPeerTCPPosix::connect_to_host(const IP_Address &p_host, uint16_t p_p
 	};
 
 #ifndef NO_FCNTL
-	if (fcntl(sockfd, F_SETFL, O_NONBLOCK) < 0) {
-		WARN_PRINT("Error setting socket as non blocking");
-	}
+	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 #else
 	int bval = 1;
-	if (ioctl(sockfd, FIONBIO, &bval) < 0) {
-		WARN_PRINT("Error setting socket as non blocking");
-	}
+	ioctl(sockfd, FIONBIO, &bval);
 #endif
 
 	struct sockaddr_storage their_addr;
@@ -315,9 +308,7 @@ void StreamPeerTCPPosix::set_no_delay(bool p_enabled) {
 
 	ERR_FAIL_COND(!is_connected_to_host());
 	int flag = p_enabled ? 1 : 0;
-	if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int)) < 0) {
-		ERR_PRINT("Unable to set TCP no delay option");
-	}
+	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
 }
 
 bool StreamPeerTCPPosix::is_connected_to_host() const {

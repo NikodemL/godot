@@ -19,7 +19,6 @@
 	<signals>
 		<signal name="scrolling">
 			<description>
-				Emitted whenever the scrollbar is being scrolled.
 			</description>
 		</signal>
 	</signals>

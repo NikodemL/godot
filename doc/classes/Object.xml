@@ -398,7 +398,6 @@
 	<signals>
 		<signal name="script_changed">
 			<description>
-				Emitted whenever the script of the Object is changed.
 			</description>
 		</signal>
 	</signals>

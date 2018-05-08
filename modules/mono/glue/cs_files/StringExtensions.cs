@@ -1,5 +1,4 @@
 //using System;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -44,9 +43,11 @@ namespace Godot
                         {
                             return instance.Substring(prev, i - prev);
                         }
-
-                        count++;
-                        prev = i + 1;
+                        else
+                        {
+                            count++;
+                            prev = i + 1;
+                        }
                     }
 
                     i++;
@@ -82,7 +83,7 @@ namespace Godot
         // </summary>
         public static string[] Bigrams(this string instance)
         {
-            var b = new string[instance.Length - 1];
+            string[] b = new string[instance.Length - 1];
 
             for (int i = 0; i < b.Length; i++)
             {
@@ -97,7 +98,7 @@ namespace Godot
         // </summary>
         public static string CEscape(this string instance)
         {
-            var sb = new StringBuilder(string.Copy(instance));
+            StringBuilder sb = new StringBuilder(string.Copy(instance));
 
             sb.Replace("\\", "\\\\");
             sb.Replace("\a", "\\a");
@@ -119,7 +120,7 @@ namespace Godot
         // </summary>
         public static string CUnescape(this string instance)
         {
-            var sb = new StringBuilder(string.Copy(instance));
+            StringBuilder sb = new StringBuilder(string.Copy(instance));
 
             sb.Replace("\\a", "\a");
             sb.Replace("\\b", "\b");
@@ -142,7 +143,7 @@ namespace Godot
         public static string Capitalize(this string instance)
         {
             string aux = instance.Replace("_", " ").ToLower();
-            var cap = string.Empty;
+            string cap = string.Empty;
 
             for (int i = 0; i < aux.GetSliceCount(" "); i++)
             {
@@ -177,13 +178,13 @@ namespace Godot
             {
                 if (to[to_idx] == 0 && instance[instance_idx] == 0)
                     return 0; // We're equal
-                if (instance[instance_idx] == 0)
+                else if (instance[instance_idx] == 0)
                     return -1; // If this is empty, and the other one is not, then we're less... I think?
-                if (to[to_idx] == 0)
+                else if (to[to_idx] == 0)
                     return 1; // Otherwise the other one is smaller...
-                if (instance[instance_idx] < to[to_idx]) // More than
+                else if (instance[instance_idx] < to[to_idx]) // More than
                     return -1;
-                if (instance[instance_idx] > to[to_idx]) // Less than
+                else if (instance[instance_idx] > to[to_idx]) // Less than
                     return 1;
 
                 instance_idx++;
@@ -259,12 +260,12 @@ namespace Godot
         {
             int basepos = instance.Find("://");
 
-            string rs;
-            var @base = string.Empty;
+            string rs = string.Empty;
+            string @base = string.Empty;
 
             if (basepos != -1)
             {
-                var end = basepos + 3;
+                int end = basepos + 3;
                 rs = instance.Substring(end, instance.Length);
                 @base = instance.Substring(0, end);
             }
@@ -311,8 +312,8 @@ namespace Godot
             int hashv = 5381;
             int c;
 
-            while ((c = instance[index++]) != 0)
-                hashv = (hashv << 5) + hashv + c; // hash * 33 + c
+            while ((c = (int)instance[index++]) != 0)
+                hashv = ((hashv << 5) + hashv) + c; // hash * 33 + c
 
             return hashv;
         }
@@ -378,7 +379,7 @@ namespace Godot
 
             while (instance[src] != 0 && text[tgt] != 0)
             {
-                bool match;
+                bool match = false;
 
                 if (case_insensitive)
                 {
@@ -454,10 +455,7 @@ namespace Godot
                         return false; // Don't start with number plz
                 }
 
-                bool valid_char = instance[i] >= '0' && 
-                                  instance[i] <= '9' || instance[i] >= 'a' && 
-                                  instance[i] <= 'z' || instance[i] >= 'A' && 
-                                  instance[i] <= 'Z' || instance[i] == '_';
+                bool valid_char = (instance[i] >= '0' && instance[i] <= '9') || (instance[i] >= 'a' && instance[i] <= 'z') || (instance[i] >= 'A' && instance[i] <= 'Z') || instance[i] == '_';
 
                 if (!valid_char)
                     return false;
@@ -504,7 +502,7 @@ namespace Godot
         // </summary>
         public static string JsonEscape(this string instance)
         {
-            var sb = new StringBuilder(string.Copy(instance));
+            StringBuilder sb = new StringBuilder(string.Copy(instance));
 
             sb.Replace("\\", "\\\\");
             sb.Replace("\b", "\\b");
@@ -553,7 +551,7 @@ namespace Godot
                 case '\0':
                     return instance[0] == 0;
                 case '*':
-                    return ExprMatch(expr + 1, instance, caseSensitive) || instance[0] != 0 && ExprMatch(expr, instance + 1, caseSensitive);
+                    return ExprMatch(expr + 1, instance, caseSensitive) || (instance[0] != 0 && ExprMatch(expr, instance + 1, caseSensitive));
                 case '?':
                     return instance[0] != 0 && instance[0] != '.' && ExprMatch(expr + 1, instance + 1, caseSensitive);
                 default:
@@ -612,13 +610,13 @@ namespace Godot
             {
                 if (to[to_idx] == 0 && instance[instance_idx] == 0)
                     return 0; // We're equal
-                if (instance[instance_idx] == 0)
+                else if (instance[instance_idx] == 0)
                     return -1; // If this is empty, and the other one is not, then we're less... I think?
-                if (to[to_idx] == 0)
+                else if (to[to_idx] == 0)
                     return 1; // Otherwise the other one is smaller..
-                if (char.ToUpper(instance[instance_idx]) < char.ToUpper(to[to_idx])) // More than
+                else if (char.ToUpper(instance[instance_idx]) < char.ToUpper(to[to_idx])) // More than
                     return -1;
-                if (char.ToUpper(instance[instance_idx]) > char.ToUpper(to[to_idx])) // Less than
+                else if (char.ToUpper(instance[instance_idx]) > char.ToUpper(to[to_idx])) // Less than
                     return 1;
 
                 instance_idx++;
@@ -726,7 +724,8 @@ namespace Godot
         {
             if (instance.Length > 0 && instance[instance.Length - 1] == '/')
                 return instance + file;
-            return instance + "/" + file;
+            else
+                return instance + "/" + file;
         }
 
         // <summary>
@@ -772,7 +771,7 @@ namespace Godot
             if (pos < 0)
                 return string.Empty;
 
-            return instance.Substring(pos, instance.Length - pos);
+            return instance.Substring(pos, (instance.Length - pos));
         }
 
         public static byte[] Sha256Buffer(this string instance)
@@ -825,7 +824,7 @@ namespace Godot
                 }
             }
 
-            return 2.0f * inter / sum;
+            return (2.0f * inter) / sum;
         }
 
         // <summary>
@@ -833,7 +832,7 @@ namespace Godot
         // </summary>
         public static string[] Split(this string instance, string divisor, bool allow_empty = true)
         {
-            return instance.Split(new[] { divisor }, StringSplitOptions.RemoveEmptyEntries);
+            return instance.Split(new string[] { divisor }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         // <summary>
@@ -841,7 +840,7 @@ namespace Godot
         // </summary>
         public static float[] SplitFloats(this string instance, string divisor, bool allow_empty = true)
         {
-            var ret = new List<float>();
+            List<float> ret = new List<float>();
             int from = 0;
             int len = instance.Length;
 
@@ -850,7 +849,7 @@ namespace Godot
                 int end = instance.Find(divisor, from);
                 if (end < 0)
                     end = len;
-                if (allow_empty || end > from)
+                if (allow_empty || (end > from))
                     ret.Add(float.Parse(instance.Substring(from)));
                 if (end == len)
                     break;
@@ -879,10 +878,13 @@ namespace Godot
             {
                 if (right)
                     return instance.Trim(non_printable);
-                return instance.TrimStart(non_printable);
+                else
+                    return instance.TrimStart(non_printable);
             }
-
-            return instance.TrimEnd(non_printable);
+            else
+            {
+                return instance.TrimEnd(non_printable);
+            }
         }
 
         // <summary>

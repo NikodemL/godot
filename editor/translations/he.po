@@ -3,7 +3,6 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
-# Daniel <lorddaniel09@gmail.com>, 2018.
 # Ben Golan <golanben4@gmail.com>, 2017.
 # Luc Stepniewski <lior@gradstein.info>, 2017.
 # Yaron Shahrabani <sh.yaron@gmail.com>, 2018.
@@ -11,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-18 16:38+0000\n"
-"Last-Translator: Daniel <lorddaniel09@gmail.com>\n"
+"PO-Revision-Date: 2018-02-22 12:37+0000\n"
+"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -20,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 2.20-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -32,19 +31,19 @@ msgstr "כל הבחירה"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "שינוי זמן פריים-מפתח אנימציה"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "שינוי מיקום אנימציה"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr "שינוי מיקום אנימציה"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "שינוי ערך פריים-מפתח אנימציה"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -1373,10 +1372,6 @@ msgstr "מחיקה"
 #: editor/editor_log.cpp
 msgid "Clear Output"
 msgstr "מחיקת הפלט"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3608,14 +3603,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -3898,10 +3885,6 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr ""
-
-#: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -4675,7 +4658,7 @@ msgstr "שמירה מחדש"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr "ניפוי שגיאות"
+msgstr "מנפה שגיאות"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
@@ -5408,7 +5391,7 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations"
-msgstr "אנימציות"
+msgstr "הנפשות"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -5568,14 +5551,6 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Item"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Radio Item"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Checked Radio Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5988,8 +5963,6 @@ msgid ""
 "Language changed.\n"
 "The UI will update next time the editor or project manager starts."
 msgstr ""
-"השפה הוחלפה.\n"
-"מנשק המשתמש יתעדכן בפעם הבאה שהעורך או מנהל המיזמים מתחיל."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -5999,11 +5972,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project Manager"
-msgstr "מנהל המיזמים"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project List"
-msgstr "רשימת המיזמים"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -6011,27 +5984,27 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
-msgstr "נא לבחור תיקייה לסריקה"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr "מיזם חדש"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Templates"
-msgstr "תבניות"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Exit"
-msgstr "יציאה"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
-msgstr "להפעיל מחדש כעת"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
-msgstr "לא ניתן להריץ מיזם"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -6041,7 +6014,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
-msgstr "מקש "
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -6053,17 +6026,15 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Mouse Button"
-msgstr "כפתור עכבר"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+msgid "Invalid action (anything goes but '/' or ':')."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
-msgstr "הפעולה ‚%s’ כבר קיימת!"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
@@ -6087,47 +6058,47 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key.."
-msgstr "נא ללחוץ על מקש…"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Mouse Button Index:"
-msgstr "מפתח כפתורי עכבר:"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button"
-msgstr "כפתור שמאלי"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Right Button"
-msgstr "כפתור ימני"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Middle Button"
-msgstr "כפתור אמצעי"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Up Button"
-msgstr "כפתור גלגלת למעלה"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Down Button"
-msgstr "כפתור גלגלת למטה"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Button 6"
-msgstr "כפתור 6"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Button 7"
-msgstr "כפתור 7"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Button 8"
-msgstr "כפתור 8"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Button 9"
-msgstr "כפתור 9"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Joypad Axis Index:"
@@ -6151,47 +6122,47 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Add Event"
-msgstr "הוספת אירוע"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
-msgstr "התקן"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "כפתור"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
-msgstr "כפתור שמאלי."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Right Button."
-msgstr "כפתור ימני."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Middle Button."
-msgstr "כפתור אמצעי."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Up."
-msgstr "גלגלת למעלה."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Down."
-msgstr "גלגלת למטה."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Add Global Property"
-msgstr "הוספת מאפיין גלובלי"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Select a setting item first!"
-msgstr "יש לבחור פריט הגדרה קודם כל!"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "No property '%s' exists."
-msgstr "לא קיים מאפיין ‚%s’."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
@@ -6199,7 +6170,11 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
-msgstr "מחיקת פריט"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Can't contain '/' or ':'"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -7125,12 +7100,14 @@ msgid "Object can't provide a length."
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Next Plane"
-msgstr "המישור הבא"
+msgstr "הלשונית הבאה"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
 msgid "Previous Plane"
-msgstr "המישור הקודם"
+msgstr "הלשונית הקודמת"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Plane:"
@@ -7239,10 +7216,6 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
 msgstr "בחירת מרחק:"
-
-#: modules/mono/csharp_script.cpp
-msgid "Class name can't be a reserved keyword"
-msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
@@ -7692,7 +7665,7 @@ msgstr ""
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "ל־CollisionPolygon2D ריק אין השפעה על התנגשות."
+msgstr ""
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -7801,7 +7774,7 @@ msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr "(זמן שנותר: %d:%02d שנ׳)"
+msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
@@ -7881,18 +7854,8 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
 
 #: scene/3d/scenario_fx.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
-
-#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr ""
-
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
-"this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
 
 #: scene/3d/sprite_3d.cpp
@@ -7909,11 +7872,11 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
-msgstr "מצב גולמי"
+msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
-msgstr "הוספת הצבע הנוכחי כערכה"
+msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -7921,11 +7884,11 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "נא לאמת…"
+msgstr ""
 
 #: scene/gui/file_dialog.cpp
 msgid "Select this Folder"
-msgstr "בחירת התיקייה"
+msgstr ""
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -7943,7 +7906,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr "(אחר)"
+msgstr ""
 
 #: scene/main/scene_tree.cpp
 msgid ""

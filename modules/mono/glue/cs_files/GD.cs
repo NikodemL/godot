@@ -91,7 +91,7 @@ namespace Godot
 
         public static int[] Range(int length)
         {
-            var ret = new int[length];
+            int[] ret = new int[length];
 
             for (int i = 0; i < length; i++)
             {
@@ -106,7 +106,7 @@ namespace Godot
             if (to < from)
                 return new int[0];
 
-            var ret = new int[to - from];
+            int[] ret = new int[to - from];
 
             for (int i = from; i < to; i++)
             {
@@ -124,14 +124,14 @@ namespace Godot
                 return new int[0];
 
             // Calculate count
-            int count;
+            int count = 0;
 
             if (increment > 0)
-                count = (to - from - 1) / increment + 1;
+                count = ((to - from - 1) / increment) + 1;
             else
-                count = (from - to - 1) / -increment + 1;
+                count = ((from - to - 1) / -increment) + 1;
 
-            var ret = new int[count];
+            int[] ret = new int[count];
 
             if (increment > 0)
             {

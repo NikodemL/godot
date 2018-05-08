@@ -127,7 +127,6 @@ class OS_X11 : public OS_Unix {
 		Vector<int> devices;
 		XIEventMask event_mask;
 		Map<int, Vector2> state;
-		Vector2 mouse_pos_to_filter;
 	} touch;
 #endif
 

@@ -125,11 +125,12 @@ class TileMapEditor : public VBoxContainer {
 		bool yf;
 		bool tr;
 
-		CellOp() :
-				idx(TileMap::INVALID_CELL),
-				xf(false),
-				yf(false),
-				tr(false) {}
+		CellOp() {
+			idx = -1;
+			xf = false;
+			yf = false;
+			tr = false;
+		}
 	};
 
 	Map<Point2i, CellOp> paint_undo;
@@ -140,12 +141,8 @@ class TileMapEditor : public VBoxContainer {
 		bool flip_h;
 		bool flip_v;
 		bool transpose;
-
-		TileData() :
-				cell(TileMap::INVALID_CELL),
-				flip_h(false),
-				flip_v(false),
-				transpose(false) {}
+		int auto_x;
+		int auto_y;
 	};
 
 	List<TileData> copydata;

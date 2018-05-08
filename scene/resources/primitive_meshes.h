@@ -48,7 +48,6 @@ class PrimitiveMesh : public Mesh {
 private:
 	RID mesh;
 	mutable AABB aabb;
-	AABB custom_aabb;
 
 	Ref<Material> material;
 
@@ -81,9 +80,6 @@ public:
 	Ref<Material> get_material() const;
 
 	Array get_mesh_arrays() const;
-
-	void set_custom_aabb(const AABB &p_custom);
-	AABB get_custom_aabb() const;
 
 	PrimitiveMesh();
 	~PrimitiveMesh();

@@ -228,7 +228,6 @@
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
-				Emitted when a GraphNode is selected.
 			</description>
 		</signal>
 		<signal name="popup_request">

@@ -3,14 +3,13 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
-# Filip <filipanton@tutanota.com>, 2018.
 # TigerxWood <TigerxWood@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-02 18:03+0000\n"
-"Last-Translator: Filip <filipanton@tutanota.com>\n"
+"PO-Revision-Date: 2018-01-20 08:55+0000\n"
+"Last-Translator: TigerxWood <TigerxWood@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -18,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -26,15 +25,15 @@ msgstr "Dezactivat"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "Toată selecția"
+msgstr "Toate selecțiile"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Schimbați Timpul Cadru Cheie"
+msgstr "Anim Schimbare timp cadre cheie"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Anim Schimbați Tranziție"
+msgstr "Anim Schimbare tranziție"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
@@ -50,149 +49,149 @@ msgstr "Anim Schimbare apelare"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr "Anim Adăugați Pistă"
+msgstr "Anim Adăugare pistă"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Anim Clonare Chei"
+msgstr "Anim Clonare chei"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr "Mută Pista Anim Sus"
+msgstr "Mutare sus pistă anim"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr "Mută Pista Anim Jos"
+msgstr "Mutare jos pistă anim"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr "Elimină Pista Anim"
+msgstr "Eliminare pistă anim"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr "Setează Tranziții la:"
+msgstr "Setare tranziții la:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr "Redenumește Pista Anim"
+msgstr "Redenumire pistă anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr "Anim Schimbați Interpolarea Pistei"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr "Anim Schimbați Modul Valorii Pistei"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Wrap Mode"
-msgstr "Anim Schimbați Modul Învelirii Pistei"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr "Editați Curba Nodului"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr "Editați Curba Selecției"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Anim Ștergeți Cheile"
+msgstr ""
 
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "Duplicați Selecția"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "Duplicați Transpunerea"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove Selection"
-msgstr "Elminați Selecția"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Continuous"
-msgstr "Continuu"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Discrete"
-msgstr "Discret"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Trigger"
-msgstr "Trăgaci"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr "Anim Adaugați Cheie"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr "Anim Mutați Cheie"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr "Scalați Selecția"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr "Scalați De La Cursor"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr "Mergeți la Pasul Următor"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr "Mergeți la Pasul Anterior"
+msgstr ""
 
 #: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
-msgstr "Linear"
+msgstr ""
 
 #: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr "Constant"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "In"
-msgstr "În"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Out"
-msgstr "Afară"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "In-Out"
-msgstr "Înăuntru-Afară"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Out-In"
-msgstr "Afară-Înăuntru"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
-msgstr "Tranziții"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr "Optimizați Animația"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "Curățați Animația"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "Creați pistă NOUA pentru %s și inserați cheie?"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "Creați %d piste NOI și inserați cheie?"
+msgstr ""
 
 #: editor/animation_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
@@ -200,272 +199,270 @@ msgstr "Creați %d piste NOI și inserați cheie?"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
-msgstr "Creați"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr "Anim Creați și Inserați"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "Anim Inserați Pistă și Cheie"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr "Anim Inserați Cheie"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr "Schimbați Lung Anim"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr "Schimbați Bucla Anim"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr "Anim Creați Cheie Valoare Typed"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr "Anim Inserați"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "Anim Scalați Cheile"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr "Anim Adăugați Pistă Chemare"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Animation zoom."
-msgstr "Zoom Animație."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr "Lungime (s):"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr "Lungime Animație (în secunde)."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr "Pas (s):"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr "Pas Bruscare Cursor (în secunde)."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr "Activați / Dezactivați Repetiția în Animație."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Add new tracks."
-msgstr "Adăugați piste noi."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Move current track up."
-msgstr "Mișcați pista curentă sus."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Move current track down."
-msgstr "Mișcați pista curentă jos."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove selected track."
-msgstr "Ștergeți pista selectată."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Track tools"
-msgstr "Unelte Pistă"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr "Activați editarea de chei individuale prin clic."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Anim. Optimizator"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Max. Linear Error:"
-msgstr "Eroare Lineară Max:"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "Eroare Angulară Max:"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "Max Unghi Optimizabil:"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Optimize"
-msgstr "Optimizați"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr "Selectați un Animator din Copacul Scenă să editați animații."
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Key"
-msgstr "Cheie"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Transition"
-msgstr "Tranziție"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Scale Ratio:"
-msgstr "Proporție Scalare:"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "Chemați Funcții în Care Nod?"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Ștergeți chei inoperabile"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr "Ștergeți piste nerezolvate sau goale"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Clean-up all animations"
-msgstr "Curățați toate animațiile"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Curățați Animațiile (FĂRĂ ANULARE!)"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr "Curățați"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr "Redimensionați Array-ul"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr "Schimbați Tipul Array-ului"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr "Schimbați Valoarea Array-ului"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr "Duceți-vă la Linie"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "Linia Numărul:"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "No Matches"
-msgstr "Nici o Potrivire"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
-msgstr "Înlocuit %d potriviri."
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Match Case"
-msgstr "Potrivește Caz-ul"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Whole Words"
-msgstr "Cuvinte Complete"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Replace"
-msgstr "Înlocuiți"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr "Înlocuiți Tot"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr "Numai Selecția"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
-msgstr "Zoom-ați  În"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Zoom Out"
-msgstr "Zoom-ați  Afară"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr "Resetați Zoom-area"
+msgstr ""
 
 #: editor/code_editor.cpp editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr "Linie:"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Col:"
-msgstr "Col:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "Metoda din Nod-ul țintă trebuie specificată!"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
-"Metoda țintă nu există! Specificați o metodă validă sau atașați un script la "
-"Nod-ul țintă."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
-msgstr "Conectați la Nod:"
+msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr "Adăugați"
+msgstr ""
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr "Ștergeți"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Adăugați Extra Argument de Chemare:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr "Extra Argumente de Chemare:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr "Drum la Nod:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Make Function"
-msgstr "Faceți Funcția"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
-msgstr "Amânat(ă)"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr "Oneshot"
+msgstr ""
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp
@@ -479,147 +476,143 @@ msgstr "Oneshot"
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr "Aproape"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr "Conectați"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "Conectați '%s' la '%s'"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connecting Signal:"
-msgstr "Conectați Semnal:"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "Deconectați '%s' de la '%s'"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
-msgstr "Conectați.."
+msgstr ""
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "Deconectați"
+msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "Semnale"
+msgstr ""
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr "Schimbați Tipul %s"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change"
-msgstr "Schimbați"
+msgstr ""
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
-msgstr "Creați %s Nou"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr "Favorite:"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr "Recent:"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Search:"
-msgstr "Cautați:"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Matches:"
-msgstr "Potriviri:"
+msgstr ""
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Description:"
-msgstr "Descripție:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr "Cautați Înlocuitor Pentru:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies For:"
-msgstr "Dependențe Pentru:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will not take effect unless reloaded."
 msgstr ""
-"Scena '%s' este în proces de editare. \n"
-"Modificările nu vor avea efect dacă nu reîncărcați."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will take effect when reloaded."
 msgstr ""
-"Resursa '%s' este în folosință.\n"
-"Modificările vor avea efect după ce reîncărcați."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
-msgstr "Dependențe"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr "Resursă"
+msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Path"
-msgstr "Cale"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr "Dependințe:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr "Reparați Stricat"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr "Editor de Dependență"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr "Cautați Înlocuitor Resursă:"
+msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp editor/filesystem_dock.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr "Deschide"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr "Stăpâni La:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
-msgstr "Ștergeți fișierele selectate din proiect? (fără anulare)"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -627,57 +620,54 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
-"Fișierele în proces de ștergere sunt necesare pentru alte resurse ca ele să "
-"sa funcționeze.\n"
-"Ștergeți oricum? (fără anulare)"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
-msgstr "Nu se poate șterge:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr "Eroare încărcând:"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
-msgstr "Scena nu a putut fi încărcata deoarece are dependențe în lipsa:"
+msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr "Deschide Oricum"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr "Ce acțiune trebuie să fie luată?"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr "Rezolvă dependențele"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr "Erori încărcând!"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Ștergeți permanent %d articol(e)? (Fără anulare!)"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr "Deține"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
-msgstr "Resurse Fără Deținere Explicită:"
+msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
-msgstr "Explorator de Resurse Orfane"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Delete selected files?"
-msgstr "Ştergeți fişierele selectate?"
+msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
@@ -685,83 +675,83 @@ msgstr "Ştergeți fişierele selectate?"
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete"
-msgstr "Ștergeți"
+msgstr ""
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr "Schimbați Cheie Dicţionar"
+msgstr ""
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
-msgstr "Schimbaţi Valoarea Dicţionar"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr "Mulțumesc din partea comunităţii Godot!"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Thanks!"
-msgstr "Mulţumiri!"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr "Contribuabili Motor Godot"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
-msgstr "Fondatorii Proiectului"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
-msgstr "Dezvoltator Principal"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Manager de Proiect "
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Developers"
-msgstr "Dezvoltatori"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Authors"
-msgstr "Autori"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr "Sponsori Platină"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr "Sponsori Aur"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr "Mini Sponsori"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr "Donatori de Aur"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr "Donatori de Argint"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr "Donatori de Bronz"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr "Donatori"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr "Licență"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
-msgstr "Licenţe Thirdparty"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid ""
@@ -770,347 +760,338 @@ msgid ""
 "is an exhaustive list of all such thirdparty components with their "
 "respective copyright statements and license terms."
 msgstr ""
-"Motorul Godot se bazează pe un număr de biblioteci thirdparty gratis și "
-"opensource, toate compatibile cu termenii licenţei MIT ai lui. Mai jos este "
-"o listă exhaustivă a tuturor acestor componente de thirdparty cu declaraţii "
-"de autor respective şi termenii licenței."
 
 #: editor/editor_about.cpp
 msgid "All Components"
-msgstr "Toate Componentele"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Components"
-msgstr "Componente"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr "Licențe"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in zip format."
-msgstr "Eroare la deschiderea fişierului pachet, nu este în format zip."
+msgstr ""
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr "Decompresez Active"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
-msgstr "Pachet Instalat cu Succes!"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr "Succes!"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Install"
-msgstr "Instalați"
+msgstr ""
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
-msgstr "Instalator de Pachet"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr "Difuzoare"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr "Adaugă Efect"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr "Redenumiţi Pista Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Change Audio Bus Volume"
-msgstr "Schimbați Volumul Pistei Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr "Comutați Pista Audio Singură"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr "Comutați Pista Audio Mută"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "Comutați Efecte de Ocolire Pista Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr "Selectați Pista Audio Trimitere"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr "Adaugați Efect Pista Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
-msgstr "Mutați Pista Efect"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Bus Effect"
-msgstr "Ștergeți Pista Efect"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
-msgstr "Pista Audio, Trageți și Plasați pentru a rearanja."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
-msgstr "Singură"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr "Mut"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr "Ocolire"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
-msgstr "Opțiuni Pistă Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr "Duplicați"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
-msgstr "Resetați Volumul"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
-msgstr "Ștergeți Efectul"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr "Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
-msgstr "Adaugă Pistă Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr "Imposibil de Șters Pistă Audio Master!"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
-msgstr "Ştergeţi Pista Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Duplicate Audio Bus"
-msgstr "Duplicați Pista Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Bus Volume"
-msgstr "Resetați Volumul Pistei Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
-msgstr "Mutați Pista Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As.."
-msgstr "Salvați Pista Audio Șablon Ca.."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout.."
-msgstr "Locație pentru Noul Șablon..."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "Deschideți Șablon Pistă Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
-msgstr "Nu există nici un fişier 'res://default_bus_layout.tres'."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "Fişier nevalid, nu un șablon de pistă audio."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
-msgstr "Adaugați Pistă Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
-msgstr "Creaţi un Șablon nou Pistă Audio."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Load"
-msgstr "Încărcați"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
-msgstr "Încărcaţi un Șablon de Pistă Audio existent."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save As"
-msgstr "Salvați Ca"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
-msgstr "Salvaţi acest Șablon Pistă Audio într-un fişier."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
-msgstr "Încărcați Implicit"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Încărcat Șablonul Pistă Audio implicit."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
-msgstr "Nume nevalid."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
-msgstr "Caractere valide:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name. Must not collide with an existing engine class name."
 msgstr ""
-"Nume nevalid. Nu trebuie să se lovească cu un nume de clasa deja existent în "
-"motor."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name. Must not collide with an existing buit-in type name."
 msgstr ""
-"Nume nevalid. Nu trebuie să se lovească cu un nume de tip deja existent în "
-"motor tip."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name. Must not collide with an existing global constant name."
 msgstr ""
-"Nume nevalid. Nu trebuie să se lovească cu un nume ce constante globale."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid Path."
-msgstr "Cale nevalidă."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "File does not exist."
-msgstr "Fișierul nu există."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Not in resource path."
-msgstr "Nu în calea de resurse."
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
-msgstr "Adaugați AutoLoad"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr "AutoLoad '%s' există deja!"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
-msgstr "Redenumiţi Autoload"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr "Comutați Globale AutoLoad"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
-msgstr "Mutați Autoload"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Remove Autoload"
-msgstr "Eliminați Autoload"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Enable"
-msgstr "Activați"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rearrange Autoloads"
-msgstr "Rearanjați Autoload-urile"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Path:"
-msgstr "Cale:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
-msgstr "Nume Nod:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp editor/editor_profiler.cpp
 #: editor/project_manager.cpp editor/settings_config_dialog.cpp
 msgid "Name"
-msgstr "Nume"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr "Singleton"
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr "Scena se Actualizează"
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "Storing local changes.."
-msgstr "Modificările locale se stochează..."
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "Updating scene.."
-msgstr "Scena se Actualizează.."
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "[empty]"
-msgstr "[gol]"
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr "[nesalvat]"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
-msgstr "Vă rugăm să selectaţi mai întâi un director de baza"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
-msgstr "Alegeţi un Director"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Create Folder"
-msgstr "Creați Director"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Name:"
-msgstr "Nume:"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Could not create folder."
-msgstr "Directorul nu a putut fi creat."
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose"
-msgstr "Alegeți"
+msgstr ""
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
-msgstr "Fişierul se Stochează:"
+msgstr ""
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1388,10 +1369,6 @@ msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Clear Output"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
@@ -3613,14 +3590,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -3903,10 +3872,6 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr ""
-
-#: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5571,14 +5536,6 @@ msgid "Checked Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Radio Item"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Checked Radio Item"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr ""
 
@@ -6054,9 +6011,7 @@ msgid "Mouse Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+msgid "Invalid action (anything goes but '/' or ':')."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6197,6 +6152,10 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Can't contain '/' or ':'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -7238,10 +7197,6 @@ msgstr ""
 msgid "Pick Distance:"
 msgstr ""
 
-#: modules/mono/csharp_script.cpp
-msgid "Class name can't be a reserved keyword"
-msgstr ""
-
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr ""
@@ -7878,18 +7833,8 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
 
 #: scene/3d/scenario_fx.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
-
-#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr ""
-
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
-"this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
 
 #: scene/3d/sprite_3d.cpp

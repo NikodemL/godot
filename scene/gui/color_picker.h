@@ -120,8 +120,6 @@ class ColorPickerButton : public Button {
 	ColorPicker *picker;
 
 	void _color_changed(const Color &p_color);
-	void _modal_closed();
-
 	virtual void pressed();
 
 protected:

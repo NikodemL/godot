@@ -644,12 +644,11 @@ void SceneTreeEditor::_renamed() {
 	ERR_FAIL_COND(!n);
 
 	String new_name = which->get_text(0);
-	if (!Node::_validate_node_name(new_name)) {
+	if (new_name.find(".") != -1 || new_name.find("/") != -1) {
 
-		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + Node::invalid_character);
+		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n  \".\", \"/\"");
 		error->popup_centered_minsize();
-
-		which->set_text(0, new_name);
+		new_name = n->get_name();
 	}
 
 	if (new_name == n->get_name())

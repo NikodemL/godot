@@ -1028,6 +1028,8 @@ void ParticlesMaterial::set_param(Parameter p_param, float p_value) {
 		case PARAM_ANIM_OFFSET: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset, p_value);
 		} break;
+		case PARAM_MAX: {
+		};
 	}
 }
 float ParticlesMaterial::get_param(Parameter p_param) const {
@@ -1080,6 +1082,8 @@ void ParticlesMaterial::set_param_randomness(Parameter p_param, float p_value) {
 		case PARAM_ANIM_OFFSET: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_random, p_value);
 		} break;
+		case PARAM_MAX: {
+		};
 	}
 }
 float ParticlesMaterial::get_param_randomness(Parameter p_param) const {
@@ -1156,6 +1160,8 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture> 
 		case PARAM_ANIM_OFFSET: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_texture, p_texture);
 		} break;
+		case PARAM_MAX: {
+		};
 	}
 
 	_queue_shader_change();
@@ -1227,19 +1233,28 @@ void ParticlesMaterial::set_emission_box_extents(Vector3 p_extents) {
 void ParticlesMaterial::set_emission_point_texture(const Ref<Texture> &p_points) {
 
 	emission_point_texture = p_points;
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_points, p_points);
+	RID texture;
+	if (p_points.is_valid())
+		texture = p_points->get_rid();
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_points, texture);
 }
 
 void ParticlesMaterial::set_emission_normal_texture(const Ref<Texture> &p_normals) {
 
 	emission_normal_texture = p_normals;
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_normal, p_normals);
+	RID texture;
+	if (p_normals.is_valid())
+		texture = p_normals->get_rid();
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_normal, texture);
 }
 
 void ParticlesMaterial::set_emission_color_texture(const Ref<Texture> &p_colors) {
 
 	emission_color_texture = p_colors;
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_color, p_colors);
+	RID texture;
+	if (p_colors.is_valid())
+		texture = p_colors->get_rid();
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_color, texture);
 	_queue_shader_change();
 }
 
@@ -1301,7 +1316,10 @@ void ParticlesMaterial::set_trail_size_modifier(const Ref<CurveTexture> &p_trail
 		curve->ensure_default_setup();
 	}
 
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_size_modifier, curve);
+	RID texture;
+	if (p_trail_size_modifier.is_valid())
+		texture = p_trail_size_modifier->get_rid();
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_size_modifier, texture);
 	_queue_shader_change();
 }
 
@@ -1313,7 +1331,10 @@ Ref<CurveTexture> ParticlesMaterial::get_trail_size_modifier() const {
 void ParticlesMaterial::set_trail_color_modifier(const Ref<GradientTexture> &p_trail_color_modifier) {
 
 	trail_color_modifier = p_trail_color_modifier;
-	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_color_modifier, p_trail_color_modifier);
+	RID texture;
+	if (p_trail_color_modifier.is_valid())
+		texture = p_trail_color_modifier->get_rid();
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->trail_color_modifier, texture);
 	_queue_shader_change();
 }
 

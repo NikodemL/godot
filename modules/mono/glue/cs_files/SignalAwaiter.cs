@@ -4,15 +4,15 @@ namespace Godot
 {
     public class SignalAwaiter : IAwaiter<object[]>, IAwaitable<object[]>
     {
-        private bool completed;
-        private object[] result;
-        private Action action;
+        private bool completed = false;
+        private object[] result = null;
+        private Action action = null;
 
-        public SignalAwaiter(Object source, string signal, Object target)
+        public SignalAwaiter(Godot.Object source, string signal, Godot.Object target)
         {
             NativeCalls.godot_icall_Object_connect_signal_awaiter(
-                Object.GetPtr(source),
-                signal, Object.GetPtr(target), this
+                Godot.Object.GetPtr(source),
+                signal, Godot.Object.GetPtr(target), this
                 );
         }
 

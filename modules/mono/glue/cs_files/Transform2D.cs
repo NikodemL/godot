@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -110,7 +111,7 @@ namespace Godot
 
         public Transform2D AffineInverse()
         {
-            var inv = this;
+            Transform2D inv = this;
 
             real_t det = this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1];
 
@@ -157,15 +158,15 @@ namespace Godot
             Vector2 s2 = m.Scale;
 
             // Slerp rotation
-            var v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
-            var v2 = new Vector2(Mathf.Cos(r2), Mathf.Sin(r2));
+            Vector2 v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
+            Vector2 v2 = new Vector2(Mathf.Cos(r2), Mathf.Sin(r2));
 
             real_t dot = v1.Dot(v2);
 
             // Clamp dot to [-1, 1]
-            dot = dot < -1.0f ? -1.0f : (dot > 1.0f ? 1.0f : dot);
+            dot = (dot < -1.0f) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot);
 
-            Vector2 v;
+            Vector2 v = new Vector2();
 
             if (dot > 0.9995f)
             {
@@ -184,7 +185,7 @@ namespace Godot
             Vector2 p2 = m.Origin;
 
             // Construct matrix
-            var res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
+            Transform2D res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
             Vector2 scale = s1.LinearInterpolate(s2, c);
             res.x *= scale;
             res.y *= scale;
@@ -194,7 +195,7 @@ namespace Godot
 
         public Transform2D Inverse()
         {
-            var inv = this;
+            Transform2D inv = this;
 
             // Swap
             real_t temp = inv.x.y;
@@ -208,13 +209,13 @@ namespace Godot
 
         public Transform2D Orthonormalized()
         {
-            var on = this;
+            Transform2D on = this;
 
             Vector2 onX = on.x;
             Vector2 onY = on.y;
 
             onX.Normalize();
-            onY = onY - onX * onX.Dot(onY);
+            onY = onY - onX * (onX.Dot(onY));
             onY.Normalize();
 
             on.x = onX;
@@ -230,7 +231,7 @@ namespace Godot
 
         public Transform2D Scaled(Vector2 scale)
         {
-            var copy = this;
+            Transform2D copy = this;
             copy.x *= scale;
             copy.y *= scale;
             copy.o *= scale;
@@ -249,7 +250,7 @@ namespace Godot
 
         public Transform2D Translated(Vector2 offset)
         {
-            var copy = this;
+            Transform2D copy = this;
             copy.o += copy.BasisXform(offset);
             return copy;
         }
@@ -268,22 +269,22 @@ namespace Godot
         // Constructors 
         public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 origin)
         {
-            x = xAxis;
-            y = yAxis;
-            o = origin;
+            this.x = xAxis;
+            this.y = yAxis;
+            this.o = origin;
         }
         
         public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
-            x = new Vector2(xx, xy);
-            y = new Vector2(yx, yy);
-            o = new Vector2(ox, oy);
+            this.x = new Vector2(xx, xy);
+            this.y = new Vector2(yx, yy);
+            this.o = new Vector2(ox, oy);
         }
 
         public Transform2D(real_t rot, Vector2 pos)
         {
-            real_t cr = Mathf.Cos(rot);
-            real_t sr = Mathf.Sin(rot);
+            real_t cr = Mathf.Cos( (real_t)rot);
+            real_t sr = Mathf.Sin( (real_t)rot);
             x.x = cr;
             y.y = cr;
             x.y = -sr;
@@ -344,9 +345,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                x.ToString(),
-                y.ToString(),
-                o.ToString()
+                this.x.ToString(),
+                this.y.ToString(),
+                this.o.ToString()
             });
         }
 
@@ -354,9 +355,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                x.ToString(format),
-                y.ToString(format),
-                o.ToString(format)
+                this.x.ToString(format),
+                this.y.ToString(format),
+                this.o.ToString(format)
             });
         }
     }

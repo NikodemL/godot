@@ -241,6 +241,7 @@ class EditorAssetLibrary : public PanelContainer {
 
 		bool active;
 		int queue_id;
+		int asset_id;
 		ImageType image_type;
 		int image_index;
 		String image_url;

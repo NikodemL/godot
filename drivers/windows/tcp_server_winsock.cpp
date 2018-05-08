@@ -105,7 +105,6 @@ Error TCPServerWinsock::listen(uint16_t p_port, const IP_Address &p_bind_address
 			ERR_FAIL_V(FAILED);
 		};
 	} else {
-		closesocket(sockfd);
 		return ERR_ALREADY_IN_USE;
 	};
 

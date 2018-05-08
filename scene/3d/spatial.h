@@ -100,8 +100,10 @@ class Spatial : public Node {
 #endif
 
 	} data;
+#ifdef TOOLS_ENABLED
 
 	void _update_gizmo();
+#endif
 	void _notify_dirty();
 	void _propagate_transform_changed(Spatial *p_origin);
 

@@ -45,8 +45,8 @@ namespace Godot
         {
             get
             {
-                float max = Math.Max(r, Math.Max(g, b));
-                float min = Math.Min(r, Math.Min(g, b));
+                float max = (float) Mathf.Max(r, (float) Mathf.Max(g, b));
+                float min = (float) Mathf.Min(r, (float) Mathf.Min(g, b));
 
                 float delta = max - min;
 
@@ -79,8 +79,8 @@ namespace Godot
         {
             get
             {
-                float max = Math.Max(r, Math.Max(g, b));
-                float min = Math.Min(r, Math.Min(g, b));
+                float max = (float) Mathf.Max(r, (float) Mathf.Max(g, b));
+                float min = (float) Mathf.Min(r, (float) Mathf.Min(g, b));
 
                 float delta = max - min;
 
@@ -96,7 +96,7 @@ namespace Godot
         {
             get
             {
-                return Math.Max(r, Math.Max(g, b));
+                return (float) Mathf.Max(r, (float) Mathf.Max(g, b));
             }
             set
             {
@@ -104,7 +104,7 @@ namespace Godot
             }
         }
 
-        private static readonly Color black = new Color(0f, 0f, 0f);
+        private static readonly Color black = new Color(0f, 0f, 0f, 1.0f);
 
         public Color Black
         {
@@ -180,7 +180,7 @@ namespace Godot
                     hue += 1.0f;
             }
 
-            saturation = max == 0 ? 0 : 1f - 1f * min / max;
+            saturation = (max == 0) ? 0 : 1f - (1f * min / max);
             value = max / 255f;
         }
 
@@ -232,10 +232,12 @@ namespace Godot
             {
                 return new Color(0, 0, 0, 0);
             }
-
-            res.r = (r * a * sa + over.r * over.a) / res.a;
-            res.g = (g * a * sa + over.g * over.a) / res.a;
-            res.b = (b * a * sa + over.b * over.a) / res.a;
+            else
+            {
+                res.r = (r * a * sa + over.r * over.a) / res.a;
+                res.g = (g * a * sa + over.g * over.a) / res.a;
+                res.b = (b * a * sa + over.b * over.a) / res.a;
+            }
 
             return res;
         }
@@ -263,14 +265,14 @@ namespace Godot
             );
         }
 
-        public Color LinearInterpolate(Color c, float t)
+        public Color LinearInterpolate(Color b, float t)
         {
-            var res = this;
+            Color res = this;
 
-            res.r += t * (c.r - r);
-            res.g += t * (c.g - g);
-            res.b += t * (c.b - b);
-            res.a += t * (c.a - a);
+            res.r += (t * (b.r - this.r));
+            res.g += (t * (b.g - this.g));
+            res.b += (t * (b.b - this.b));
+            res.a += (t * (b.a - this.a));
 
             return res;
         }
@@ -303,7 +305,7 @@ namespace Godot
 
         public string ToHtml(bool include_alpha = true)
         {
-            var txt = string.Empty;
+            String txt = string.Empty;
 
             txt += _to_hex(r);
             txt += _to_hex(g);
@@ -326,13 +328,13 @@ namespace Godot
 
         public Color(int rgba)
         {
-            a = (rgba & 0xFF) / 255.0f;
+            this.a = (rgba & 0xFF) / 255.0f;
             rgba >>= 8;
-            b = (rgba & 0xFF) / 255.0f;
+            this.b = (rgba & 0xFF) / 255.0f;
             rgba >>= 8;
-            g = (rgba & 0xFF) / 255.0f;
+            this.g = (rgba & 0xFF) / 255.0f;
             rgba >>= 8;
-            r = (rgba & 0xFF) / 255.0f;
+            this.r = (rgba & 0xFF) / 255.0f;
         }
 
         private static int _parse_col(string str, int ofs)
@@ -342,7 +344,7 @@ namespace Godot
             for (int i = 0; i < 2; i++)
             {
                 int c = str[i + ofs];
-                int v;
+                int v = 0;
 
                 if (c >= '0' && c <= '9')
                 {
@@ -374,9 +376,9 @@ namespace Godot
 
         private String _to_hex(float val)
         {
-            var v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
+            int v = (int) Mathf.Clamp(val * 255.0f, 0, 255);
 
-            var ret = string.Empty;
+            string ret = string.Empty;
 
             for (int i = 0; i < 2; i++)
             {
@@ -403,7 +405,7 @@ namespace Godot
             if (color[0] == '#')
                 color = color.Substring(1, color.Length - 1);
 
-            bool alpha;
+            bool alpha = false;
 
             if (color.Length == 8)
                 alpha = true;
@@ -432,7 +434,7 @@ namespace Godot
 
         public static Color Color8(byte r8, byte g8, byte b8, byte a8)
         {
-            return new Color(r8 / 255f, g8 / 255f, b8 / 255f, a8 / 255f);
+            return new Color((float)r8 / 255f, (float)g8 / 255f, (float)b8 / 255f, (float)a8 / 255f);
         }
 
         public Color(string rgba)
@@ -449,7 +451,7 @@ namespace Godot
             if (rgba[0] == '#')
                 rgba = rgba.Substring(1);
 
-            bool alpha;
+            bool alpha = false;
 
             if (rgba.Length == 8)
             {
@@ -511,11 +513,14 @@ namespace Godot
                 if (left.g == right.g)
                 {
                     if (left.b == right.b)
-                        return left.a < right.a;
-                    return left.b < right.b;
+                        return (left.a < right.a);
+                    else
+                        return (left.b < right.b);
                 }
-
-                return left.g < right.g;
+                else
+                {
+                    return left.g < right.g;
+                }
             }
 
             return left.r < right.r;
@@ -528,11 +533,14 @@ namespace Godot
                 if (left.g == right.g)
                 {
                     if (left.b == right.b)
-                        return left.a > right.a;
-                    return left.b > right.b;
+                        return (left.a > right.a);
+                    else
+                        return (left.b > right.b);
                 }
-
-                return left.g > right.g;
+                else
+                {
+                    return left.g > right.g;
+                }
             }
 
             return left.r > right.r;
@@ -560,12 +568,24 @@ namespace Godot
 
         public override string ToString()
         {
-            return String.Format("{0},{1},{2},{3}", r.ToString(), g.ToString(), b.ToString(), a.ToString());
+            return String.Format("{0},{1},{2},{3}", new object[]
+                {
+                    this.r.ToString(),
+                    this.g.ToString(),
+                    this.b.ToString(),
+                    this.a.ToString()
+                });
         }
 
         public string ToString(string format)
         {
-            return String.Format("{0},{1},{2},{3}", r.ToString(format), g.ToString(format), b.ToString(format), a.ToString(format));
+            return String.Format("{0},{1},{2},{3}", new object[]
+                {
+                    this.r.ToString(format),
+                    this.g.ToString(format),
+                    this.b.ToString(format),
+                    this.a.ToString(format)
+                });
         }
     }
 }

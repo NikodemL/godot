@@ -116,7 +116,7 @@ public class PaymentsManager {
 
 			@Override
 			protected void error(String message) {
-				godotPaymentV3.callbackFail(message);
+				godotPaymentV3.callbackFail();
 			}
 
 			@Override
@@ -148,7 +148,7 @@ public class PaymentsManager {
 			@Override
 			protected void error(String message) {
 				Log.d("godot", "consumeUnconsumedPurchases :" + message);
-				godotPaymentV3.callbackFailConsume(message);
+				godotPaymentV3.callbackFailConsume();
 			}
 
 			@Override
@@ -222,7 +222,7 @@ public class PaymentsManager {
 
 						@Override
 						protected void error(String message) {
-							godotPaymentV3.callbackFail(message);
+							godotPaymentV3.callbackFail();
 						}
 					}
 							.consume(sku);
@@ -231,7 +231,7 @@ public class PaymentsManager {
 
 			@Override
 			protected void error(String message) {
-				godotPaymentV3.callbackFail(message);
+				godotPaymentV3.callbackFail();
 			}
 
 			@Override
@@ -258,7 +258,7 @@ public class PaymentsManager {
 
 					@Override
 					protected void error(String message) {
-						godotPaymentV3.callbackFail(message);
+						godotPaymentV3.callbackFail();
 					}
 				}
 						.consume(sku);
@@ -266,7 +266,7 @@ public class PaymentsManager {
 
 			@Override
 			protected void error(String message) {
-				godotPaymentV3.callbackFail(message);
+				godotPaymentV3.callbackFail();
 			}
 
 			@Override
@@ -291,7 +291,7 @@ public class PaymentsManager {
 
 			@Override
 			protected void error(String message) {
-				godotPaymentV3.callbackFailConsume(message);
+				godotPaymentV3.callbackFailConsume();
 			}
 		}
 				.consume(sku);

@@ -335,9 +335,7 @@ Error StreamPeerTCPWinsock::connect_to_host(const IP_Address &p_host, uint16_t p
 void StreamPeerTCPWinsock::set_no_delay(bool p_enabled) {
 	ERR_FAIL_COND(!is_connected_to_host());
 	int flag = p_enabled ? 1 : 0;
-	if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int)) != 0) {
-		ERR_PRINT("Unable to set TCP no delay option");
-	}
+	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
 }
 
 int StreamPeerTCPWinsock::get_available_bytes() const {

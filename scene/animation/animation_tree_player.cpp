@@ -812,6 +812,8 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 		t.value = t.object->get_indexed(t.subpath);
 		t.value.zero();
+
+		t.skip = false;
 	}
 
 	/* STEP 2 PROCESS ANIMATIONS */
@@ -884,7 +886,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 		Track &t = E->get();
 
-		if (!t.object)
+		if (t.skip || !t.object)
 			continue;
 
 		if (t.subpath.size()) { // value track
@@ -898,7 +900,8 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.scale.x += 1.0;
 		t.scale.y += 1.0;
 		t.scale.z += 1.0;
-		xform.basis.set_quat_scale(t.rot, t.scale);
+		xform.basis.scale(t.scale);
+		xform.basis.rotate(t.rot.get_euler());
 
 		if (t.bone_idx >= 0) {
 			if (t.skeleton)

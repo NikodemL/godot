@@ -164,14 +164,21 @@ void StringName::operator=(const StringName &p_name) {
 		_data = p_name._data;
 	}
 }
+/* was inlined
+StringName::operator String() const {
 
+	if (_data)
+		return _data->get_name();
+
+	return "";
+}
+*/
 StringName::StringName(const StringName &p_name) {
 
-	_data = NULL;
-
 	ERR_FAIL_COND(!configured);
-
+	_data = NULL;
 	if (p_name._data && p_name._data->refcount.ref()) {
+
 		_data = p_name._data;
 	}
 }

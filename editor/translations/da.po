@@ -3,24 +3,22 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
-# Dankse Memes <purplelops@gmail.com>, 2018.
 # David Lamhauge <davidlamhauge@gmail.com>, 2016.
-# Esben Damkjær Sørensen <esben@damkjaergaard.com>, 2018.
 # Kim Nielsen <kimmowich@stofanet.dk>, 2017.
 # Michael Madsen <mim@michael-madsen.dk>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-22 07:35+0000\n"
-"Last-Translator: Dankse Memes <purplelops@gmail.com>\n"
+"PO-Revision-Date: 2017-12-20 15:42+0000\n"
+"Last-Translator: Kim Nielsen <kimmowich@stofanet.dk>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 2.18\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -31,8 +29,9 @@ msgid "All Selection"
 msgstr "All selection"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Skift Keyframetid"
+msgstr "Anim Skift Værdi"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -43,8 +42,9 @@ msgid "Anim Change Transform"
 msgstr "Anim Skift Transformering"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Anim Skift Keyframeværdi"
+msgstr "Anim Skift Værdi"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -497,8 +497,9 @@ msgid "Connecting Signal:"
 msgstr "Forbindelses Signal:"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "Afbryd '%s' fra '%s'"
+msgstr "Forbind '%s' til '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -514,8 +515,9 @@ msgid "Signals"
 msgstr "Signaler"
 
 #: editor/create_dialog.cpp
+#, fuzzy
 msgid "Change %s Type"
-msgstr "Skift %s Type"
+msgstr "Skift Base Type"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -523,8 +525,9 @@ msgid "Change"
 msgstr "Skift"
 
 #: editor/create_dialog.cpp
+#, fuzzy
 msgid "Create New %s"
-msgstr "Opret Ny %s"
+msgstr "Opret Nyt"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -636,7 +639,7 @@ msgstr ""
 #: editor/dependency_editor.cpp
 #, fuzzy
 msgid "Cannot remove:"
-msgstr "Kan ikke fjerne:"
+msgstr "Kan ikke fjerne:\n"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -719,8 +722,9 @@ msgid "Lead Developer"
 msgstr "Ledende Udvikler"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid "Project Manager "
-msgstr "Projektleder "
+msgstr "Projektleder"
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -813,8 +817,9 @@ msgid "Install"
 msgstr "Installér"
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
 msgid "Package Installer"
-msgstr "Pakkeinstallatør"
+msgstr "Pakke Installatør"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -896,7 +901,7 @@ msgstr "Slet Effect"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr "Lyd"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1078,11 +1083,11 @@ msgstr "Opdatere scene.."
 
 #: editor/editor_data.cpp
 msgid "[empty]"
-msgstr "[tom]"
+msgstr ""
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr "[ikke gemt]"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1122,16 +1127,18 @@ msgid "Packing"
 msgstr "Pakker"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
+#, fuzzy
 msgid "Template file not found:"
-msgstr "Skabelonfil ikke fundet:"
+msgstr "Skabelon fil ikke fundet:\n"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
 msgstr "Filen Eksisterer, Overskrives?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
 msgid "Select Current Folder"
-msgstr "Vælg nurværende mappe"
+msgstr "Opret mappe"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
@@ -1237,8 +1244,9 @@ msgid "File:"
 msgstr "Fil:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
 msgid "Must use a valid extension."
-msgstr "Du skal bruge en gyldig udvidelse."
+msgstr "Skal bruge en gyldig extension."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1337,7 +1345,7 @@ msgstr "Beskrivelse"
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Online Tutorials:"
-msgstr "Online Dokumentation:"
+msgstr "Online Dokumentation"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -1407,10 +1415,6 @@ msgstr "Clear"
 #, fuzzy
 msgid "Clear Output"
 msgstr "Output"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -3738,14 +3742,6 @@ msgid "Show Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Origin"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Show Viewport"
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr ""
 
@@ -4030,10 +4026,6 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr ""
-
-#: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5710,14 +5702,6 @@ msgid "Checked Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Radio Item"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Checked Radio Item"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr ""
 
@@ -6200,9 +6184,7 @@ msgid "Mouse Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
+msgid "Invalid action (anything goes but '/' or ':')."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6345,6 +6327,10 @@ msgstr ""
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
 msgstr "Slet Valgte"
+
+#: editor/project_settings_editor.cpp
+msgid "Can't contain '/' or ':'"
+msgstr "Kan ikke indeholde '/' eller ':'"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
@@ -7393,10 +7379,6 @@ msgstr ""
 msgid "Pick Distance:"
 msgstr ""
 
-#: modules/mono/csharp_script.cpp
-msgid "Class name can't be a reserved keyword"
-msgstr ""
-
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
 msgstr ""
@@ -8091,21 +8073,11 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr "Stien skal pege på en gyldig fysisk node for at virke."
 
 #: scene/3d/scenario_fx.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
-
-#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
 "Kun én WorldEnvironment er tilladt pr. scene (eller et sæt af instanserede "
 "scener)."
-
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
-"this environment's Background Mode to Canvas (for 2D scenes)."
-msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8196,9 +8168,6 @@ msgstr "Error loading skrifttype."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Ugyldig skriftstørrelse."
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Kan ikke indeholde '/' eller ':'"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

@@ -58,10 +58,6 @@ int NetworkedMultiplayerENet::get_packet_peer() const {
 Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth) {
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_max_clients < 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_in_bandwidth < 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_out_bandwidth < 0, ERR_INVALID_PARAMETER);
 
 	ENetAddress address;
 
@@ -84,8 +80,8 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	host = enet_host_create(&address /* the address to bind the server host to */,
 			p_max_clients /* allow up to 32 clients and/or outgoing connections */,
 			SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
-			p_in_bandwidth /* limit incoming bandwith if > 0 */,
-			p_out_bandwidth /* limit outgoing bandwith if > 0 */);
+			p_in_bandwidth /* assume any amount of incoming bandwidth */,
+			p_out_bandwidth /* assume any amount of outgoing bandwidth */);
 
 	ERR_FAIL_COND_V(!host, ERR_CANT_CREATE);
 
@@ -97,46 +93,15 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	connection_status = CONNECTION_CONNECTED;
 	return OK;
 }
-Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth, int p_client_port) {
+Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth) {
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_client_port < 0 || p_client_port > 65535, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_in_bandwidth < 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_out_bandwidth < 0, ERR_INVALID_PARAMETER);
 
-	if (p_client_port != 0) {
-		ENetAddress c_client;
-
-#ifdef GODOT_ENET
-		if (bind_ip.is_wildcard()) {
-			c_client.wildcard = 1;
-		} else {
-			enet_address_set_ip(&c_client, bind_ip.get_ipv6(), 16);
-		}
-#else
-		if (bind_ip.is_wildcard()) {
-			c_client.host = 0;
-		} else {
-			ERR_FAIL_COND_V(!bind_ip.is_ipv4(), ERR_INVALID_PARAMETER);
-			c_client.host = *(uint32_t *)bind_ip.get_ipv4();
-		}
-#endif
-
-		c_client.port = p_client_port;
-
-		host = enet_host_create(&c_client /* create a client host */,
-				1 /* only allow 1 outgoing connection */,
-				SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
-				p_in_bandwidth /* limit incoming bandwith if > 0 */,
-				p_out_bandwidth /* limit outgoing bandwith if > 0 */);
-	} else {
-		host = enet_host_create(NULL /* create a client host */,
-				1 /* only allow 1 outgoing connection */,
-				SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
-				p_in_bandwidth /* limit incoming bandwith if > 0 */,
-				p_out_bandwidth /* limit outgoing bandwith if > 0 */);
-	}
+	host = enet_host_create(NULL /* create a client host */,
+			1 /* only allow 1 outgoing connection */,
+			SYSCH_MAX /* allow up to SYSCH_MAX channels to be used */,
+			p_in_bandwidth /* limit incoming bandwith if > 0 */,
+			p_out_bandwidth /* limit outgoing bandwith if > 0 */);
 
 	ERR_FAIL_COND_V(!host, ERR_CANT_CREATE);
 
@@ -166,7 +131,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 
 	unique_id = _gen_unique_id();
 
-	// Initiate connection, allocating enough channels
+	/* Initiate the connection, allocating the enough channels */
 	ENetPeer *peer = enet_host_connect(host, &address, SYSCH_MAX, unique_id);
 
 	if (peer == NULL) {
@@ -208,7 +173,7 @@ void NetworkedMultiplayerENet::poll() {
 
 		switch (event.type) {
 			case ENET_EVENT_TYPE_CONNECT: {
-				// Store any relevant client information here.
+				/* Store any relevant client information here. */
 
 				if (server && refuse_connections) {
 					enet_peer_reset(event.peer);
@@ -218,7 +183,7 @@ void NetworkedMultiplayerENet::poll() {
 				int *new_id = memnew(int);
 				*new_id = event.data;
 
-				if (*new_id == 0) { // Data zero is sent by server (enet won't let you configure this). Server is always 1.
+				if (*new_id == 0) { // Data zero is sent by server (enet won't let you configure this). Server is always 1
 					*new_id = 1;
 				}
 
@@ -255,7 +220,7 @@ void NetworkedMultiplayerENet::poll() {
 			} break;
 			case ENET_EVENT_TYPE_DISCONNECT: {
 
-				// Reset the peer's client information.
+				/* Reset the peer's client information. */
 
 				int *id = (int *)event.peer->data;
 
@@ -387,7 +352,7 @@ void NetworkedMultiplayerENet::poll() {
 						incoming_packets.push_back(packet);
 					}
 
-					// Destroy packet later
+					// Destroy packet later..
 				} else {
 					ERR_CONTINUE(true);
 				}
@@ -406,10 +371,10 @@ bool NetworkedMultiplayerENet::is_server() const {
 	return server;
 }
 
-void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
+void NetworkedMultiplayerENet::close_connection() {
 
-	ERR_FAIL_COND(!active);
-	ERR_FAIL_COND(wait_usec < 0);
+	if (!active)
+		return;
 
 	_pop_current_packet();
 
@@ -423,10 +388,7 @@ void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
 
 	if (peers_disconnected) {
 		enet_host_flush(host);
-
-		if (wait_usec > 0) {
-			OS::get_singleton()->delay_usec(wait_usec); // Wait for disconnection packets to send
-		}
+		OS::get_singleton()->delay_usec(100); // Wait 100ms for disconnection packets to send
 	}
 
 	enet_host_destroy(host);
@@ -470,7 +432,6 @@ int NetworkedMultiplayerENet::get_available_packet_count() const {
 
 	return incoming_packets.size();
 }
-
 Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 	ERR_FAIL_COND_V(incoming_packets.size() == 0, ERR_UNAVAILABLE);
@@ -485,7 +446,6 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buff
 
 	return OK;
 }
-
 Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
 	ERR_FAIL_COND_V(!active, ERR_UNCONFIGURED);
@@ -553,7 +513,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	} else {
 
 		ERR_FAIL_COND_V(!peer_map.has(1), ERR_BUG);
-		enet_peer_send(peer_map[1], channel, packet); // Send to server for broadcast
+		enet_peer_send(peer_map[1], channel, packet); // Send to server for broadcast..
 	}
 
 	enet_host_flush(host);
@@ -762,8 +722,8 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "client_port"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("close_connection", "wait_usec"), &NetworkedMultiplayerENet::close_connection, DEFVAL(100));
+	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("close_connection"), &NetworkedMultiplayerENet::close_connection);
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
@@ -804,7 +764,7 @@ NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
 	close_connection();
 }
 
-// Sets IP for ENet to bind when using create_server or create_client
+// Sets IP for ENet to bind when using create_server
 // if no IP is set, then ENet bind to ENET_HOST_ANY
 void NetworkedMultiplayerENet::set_bind_ip(const IP_Address &p_ip) {
 	ERR_FAIL_COND(!p_ip.is_valid() && !p_ip.is_wildcard());

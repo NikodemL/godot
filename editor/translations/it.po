@@ -9,18 +9,16 @@
 # Elia Zanaboni <elia.zanaboni@gmail.com>, 2017.
 # Giovanni Solimeno (Crax97) <gsolimeno97@gmail.com>, 2017.
 # Marco Melorio <m.melorio@icloud.com>, 2017.
-# Matteo <matteo.guglielmetti@hotmail.it>, 2018.
-# Myself <whatamidoing.wt@gmail.com>, 2017-2018.
+# Myself <whatamidoing.wt@gmail.com>, 2017.
 # RealAquilus <JamesHeller@live.it>, 2017.
-# Samuele Zolfanelli <samdazel@gmail.com>, 2018.
 # Sean Bone <seanbone@zumguy.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-05-02 10:38+0000\n"
-"Last-Translator: Samuele Zolfanelli <samdazel@gmail.com>\n"
+"PO-Revision-Date: 2017-12-14 12:48+0000\n"
+"Last-Translator: anonymous <>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -28,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -507,8 +505,9 @@ msgid "Connecting Signal:"
 msgstr "Connessione Segnali:"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
 msgid "Disconnect '%s' from '%s'"
-msgstr "Disconnetti '%s' da '%s'"
+msgstr "Connetti '%s' a '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
@@ -526,7 +525,7 @@ msgstr "Segnali"
 #: editor/create_dialog.cpp
 #, fuzzy
 msgid "Change %s Type"
-msgstr "Cambia Tipo di %s"
+msgstr "Cambia Tipo"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -534,8 +533,9 @@ msgid "Change"
 msgstr "Cambia"
 
 #: editor/create_dialog.cpp
+#, fuzzy
 msgid "Create New %s"
-msgstr "Crea Nuovo %s"
+msgstr "Crea Nuovo"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -646,8 +646,9 @@ msgstr ""
 "Rimuoverli comunque? (no undo)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid "Cannot remove:"
-msgstr "Impossibile rimuovere:"
+msgstr "Impossibile rimouvere:\n"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -760,7 +761,7 @@ msgstr "Donatori Oro"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr "Donatori Argento"
+msgstr "Sponsors Argento"
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
@@ -841,8 +842,9 @@ msgid "Rename Audio Bus"
 msgstr "Rinomina Bus Audio"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "Cambia il volume del Bus Audio"
+msgstr "Imposta Bus Audio su Solo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -907,7 +909,7 @@ msgstr "Elimina Effetto"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr "Audio"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1088,12 +1090,13 @@ msgid "Updating scene.."
 msgstr "Aggiornando la scena.."
 
 #: editor/editor_data.cpp
+#, fuzzy
 msgid "[empty]"
-msgstr "[vuoto]"
+msgstr "(vuoto)"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
-msgstr "[non salvato]"
+msgstr ""
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
@@ -1346,8 +1349,9 @@ msgid "Description"
 msgstr "Descrizione"
 
 #: editor/editor_help.cpp
+#, fuzzy
 msgid "Online Tutorials:"
-msgstr "Tutorial online:"
+msgstr "Tutorials"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -1356,7 +1360,7 @@ msgid ""
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"Al momento una descrizione per questa classe non esiste. Aiutaci [color="
+"Al momento una descrizione per questo metodo non esiste. Aiutaci [color="
 "$color][url=$url]aggiungendone una[/url][/color]!"
 
 #: editor/editor_help.cpp
@@ -1413,11 +1417,7 @@ msgstr "Rimuovi"
 #: editor/editor_log.cpp
 #, fuzzy
 msgid "Clear Output"
-msgstr "Pulisci output"
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr ""
+msgstr "Output"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -2382,8 +2382,9 @@ msgid "Frame #:"
 msgstr "Frame #:"
 
 #: editor/editor_profiler.cpp
+#, fuzzy
 msgid "Time"
-msgstr "Tempo"
+msgstr "Tempo:"
 
 #: editor/editor_profiler.cpp
 #, fuzzy
@@ -2490,7 +2491,7 @@ msgstr "Non é stato trovato version.txt all'interno di templates."
 #: editor/export_template_manager.cpp
 #, fuzzy
 msgid "Error creating path for templates:"
-msgstr "Errore di creazione del percorso per i template:"
+msgstr "Errore di creazione del percorso per le template:\n"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2525,8 +2526,9 @@ msgstr "Nessuna risposta."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Request Failed."
-msgstr "Richiesta fallita."
+msgstr "Rich. Fall."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2570,7 +2572,7 @@ msgstr "Connettendo.."
 #: editor/export_template_manager.cpp
 #, fuzzy
 msgid "Can't Connect"
-msgstr "Impossibile connettere."
+msgstr "Impossibile connettersi"
 
 #: editor/export_template_manager.cpp
 msgid "Connected"
@@ -2590,6 +2592,7 @@ msgid "Connection Error"
 msgstr "Errore di connessione"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "SSL Handshake Error"
 msgstr "Errore nell'Handshake SSL"
 
@@ -2648,7 +2651,8 @@ msgstr "Visualizza elementi come una lista"
 #, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"Stato: Importazione file fallita. Si prega di riparare il file e "
+"\n"
+"Stato: Importazione file fallita. Si prega di sistemare il file e "
 "reimportarlo manualmente."
 
 #: editor/filesystem_dock.cpp
@@ -2658,7 +2662,7 @@ msgstr "Impossibile spostare/rinominare risorse root."
 #: editor/filesystem_dock.cpp
 #, fuzzy
 msgid "Cannot move a folder into itself."
-msgstr "Impossibile spostare una cartella in se stessa."
+msgstr "Impossibile spostare una cartella in se stessa.\n"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -2666,12 +2670,14 @@ msgid "Error moving:"
 msgstr "Errore spostamento:\n"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Error duplicating:"
-msgstr "Errore duplicazione:"
+msgstr "Errore in caricamento:"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Unable to update dependencies:"
-msgstr "Impossibile aggiornare le dipendenze:"
+msgstr "Impossibile aggiornare le dipendenze:\n"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
@@ -2702,12 +2708,14 @@ msgid "Renaming folder:"
 msgstr "Rinomina cartella:"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Duplicating file:"
-msgstr "Duplicando file:"
+msgstr "duplica"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Duplicating folder:"
-msgstr "Duplicando cartella:"
+msgstr "Rinomina cartella:"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2728,7 +2736,7 @@ msgstr "Sposta in.."
 #: editor/filesystem_dock.cpp
 #, fuzzy
 msgid "Open Scene(s)"
-msgstr "Apri Scena/e"
+msgstr "Apri Scena"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2743,8 +2751,9 @@ msgid "View Owners.."
 msgstr "Vedi Proprietari.."
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid "Duplicate.."
-msgstr "Duplica.."
+msgstr "duplica"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2841,13 +2850,14 @@ msgid "Importing Scene.."
 msgstr "Importando Scena.."
 
 #: editor/import/resource_importer_scene.cpp
+#, fuzzy
 msgid "Generating Lightmaps"
-msgstr "Generando Lightmap"
+msgstr "Trasferisci a Lightmap:"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
 msgid "Generating for Mesh: "
-msgstr "Generando per Mesh: "
+msgstr "Generando AABB"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script.."
@@ -3096,16 +3106,15 @@ msgstr "Copia Animazione"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning"
-msgstr "Onion Skinning"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
 msgstr "Attiva Onion Skinning"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Directions"
-msgstr "Direzioni"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
@@ -3126,12 +3135,12 @@ msgstr "1 Passo"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "2 steps"
-msgstr "2 passi"
+msgstr "2 Passi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
 msgid "3 steps"
-msgstr "3 passi"
+msgstr "3 Passi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
@@ -3139,11 +3148,11 @@ msgstr "Solo Differenze"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr "Forza Modulazione Bianca"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr "Includi Gizmo (3D)"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -3473,28 +3482,21 @@ msgid ""
 "Save your scene (for images to be saved in the same dir), or pick a save "
 "path from the BakedLightmap properties."
 msgstr ""
-"Impossibile determinare un percorso di salvataggio per le immagini di "
-"lightmap.\n"
-"Salva la scena (per salvare le immagini nella stessa directory), o scegli un "
-"percorso di salvataggio nelle proprietà di BackedLightmap."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
-"Nessuna mesh da preprocessare. Assicurarsi che contengano un canale UV2 e "
-"che la spunta 'Bake Light' sia abilitata."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
-"Tentativo di creazione delle immagini di lightmap fallito, assicurarsi che "
-"il percorso dei file sia scrivibile."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid "Bake Lightmaps"
-msgstr "Preprocessa Lightmaps"
+msgstr "Trasferisci a Lightmap:"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3753,16 +3755,6 @@ msgstr "Mostra Ossa"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
 msgstr "Mostra guide"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Show Origin"
-msgstr "Visualizza Origine"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Show Viewport"
-msgstr "1 Vista"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4066,10 +4058,6 @@ msgstr "MeshInstance manca di una Mesh!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
 msgstr "La mesh non ha superficie dalla quale creare un'outline!"
-
-#: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5788,16 +5776,6 @@ msgid "Checked Item"
 msgstr "Checked Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Radio Item"
-msgstr "Aggiungi Elemento"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Checked Radio Item"
-msgstr "Checked Item"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr "Ha"
 
@@ -6317,10 +6295,8 @@ msgid "Mouse Button"
 msgstr "Pulsante Mouse"
 
 #: editor/project_settings_editor.cpp
-msgid ""
-"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
-msgstr ""
+msgid "Invalid action (anything goes but '/' or ':')."
+msgstr "Azione invalida (va bene tutto a parte '/' o ':')."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -6465,6 +6441,11 @@ msgstr "L'impostazione '%s' è interna e non può essere rimossa."
 #, fuzzy
 msgid "Delete Item"
 msgstr "Elimina Input"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Can't contain '/' or ':'"
+msgstr "Impossibile connetersi all'host:"
 
 #: editor/project_settings_editor.cpp
 #, fuzzy
@@ -7575,10 +7556,6 @@ msgstr "Impostazioni Snap"
 msgid "Pick Distance:"
 msgstr "Istanza:"
 
-#: modules/mono/csharp_script.cpp
-msgid "Class name can't be a reserved keyword"
-msgstr ""
-
 #: modules/mono/editor/godotsharp_editor.cpp
 #, fuzzy
 msgid "Generating solution..."
@@ -7844,7 +7821,7 @@ msgstr "Iteratore"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr "While"
+msgstr "Mentre"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Return"
@@ -8330,21 +8307,11 @@ msgstr ""
 "poter funzionare."
 
 #: scene/3d/scenario_fx.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
-
-#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
 msgstr ""
 "Solamente un WorldEnvironment è consentito per scena (o insieme di scene "
 "istanziate)."
-
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
-"this environment's Background Mode to Canvas (for 2D scenes)."
-msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -8444,13 +8411,6 @@ msgstr "Errore caricamento font."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Dimensione font Invalida."
-
-#~ msgid "Invalid action (anything goes but '/' or ':')."
-#~ msgstr "Azione invalida (va bene tutto a parte '/' o ':')."
-
-#, fuzzy
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Impossibile connetersi all'host:"
 
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "

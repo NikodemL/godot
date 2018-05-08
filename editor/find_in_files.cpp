@@ -154,7 +154,9 @@ void FindInFiles::_iterate() {
 			PoolStringArray sub_dirs;
 			_scan_dir(_root_prefix + _current_dir, sub_dirs);
 
-			_folders_stack.push_back(sub_dirs);
+			if (sub_dirs.size() != 0) {
+				_folders_stack.push_back(sub_dirs);
+			}
 
 		} else {
 			// Go back one level
@@ -174,7 +176,7 @@ void FindInFiles::_iterate() {
 
 		String fpath = _files_to_scan[_files_to_scan.size() - 1];
 		pop_back(_files_to_scan);
-		_scan_file(fpath);
+		_scan_file(_root_prefix + fpath);
 
 	} else {
 		print_line("Search complete");
@@ -200,6 +202,8 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 		return;
 	}
 
+	//print_line(String("Scanning ") + path);
+
 	dir->list_dir_begin();
 
 	for (int i = 0; i < 1000; ++i) {
@@ -218,7 +222,7 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 		else {
 			String file_ext = file.get_extension();
 			if (_extension_filter.has(file_ext)) {
-				_files_to_scan.push_back(path.plus_file(file));
+				_files_to_scan.push_back(file);
 			}
 		}
 	}
@@ -228,6 +232,7 @@ void FindInFiles::_scan_file(String fpath) {
 
 	FileAccess *f = FileAccess::open(fpath, FileAccess::READ);
 	if (f == NULL) {
+		f->close();
 		print_line(String("Cannot open file ") + fpath);
 		return;
 	}

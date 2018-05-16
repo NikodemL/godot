@@ -72,9 +72,9 @@ void T9Sender::init_in_render(float unsued) {
 	glGenBuffers(2, pbo_objects);
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_objects[0]);
-	glBufferData(GL_PIXEL_PACK_BUFFER, 384 * 384 * 4, 0, GL_STREAM_READ);
+	glBufferData(GL_PIXEL_PACK_BUFFER, 256 * 256 * 4, 0, GL_STREAM_READ);
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_objects[1]);
-	glBufferData(GL_PIXEL_PACK_BUFFER, 384 * 384 * 4, 0, GL_STREAM_READ);
+	glBufferData(GL_PIXEL_PACK_BUFFER, 256 * 256 * 4, 0, GL_STREAM_READ);
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
@@ -166,16 +166,11 @@ void T9Sender::send_screen(Ref<ViewportTexture> texture) {
 }
 
 void flip_image(unsigned char* src_data, unsigned char* dst_data, int screen_width, int screen_height) {
-	for (int i = 0; i < screen_width; i++) {
-		for (int j = 0; j < screen_height; j++) {
-			int row_dst_idx = (screen_height - i - 1) * screen_height;
-			int row_src_idx = i * screen_height;
+	for (int i = 0; i < screen_height; i++) {
+		int row_dst_idx = (screen_height - i - 1) * screen_width * 4;
+		int row_src_idx = i * screen_width * 4;
 
-			dst_data[(row_dst_idx + j) * 4 + 0] = src_data[(row_src_idx + j) * 4 + 2];
-			dst_data[(row_dst_idx + j) * 4 + 1] = src_data[(row_src_idx + j) * 4 + 1];
-			dst_data[(row_dst_idx + j) * 4 + 2] = src_data[(row_src_idx + j) * 4 + 0];
-			dst_data[(row_dst_idx + j) * 4 + 3] = src_data[(row_src_idx + j) * 4 + 3];
-		}
+		memcpy(dst_data + row_dst_idx, src_data + row_src_idx, 4 * screen_width);
 	}
 }
 
@@ -246,9 +241,9 @@ void T9Sender::send_front_framebuffer_in_render(float unsued)
 	if (ptr)
 	{
 		// T9 expects top-down row format, we have it down-top
-		//flip_image(ptr, buffer_data, screen_width, screen_height);
+		flip_image(ptr, buffer_data, screen_width, screen_height);
 
-		T9SendScreenPicture(screen_number, ptr); // buffer_data);
+		T9SendScreenPicture(screen_number, buffer_data);
 		checkError();
 		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 		checkError();

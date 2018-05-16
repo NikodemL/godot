@@ -166,16 +166,11 @@ void T9Sender::send_screen(Ref<ViewportTexture> texture) {
 }
 
 void flip_image(unsigned char* src_data, unsigned char* dst_data, int screen_width, int screen_height) {
-	for (int i = 0; i < screen_width; i++) {
-		for (int j = 0; j < screen_height; j++) {
-			int row_dst_idx = (screen_height - i - 1) * screen_height;
-			int row_src_idx = i * screen_height;
+	for (int i = 0; i < screen_height; i++) {
+		int row_dst_idx = (screen_height - i - 1) * screen_width * 4;
+		int row_src_idx = i * screen_width * 4;
 
-			dst_data[(row_dst_idx + j) * 4 + 0] = src_data[(row_src_idx + j) * 4 + 2];
-			dst_data[(row_dst_idx + j) * 4 + 1] = src_data[(row_src_idx + j) * 4 + 1];
-			dst_data[(row_dst_idx + j) * 4 + 2] = src_data[(row_src_idx + j) * 4 + 0];
-			dst_data[(row_dst_idx + j) * 4 + 3] = src_data[(row_src_idx + j) * 4 + 3];
-		}
+		memcpy(dst_data + row_dst_idx, src_data + row_src_idx, 4 * screen_width);
 	}
 }
 

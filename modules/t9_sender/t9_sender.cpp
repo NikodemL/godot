@@ -72,9 +72,9 @@ void T9Sender::init_in_render(float unsued) {
 	glGenBuffers(2, pbo_objects);
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_objects[0]);
-	glBufferData(GL_PIXEL_PACK_BUFFER, 256 * 256 * 4, 0, GL_STREAM_READ);
+	glBufferData(GL_PIXEL_PACK_BUFFER, 384 * 384 * 4, 0, GL_STREAM_READ);
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_objects[1]);
-	glBufferData(GL_PIXEL_PACK_BUFFER, 256 * 256 * 4, 0, GL_STREAM_READ);
+	glBufferData(GL_PIXEL_PACK_BUFFER, 384 * 384 * 4, 0, GL_STREAM_READ);
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
@@ -246,9 +246,9 @@ void T9Sender::send_front_framebuffer_in_render(float unsued)
 	if (ptr)
 	{
 		// T9 expects top-down row format, we have it down-top
-		flip_image(ptr, buffer_data, screen_width, screen_height);
+		//flip_image(ptr, buffer_data, screen_width, screen_height);
 
-		T9SendScreenPicture(screen_number, buffer_data);
+		T9SendScreenPicture(screen_number, ptr); // buffer_data);
 		checkError();
 		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 		checkError();

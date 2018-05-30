@@ -301,8 +301,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			"#ifdef USE_TEXTURE_RECT\n"
 			"vec2 uv_interp2;\n"
 			"uv_interp2 = vertex.xy;\n"
-			"#else\n"
-			"vec2 uv_interp2 = vec2(0,0);\n"
 			"#endif\n");
 
 	if (cc) {

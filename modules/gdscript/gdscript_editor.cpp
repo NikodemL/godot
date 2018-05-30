@@ -416,7 +416,7 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 			s += p_args[i].get_slice(":", 0);
 		}
 	}
-	s += "):\n" + _get_indentation() + "pass # replace with function body\n";
+	s += "):\n" + _get_indentation() + "pass # Replace with function body.\n";
 
 	return s;
 }
@@ -2634,6 +2634,13 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			r_result.class_member = p_symbol;
 			return OK;
 		}
+	}
+
+	if ("PI" == p_symbol || "TAU" == p_symbol || "INF" == p_symbol || "NAN" == p_symbol) {
+		r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+		r_result.class_name = "@GDScript";
+		r_result.class_member = p_symbol;
+		return OK;
 	}
 
 	GDScriptParser p;

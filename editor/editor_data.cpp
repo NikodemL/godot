@@ -364,6 +364,14 @@ void EditorData::notify_edited_scene_changed() {
 	}
 }
 
+void EditorData::notify_resource_saved(const Ref<Resource> &p_resource) {
+
+	for (int i = 0; i < editor_plugins.size(); i++) {
+
+		editor_plugins[i]->notify_resource_saved(p_resource);
+	}
+}
+
 void EditorData::clear_editor_states() {
 
 	for (int i = 0; i < editor_plugins.size(); i++) {
@@ -410,6 +418,18 @@ void EditorData::paste_object_params(Object *p_object) {
 
 		p_object->set(E->get().name, E->get().value);
 	}
+}
+
+bool EditorData::call_build() {
+
+	bool result = true;
+
+	for (int i = 0; i < editor_plugins.size() && result; i++) {
+
+		result &= editor_plugins[i]->build();
+	}
+
+	return result;
 }
 
 UndoRedo &EditorData::get_undo_redo() {
@@ -890,7 +910,7 @@ Array EditorSelection::_get_transformable_selected_nodes() {
 	return ret;
 }
 
-Array EditorSelection::_get_selected_nodes() {
+Array EditorSelection::get_selected_nodes() {
 
 	Array ret;
 
@@ -908,7 +928,7 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &EditorSelection::clear);
 	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
-	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::_get_selected_nodes);
+	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
 	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
 	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
 	ADD_SIGNAL(MethodInfo("selection_changed"));

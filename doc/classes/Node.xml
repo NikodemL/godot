@@ -586,7 +586,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code]. Returns an empty [Variant].
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
 			</description>
 		</method>
 		<method name="rpc_unreliable" qualifiers="vararg">
@@ -606,7 +606,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol. Returns an empty [Variant].
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
 			</description>
 		</method>
 		<method name="rset">
@@ -641,7 +641,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Remotely changes the property's value on a specific peer identified by [code]peer_id[/code].
+				Remotely changes the property's value on a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]).
 			</description>
 		</method>
 		<method name="rset_unreliable">
@@ -665,7 +665,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Remotely changes property's value on a specific peer identified by [code]peer_id[/code] using an unreliable protocol.
+				Remotely changes property's value on a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]).
 			</description>
 		</method>
 		<method name="set_display_folded">
@@ -703,7 +703,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method]_physics_process[/code] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
+				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method _physics_process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
 			</description>
 		</method>
 		<method name="set_process">
@@ -730,7 +730,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method]_process[/code] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
+				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
 			</description>
 		</method>
 		<method name="set_process_unhandled_input">
@@ -762,12 +762,14 @@
 		</method>
 	</methods>
 	<members>
-		<member name="custom_multiplayer_api" type="MultiplayerAPI" setter="set_custom_multiplayer_api" getter="get_custom_multiplayer_api">
+		<member name="custom_multiplayer" type="MultiplayerAPI" setter="set_custom_multiplayer" getter="get_custom_multiplayer">
+			The override to the default [MultiplayerAPI]. Set to null to use the default SceneTree one.
 		</member>
 		<member name="filename" type="String" setter="set_filename" getter="get_filename">
 			When a scene is instanced from a file, its topmost node contains the filename from which it was loaded.
 		</member>
-		<member name="multiplayer_api" type="MultiplayerAPI" setter="" getter="get_multiplayer_api">
+		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
+			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).
 		</member>
 		<member name="name" type="String" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed
@@ -780,6 +782,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="ready">
+			<description>
+				Emitted when the node is ready.
+			</description>
+		</signal>
 		<signal name="renamed">
 			<description>
 				Emitted when the node is renamed.

@@ -61,6 +61,7 @@ void TileMap::_notification(int p_what) {
 			}
 
 			pending_update = true;
+			_recreate_quadrants();
 			_update_dirty_quadrants();
 			RID space = get_world_2d()->get_space();
 			_update_quadrant_transform();
@@ -304,6 +305,7 @@ void TileMap::_update_dirty_quadrants() {
 		}
 		q.occluder_instances.clear();
 		Ref<ShaderMaterial> prev_material;
+		int prev_z_index;
 		RID prev_canvas_item;
 		RID prev_debug_canvas_item;
 
@@ -324,11 +326,12 @@ void TileMap::_update_dirty_quadrants() {
 				continue;
 
 			Ref<ShaderMaterial> mat = tile_set->tile_get_material(c.id);
+			int z_index = tile_set->tile_get_z_index(c.id);
 
 			RID canvas_item;
 			RID debug_canvas_item;
 
-			if (prev_canvas_item == RID() || prev_material != mat) {
+			if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
 
 				canvas_item = vs->canvas_item_create();
 				if (mat.is_valid())
@@ -339,6 +342,7 @@ void TileMap::_update_dirty_quadrants() {
 				xform.set_origin(q.pos);
 				vs->canvas_item_set_transform(canvas_item, xform);
 				vs->canvas_item_set_light_mask(canvas_item, get_light_mask());
+				vs->canvas_item_set_z_index(canvas_item, z_index);
 
 				q.canvas_items.push_back(canvas_item);
 
@@ -354,6 +358,7 @@ void TileMap::_update_dirty_quadrants() {
 
 				prev_canvas_item = canvas_item;
 				prev_material = mat;
+				prev_z_index = z_index;
 
 			} else {
 				canvas_item = prev_canvas_item;
@@ -712,7 +717,7 @@ void TileMap::_make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q) {
 	pending_update = true;
 	if (!is_inside_tree())
 		return;
-	call_deferred("_update_dirty_quadrants");
+	_update_dirty_quadrants();
 }
 
 void TileMap::set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose) {
@@ -840,15 +845,36 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 				if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
 					mask |= TileSet::BIND_BOTTOMRIGHT;
 				}
-			} else if (tile_set->autotile_get_bitmask_mode(id) == TileSet::BITMASK_3X3) {
-				if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
-					mask |= TileSet::BIND_TOPLEFT;
+			} else {
+				if (tile_set->autotile_get_bitmask_mode(id) == TileSet::BITMASK_3X3_MINIMAL) {
+					if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
+						mask |= TileSet::BIND_TOPLEFT;
+					}
+					if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
+						mask |= TileSet::BIND_TOPRIGHT;
+					}
+					if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
+						mask |= TileSet::BIND_BOTTOMLEFT;
+					}
+					if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
+						mask |= TileSet::BIND_BOTTOMRIGHT;
+					}
+				} else {
+					if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y - 1))) {
+						mask |= TileSet::BIND_TOPLEFT;
+					}
+					if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y - 1))) {
+						mask |= TileSet::BIND_TOPRIGHT;
+					}
+					if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y + 1))) {
+						mask |= TileSet::BIND_BOTTOMLEFT;
+					}
+					if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y + 1))) {
+						mask |= TileSet::BIND_BOTTOMRIGHT;
+					}
 				}
 				if (tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1))) {
 					mask |= TileSet::BIND_TOP;
-				}
-				if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
-					mask |= TileSet::BIND_TOPRIGHT;
 				}
 				if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
 					mask |= TileSet::BIND_LEFT;
@@ -857,14 +883,8 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 				if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
 					mask |= TileSet::BIND_RIGHT;
 				}
-				if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
-					mask |= TileSet::BIND_BOTTOMLEFT;
-				}
 				if (tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1))) {
 					mask |= TileSet::BIND_BOTTOM;
-				}
-				if (tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y + 1)) && tile_set->is_tile_bound(id, get_cell(p_x + 1, p_y))) {
-					mask |= TileSet::BIND_BOTTOMRIGHT;
 				}
 			}
 			Vector2 coord = tile_set->autotile_get_subtile_for_bitmask(id, mask, this, Vector2(p_x, p_y));

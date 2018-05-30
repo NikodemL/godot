@@ -177,7 +177,11 @@ Error AudioDriverPulseAudio::init_device() {
 
 	pa_buffer_attr attr;
 	// set to appropriate buffer length (in bytes) from global settings
-	attr.tlength = pa_buffer_size * sizeof(int16_t);
+	// Note: PulseAudio defaults to 4 fragments, which means that the actual
+	// latency is tlength / fragments. It seems that the PulseAudio has no way
+	// to get the fragments number so we're hardcoding this to the default of 4
+	const int fragments = 4;
+	attr.tlength = pa_buffer_size * sizeof(int16_t) * fragments;
 	// set them to be automatically chosen
 	attr.prebuf = (uint32_t)-1;
 	attr.maxlength = (uint32_t)-1;
@@ -336,13 +340,22 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 						bytes = byte_size;
 					}
 
-					int ret = pa_stream_write(ad->pa_str, ptr, bytes, NULL, 0LL, PA_SEEK_RELATIVE);
+					ret = pa_stream_write(ad->pa_str, ptr, bytes, NULL, 0LL, PA_SEEK_RELATIVE);
 					if (ret >= 0) {
 						byte_size -= bytes;
 						ptr = (const char *)ptr + bytes;
 					}
 				} else {
-					pa_mainloop_iterate(ad->pa_ml, 1, NULL);
+					ret = pa_mainloop_iterate(ad->pa_ml, 0, NULL);
+					if (ret == 0) {
+						// If pa_mainloop_iterate returns 0 sleep for 1 msec to wait
+						// for the stream to be able to process more bytes
+						ad->unlock();
+
+						OS::get_singleton()->delay_usec(1000);
+
+						ad->lock();
+					}
 				}
 			}
 		}

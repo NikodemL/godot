@@ -121,6 +121,10 @@ Array VisualScriptNode::_get_default_input_values() const {
 	return default_input_values;
 }
 
+String VisualScriptNode::get_text() const {
+	return "";
+}
+
 void VisualScriptNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_visual_script"), &VisualScriptNode::get_visual_script);
@@ -2028,6 +2032,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 		function.flow_stack_size = 0;
 		function.pass_stack_size = 0;
 		function.node_count = 0;
+
 		Map<StringName, int> local_var_indices;
 
 		if (function.node < 0) {

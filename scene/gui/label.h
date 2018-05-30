@@ -69,6 +69,8 @@ private:
 	bool uppercase;
 	bool expand;
 	int max_font_size;
+	float character_central_scale;
+	int forced_font_size;
 
 	int get_longest_line_width() const;
 
@@ -156,6 +158,12 @@ public:
 
 	void set_loc_label(String p_loc_label);
 	String get_loc_label() const;
+
+	void set_character_central_scale(float p_character_central_scale);
+	float get_character_central_scale() const;
+
+	void set_forced_font_size(int p_forced_font_size);
+	int get_forced_font_size() const;
 
 	Label(const String &p_text = String());
 	~Label();

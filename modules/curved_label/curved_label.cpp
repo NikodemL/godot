@@ -62,10 +62,10 @@ void CurvedLabel::_notification(int p_what) {
 
 			float char_w;
 			if (mirroredtext) {
-				char_w = -font->draw_char(ci, Vector2(0, radius), c, n, font_color, expand_scale);
+				char_w = -font->draw_char(ci, Vector2(0, radius), c, n, font_color, Point2(expand_scale, 1));
 			}
 			else {
-				char_w = font->draw_char(ci, Vector2(0, -radius), c, n, font_color, expand_scale);
+				char_w = font->draw_char(ci, Vector2(0, -radius), c, n, font_color, Point2(expand_scale, 1));
 			}
 			float char_angle = 2 * atan(char_w / (2 * radius)) * 180. / 3.1415 * space;
 			rotation += char_angle;

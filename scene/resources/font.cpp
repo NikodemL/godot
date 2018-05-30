@@ -87,7 +87,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate", "expand_scale"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(1.0f));
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate", "expand_scale"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)), DEFVAL(Point2(1.0f, 1.0f)));
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
 }
 
@@ -511,14 +511,23 @@ float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_c
 	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
 	if (c->texture_idx != -1) {
 
+		// We find source and dst rect
 		Rect2 rect(cpos, c->rect.size * custom_scale.x);
-		real_t grow_x = rect.get_size().x * (custom_scale.y - 1) / 2;
-		real_t grow_y = rect.get_size().y * (custom_scale.y - 1) / 2;
+		Rect2 src_rect(c->rect);
 
-		rect = rect.grow_individual(grow_x, grow_y, grow_x, grow_y);
+		// Y scales the outerrect while retaining inner rect's UVs
+		if (custom_scale.y != 1) {
+			real_t grow_x = rect.get_size().x * (custom_scale.y - 1) / 2;
+			real_t grow_y = rect.get_size().y * (custom_scale.y - 1) / 2;
+			rect = rect.grow_individual(grow_x, grow_y, grow_x, grow_y);
+
+			real_t uv_grow_x = src_rect.get_size().x * (custom_scale.y - 1) / 2;
+			real_t uv_grow_y = src_rect.get_size().y * (custom_scale.y - 1) / 2;
+			src_rect = src_rect.grow_individual(uv_grow_x, uv_grow_y, uv_grow_x, uv_grow_y);
+		}
 
 		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, rect,
-			textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
+			textures[c->texture_idx]->get_rid(), src_rect, p_modulate, false, RID(), false);
 	}
 
 	return get_char_size(p_char, p_next).width * custom_scale.x;

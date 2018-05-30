@@ -873,7 +873,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE, "-1,999,1"), "set_max_lines_visible", "get_max_lines_visible");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_max_font_size", "get_max_font_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "forced_font_soze", PROPERTY_HINT_RANGE, "0,1000"), "set_forced_font_size", "get_forced_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "forced_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_forced_font_size", "get_forced_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "character_central_scale", PROPERTY_HINT_RANGE, "0.1,2"), "set_character_central_scale", "get_character_central_scale");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "loc_label"), "set_loc_label", "get_loc_label");
 }

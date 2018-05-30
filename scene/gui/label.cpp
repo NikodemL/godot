@@ -233,7 +233,7 @@ void Label::_notification(int p_what) {
 		}
 
 		// We also allow custom expand scale
-		Point2 custom_scale(expand_scale, character_central_scale);
+		Point2 custom_scale(expand_scale, character_quad_scale);
 
 		int line_spacing_expand = line_spacing * expand_scale;
 		int font_h_expand = font->get_height() * expand_scale + line_spacing_expand;
@@ -796,13 +796,13 @@ String Label::get_loc_label() const {
 	return loc_label;
 }
 
-void Label::set_character_central_scale(float p_character_central_scale) {
-	character_central_scale = p_character_central_scale > 0.1f ? p_character_central_scale : 0.1f;
+void Label::set_character_quad_scale(float p_character_quad_scale) {
+	character_quad_scale = p_character_quad_scale > 0.1f ? p_character_quad_scale : 0.1f;
 	update();
 }
 
-float Label::get_character_central_scale() const {
-	return character_central_scale;
+float Label::get_character_quad_scale() const {
+	return character_quad_scale;
 }
 
 void Label::set_forced_font_size(int p_forced_font_size) {
@@ -846,8 +846,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_font_size", "max_size"), &Label::set_max_font_size);
 	ClassDB::bind_method(D_METHOD("get_loc_label"), &Label::get_loc_label);
 	ClassDB::bind_method(D_METHOD("set_loc_label", "loc_label"), &Label::set_loc_label);
-	ClassDB::bind_method(D_METHOD("get_character_central_scale"), &Label::get_character_central_scale);
-	ClassDB::bind_method(D_METHOD("set_character_central_scale", "scale"), &Label::set_character_central_scale);
+	ClassDB::bind_method(D_METHOD("get_character_quad_scale"), &Label::get_character_quad_scale);
+	ClassDB::bind_method(D_METHOD("set_character_quad_scale", "scale"), &Label::set_character_quad_scale);
 	ClassDB::bind_method(D_METHOD("get_forced_font_size"), &Label::get_forced_font_size);
 	ClassDB::bind_method(D_METHOD("set_forced_font_size", "size"), &Label::set_forced_font_size);
 
@@ -874,7 +874,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_max_font_size", "get_max_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "forced_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_forced_font_size", "get_forced_font_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "character_central_scale", PROPERTY_HINT_RANGE, "0.1,2"), "set_character_central_scale", "get_character_central_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "character_quad_scale", PROPERTY_HINT_RANGE, "0.1,2"), "set_character_quad_scale", "get_character_quad_scale");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "loc_label"), "set_loc_label", "get_loc_label");
 }
 
@@ -901,7 +901,7 @@ Label::Label(const String &p_text) {
 	expand = false;
 	max_font_size = 3000;
 	loc_label = "";
-	character_central_scale = 1.0f;
+	character_quad_scale = 1.0f;
 	forced_font_size = 0;
 }
 

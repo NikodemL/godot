@@ -296,6 +296,13 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 	strings.push_back(vertex_code2.get_data());
 
+	// Added UV2 support to vertex program in canvas item shader
+	strings.push_back(
+			"#ifdef USE_TEXTURE_RECT\n"
+			"vec2 uv_interp2;\n"
+			"uv_interp2 = vertex.xy;\n"
+			"#endif\n");
+
 	if (cc) {
 		code_string = cc->vertex.ascii();
 		strings.push_back(code_string.get_data());
@@ -309,6 +316,12 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 		//print_line("vert strings "+itos(i)+":"+String(strings[i]));
 	}
+#endif
+
+#ifdef DEBUG_PRINT_SHADER
+	std::ofstream vpf("vertex.log");
+	for (int ii = 0; ii < strings.size(); ii++)
+		vpf << strings[ii] << std::endl;
 #endif
 
 	v.vert_id = glCreateShader(GL_VERTEX_SHADER);
@@ -404,6 +417,12 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 		//print_line("frag strings "+itos(i)+":"+String(strings[i]));
 	}
+#endif
+
+#ifdef DEBUG_PRINT_SHADER
+	std::ofstream ppf("fragment.log");
+	for (int ii = 0; ii < strings.size(); ii++)
+		ppf << strings[ii] << std::endl;
 #endif
 
 	v.frag_id = glCreateShader(GL_FRAGMENT_SHADER);
@@ -733,6 +752,7 @@ void ShaderGLES3::set_custom_shader_code(uint32_t p_code_id, const String &p_ver
 	cc->texture_uniforms = p_texture_uniforms;
 	cc->uniforms = p_uniforms;
 	cc->custom_defines = p_custom_defines;
+
 	cc->version++;
 }
 

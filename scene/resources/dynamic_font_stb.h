@@ -171,7 +171,7 @@ public:
 
 	virtual bool is_distance_field_hint() const;
 
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), float expand_scale = 1) const;
+	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), const Point2& expand_scale = Point2(1,1)) const;
 
 	DynamicFont();
 	~DynamicFont();

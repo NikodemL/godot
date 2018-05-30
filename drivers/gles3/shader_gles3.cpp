@@ -298,7 +298,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 	// Added UV2 support to vertex program in canvas item shader
 	strings.push_back(
-			"#ifdef USE_TEXTURE_RECT\n"
+			"\n#ifdef USE_TEXTURE_RECT\n"
 			"vec2 uv_interp2;\n"
 			"uv_interp2 = vertex.xy;\n"
 			"#endif\n");

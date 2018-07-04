@@ -30,7 +30,7 @@ void CurvedLabel::_notification(int p_what) {
 		float text_size_x = 0;
 		for (int i = 0; i < text.length(); i++) {
 			CharType c = text[i];
-			int char_width = font->get_char_size(c, text[i+1]).width;
+			int char_width = font->get_char_size(c).width;
 			text_size_x += char_width;
 		}
 
@@ -56,7 +56,7 @@ void CurvedLabel::_notification(int p_what) {
 			CharType n = text[i + 1];
 
 			// We get the character size without kerning for centering (additional rotation to point to center)
-			Size2 char_size = font->get_char_size(c);
+			Size2 char_size = font->get_char_size(c, n) * expand_scale;
 			float char_angle = atan(char_size.width / (2 * radius));
 
 			float mirrored = mirroredtext ? -1 : 1;
@@ -70,11 +70,19 @@ void CurvedLabel::_notification(int p_what) {
 			float advance = 0;
 			if (mirroredtext) {
 				// We need to offset character since it is written from left bottom corner
-				advance -= font->draw_char(ci, Vector2(-char_size.x / 2, radius), c, n, font_color, expand_scale);
+				font->draw_char(ci, Vector2(-char_size.x / 2, radius), c, n, font_color, Vector2(expand_scale, 1));
+
+				if (i + 1 < text.length()) {
+					advance = - (font->get_char_size(c, n).width * 3 + font->get_char_size(n, text[i+2]).width) / 4 * expand_scale;
+				}
 			}
 			else {
 				// We need to offset character since it is written from left bottom corner
-				advance += font->draw_char(ci, Vector2(-char_size.x / 2, -radius), c, n, font_color, expand_scale);
+				advance += font->draw_char(ci, Vector2(-char_size.x / 2, -radius), c, n, font_color, Vector2(expand_scale, 1));
+
+				if (i + 1 < text.length()) {
+					advance = (font->get_char_size(c, n).width * 3 + font->get_char_size(n, text[i + 2]).width) / 4 * expand_scale;
+				}
 			}
 
 			// Advance uses kerning and additional space

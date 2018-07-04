@@ -34,7 +34,7 @@
 			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
-				Calls [code]method[/code] on each member of the given group, respecting the given [enum GROUP_CALL] flags.
+				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="change_scene">
@@ -160,7 +160,7 @@
 			<argument index="2" name="notification" type="int">
 			</argument>
 			<description>
-				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GROUP_CALL] flags.
+				Sends the given notification to all members of the [code]group[/code], respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="queue_delete">
@@ -220,7 +220,7 @@
 			<argument index="3" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GROUP_CALL] flags.
+				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
 		<method name="set_input_as_handled">
@@ -266,7 +266,8 @@
 		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
 			The root of the edited scene.
 		</member>
-		<member name="multiplayer_api" type="MultiplayerAPI" setter="set_multiplayer_api" getter="get_multiplayer_api">
+		<member name="multiplayer" type="MultiplayerAPI" setter="set_multiplayer" getter="get_multiplayer">
+			The default [MultiplayerAPI] instance for this SceneTree.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
 			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to slave. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
@@ -367,12 +368,16 @@
 	</signals>
 	<constants>
 		<constant name="GROUP_CALL_DEFAULT" value="0" enum="GroupCallFlags">
+			Call a group with no flags (default).
 		</constant>
 		<constant name="GROUP_CALL_REVERSE" value="1" enum="GroupCallFlags">
+			Call a group in reverse scene order.
 		</constant>
 		<constant name="GROUP_CALL_REALTIME" value="2" enum="GroupCallFlags">
+			Call a group immediately (calls are normally made on idle).
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
+			Call a group only once even if the call is executed many times.
 		</constant>
 		<constant name="STRETCH_MODE_DISABLED" value="0" enum="StretchMode">
 		</constant>

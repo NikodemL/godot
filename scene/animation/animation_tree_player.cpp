@@ -813,7 +813,11 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.value = t.object->get_indexed(t.subpath);
 		t.value.zero();
 
-		t.skip = false;
+		if (t.skeleton) {
+			t.skip = t.skeleton->is_bone_ignore_animation(t.bone_idx);
+		} else {
+			t.skip = false;
+		}
 	}
 
 	/* STEP 2 PROCESS ANIMATIONS */
@@ -900,8 +904,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.scale.x += 1.0;
 		t.scale.y += 1.0;
 		t.scale.z += 1.0;
-		xform.basis.scale(t.scale);
-		xform.basis.rotate(t.rot.get_euler());
+		xform.basis.set_quat_scale(t.rot, t.scale);
 
 		if (t.bone_idx >= 0) {
 			if (t.skeleton)
@@ -1211,6 +1214,12 @@ String AnimationTreePlayer::animation_node_get_master_animation(const StringName
 
 	GET_NODE_V(NODE_ANIMATION, AnimationNode, String());
 	return n->from;
+}
+
+float AnimationTreePlayer::animation_node_get_position(const StringName &p_node) const {
+
+	GET_NODE_V(NODE_ANIMATION, AnimationNode, 0);
+	return n->time;
 }
 
 bool AnimationTreePlayer::animation_node_is_path_filtered(const StringName &p_node, const NodePath &p_path) const {
@@ -1721,6 +1730,7 @@ void AnimationTreePlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("animation_node_set_master_animation", "id", "source"), &AnimationTreePlayer::animation_node_set_master_animation);
 	ClassDB::bind_method(D_METHOD("animation_node_get_master_animation", "id"), &AnimationTreePlayer::animation_node_get_master_animation);
+	ClassDB::bind_method(D_METHOD("animation_node_get_position", "id"), &AnimationTreePlayer::animation_node_get_position);
 	ClassDB::bind_method(D_METHOD("animation_node_set_filter_path", "id", "path", "enable"), &AnimationTreePlayer::animation_node_set_filter_path);
 
 	ClassDB::bind_method(D_METHOD("oneshot_node_set_fadein_time", "id", "time_sec"), &AnimationTreePlayer::oneshot_node_set_fadein_time);

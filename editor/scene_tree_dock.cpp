@@ -73,7 +73,11 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 	if (!p_event->is_pressed() || p_event->is_echo())
 		return;
 
-	if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {
+	if (ED_IS_SHORTCUT("scene_tree/batch_rename", p_event)) {
+		_tool_selected(TOOL_BATCH_RENAME);
+	} else if (ED_IS_SHORTCUT("scene_tree/rename", p_event)) {
+		_tool_selected(TOOL_RENAME);
+	} else if (ED_IS_SHORTCUT("scene_tree/add_child_node", p_event)) {
 		_tool_selected(TOOL_NEW);
 	} else if (ED_IS_SHORTCUT("scene_tree/instance_scene", p_event)) {
 		_tool_selected(TOOL_INSTANCE);
@@ -107,7 +111,12 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 void SceneTreeDock::instance(const String &p_file) {
 
 	Node *parent = scene_tree->get_selected();
-	if (!parent || !edited_scene) {
+
+	if (!parent) {
+		parent = edited_scene;
+	};
+
+	if (!edited_scene) {
 
 		current_option = -1;
 		accept->get_ok()->set_text(TTR("OK :("));
@@ -280,6 +289,19 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 	switch (p_tool) {
 
+		case TOOL_BATCH_RENAME: {
+			Tree *tree = scene_tree->get_scene_tree();
+			if (tree->is_anything_selected()) {
+				rename_dialog->popup_centered();
+			}
+		} break;
+		case TOOL_RENAME: {
+			Tree *tree = scene_tree->get_scene_tree();
+			if (tree->is_anything_selected()) {
+				tree->grab_focus();
+				tree->edit_selected();
+			}
+		} break;
 		case TOOL_NEW: {
 
 			String preferred = "";
@@ -379,7 +401,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (scene_tree->get_selected() == edited_scene) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done on the tree root."));
 				accept->popup_centered_minsize();
 				break;
@@ -440,7 +462,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (editor_selection->is_selected(edited_scene)) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done on the tree root."));
 				accept->popup_centered_minsize();
 				break;
@@ -510,7 +532,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (editor_selection->is_selected(edited_scene)) {
 
 				current_option = -1;
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done on the tree root."));
 				accept->popup_centered_minsize();
 				break;
@@ -571,7 +593,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *scene = editor_data->get_edited_scene_root();
 
 			if (!scene) {
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done without a scene."));
 				accept->popup_centered_minsize();
 				break;
@@ -580,7 +602,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			if (selection.size() != 1) {
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation requires a single selected node."));
 				accept->popup_centered_minsize();
 				break;
@@ -589,14 +611,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *tocopy = selection.front()->get();
 
 			if (tocopy == scene) {
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("Can not perform with the root node."));
 				accept->popup_centered_minsize();
 				break;
 			}
 
 			if (tocopy != editor_data->get_edited_scene_root() && tocopy->get_filename() != "") {
-				accept->get_ok()->set_text(TTR("I see.."));
+				accept->get_ok()->set_text(TTR("I see..."));
 				accept->set_text(TTR("This operation can't be done on instanced scenes."));
 				accept->popup_centered_minsize();
 				break;
@@ -620,7 +642,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			new_scene_from_dialog->set_current_path(existing);
 
 			new_scene_from_dialog->popup_centered_ratio();
-			new_scene_from_dialog->set_title(TTR("Save New Scene As.."));
+			new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
 		} break;
 		case TOOL_COPY_NODE_PATH: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -719,7 +741,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (node) {
 					node->set_scene_inherited_state(Ref<SceneState>());
 					scene_tree->update_tree();
-					EditorNode::get_singleton()->get_property_editor()->update_tree();
+					EditorNode::get_singleton()->get_inspector()->update_tree();
 				}
 			}
 		} break;
@@ -1606,7 +1628,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	if (selection.size() != 1) {
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 		accept->set_text(TTR("This operation requires a single selected node."));
 		accept->popup_centered_minsize();
 		return;
@@ -1624,7 +1646,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		memdelete(copy);
 
 		if (err != OK) {
-			accept->get_ok()->set_text(TTR("I see.."));
+			accept->get_ok()->set_text(TTR("I see..."));
 			accept->set_text(TTR("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."));
 			accept->popup_centered_minsize();
 			return;
@@ -1638,7 +1660,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 			flg |= ResourceSaver::FLAG_COMPRESS;
 		err = ResourceSaver::save(p_file, sdata, flg);
 		if (err != OK) {
-			accept->get_ok()->set_text(TTR("I see.."));
+			accept->get_ok()->set_text(TTR("I see..."));
 			accept->set_text(TTR("Error saving scene."));
 			accept->popup_centered_minsize();
 			return;
@@ -1657,7 +1679,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		EditorNode::get_singleton()->reload_scene(p_file);
 
 	} else {
-		accept->get_ok()->set_text(TTR("I see.."));
+		accept->get_ok()->set_text(TTR("I see..."));
 		accept->set_text(TTR("Error duplicating scene to save it."));
 		accept->popup_centered_minsize();
 		return;
@@ -1886,6 +1908,9 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
 		menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
 		menu->add_separator();
+		menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
+	} else { // multi select
+		menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
 	}
 	menu->add_icon_shortcut(get_icon("Reload", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
 	menu->add_separator();
@@ -1924,6 +1949,12 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
 		menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
+	}
+
+	if (selection.size() > 1) {
+		//this is not a commonly used action, it makes no sense for it to be where it was nor always present.
+		menu->add_separator();
+		menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
 	}
 	menu->add_separator();
 	menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
@@ -2064,6 +2095,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	filter_hbc->add_constant_override("separate", 0);
 	ToolButton *tb;
 
+	ED_SHORTCUT("scene_tree/rename", TTR("Rename"));
+	ED_SHORTCUT("scene_tree/batch_rename", TTR("Batch Rename"), KEY_MASK_CMD | KEY_F2);
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KEY_MASK_CMD | KEY_A);
 	ED_SHORTCUT("scene_tree/instance_scene", TTR("Instance Child Scene"));
 	ED_SHORTCUT("scene_tree/change_node_type", TTR("Change Type"));
@@ -2161,6 +2194,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	create_dialog->set_base_type("Node");
 	add_child(create_dialog);
 	create_dialog->connect("create", this, "_create");
+
+	rename_dialog = memnew(RenameDialog(scene_tree, &editor_data->get_undo_redo()));
+	add_child(rename_dialog);
 
 	script_create_dialog = memnew(ScriptCreateDialog);
 	add_child(script_create_dialog);

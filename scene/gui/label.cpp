@@ -210,6 +210,7 @@ void Label::_notification(int p_what) {
 		bool use_outline = get_constant("shadow_as_outline");
 		Point2 shadow_ofs(get_constant("shadow_offset_x"), get_constant("shadow_offset_y"));
 		int line_spacing = get_constant("line_spacing");
+		Color font_outline_modulate = get_color("font_outline_modulate");
 
 		style->draw(ci, Rect2(Point2(0, 0), get_size()));
 
@@ -228,6 +229,12 @@ void Label::_notification(int p_what) {
 				expand_scale = max_label_size_y / labelRect.y;
 			}
 		}
+		else if (forced_font_size != 0) {
+			expand_scale = forced_font_size / font->get_height();
+		}
+
+		// We also allow custom expand scale
+		Point2 custom_scale(expand_scale, character_quad_scale);
 
 		int line_spacing_expand = line_spacing * expand_scale;
 		int font_h_expand = font->get_height() * expand_scale + line_spacing_expand;
@@ -376,11 +383,11 @@ void Label::_notification(int p_what) {
 								n = String::char_uppercase(c);
 							}
 
-							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow, expand_scale);
+							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow, custom_scale);
 							if (use_outline) {
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow, expand_scale);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, expand_scale);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, expand_scale);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow, custom_scale);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, custom_scale);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, custom_scale);
 							}
 							x_ofs_shadow += move;
 							chars_total_shadow++;
@@ -397,7 +404,7 @@ void Label::_notification(int p_what) {
 							n = String::char_uppercase(c);
 						}
 
-						x_ofs += font->draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color, expand_scale);
+						x_ofs += font->draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color, custom_scale);
 						chars_total++;
 					}
 				}
@@ -465,7 +472,8 @@ int Label::get_longest_line_width() const {
 			}
 		} else {
 
-			int char_width = font->get_char_size(current, xl_text[i + 1]).width;
+			// ceiling to ensure autowrapping does not cut text
+			int char_width = Math::ceil(font->get_char_size(current, xl_text[i + 1]).width);
 			line_width += char_width;
 		}
 	}
@@ -518,7 +526,8 @@ void Label::regenerate_word_cache() {
 	int word_pos = 0;
 	int line_width = 0;
 	int space_count = 0;
-	int space_width = font->get_char_size(' ').width;
+	// ceiling to ensure autowrapping does not cut text
+	int space_width = Math::ceil(font->get_char_size(' ').width);
 	int line_spacing = get_constant("line_spacing");
 	line_count = 1;
 	total_char_cache = 0;
@@ -580,8 +589,8 @@ void Label::regenerate_word_cache() {
 			if (current_word_size == 0) {
 				word_pos = i;
 			}
-
-			char_width = font->get_char_size(current, xl_text[i + 1]).width;
+			// ceiling to ensure autowrapping does not cut text
+			char_width = Math::ceil(font->get_char_size(current, xl_text[i + 1]).width);
 			current_word_size += char_width;
 			line_width += char_width;
 			total_char_cache++;
@@ -790,6 +799,24 @@ String Label::get_loc_label() const {
 	return loc_label;
 }
 
+void Label::set_character_quad_scale(float p_character_quad_scale) {
+	character_quad_scale = p_character_quad_scale > 0.1f ? p_character_quad_scale : 0.1f;
+	update();
+}
+
+float Label::get_character_quad_scale() const {
+	return character_quad_scale;
+}
+
+void Label::set_forced_font_size(int p_forced_font_size) {
+	forced_font_size = p_forced_font_size;
+	update();
+}
+
+int Label::get_forced_font_size() const {
+	return forced_font_size;
+}
+
 void Label::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &Label::set_align);
@@ -822,6 +849,10 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_font_size", "max_size"), &Label::set_max_font_size);
 	ClassDB::bind_method(D_METHOD("get_loc_label"), &Label::get_loc_label);
 	ClassDB::bind_method(D_METHOD("set_loc_label", "loc_label"), &Label::set_loc_label);
+	ClassDB::bind_method(D_METHOD("get_character_quad_scale"), &Label::get_character_quad_scale);
+	ClassDB::bind_method(D_METHOD("set_character_quad_scale", "scale"), &Label::set_character_quad_scale);
+	ClassDB::bind_method(D_METHOD("get_forced_font_size"), &Label::get_forced_font_size);
+	ClassDB::bind_method(D_METHOD("set_forced_font_size", "size"), &Label::set_forced_font_size);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -845,6 +876,8 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE, "-1,999,1"), "set_max_lines_visible", "get_max_lines_visible");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_max_font_size", "get_max_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "forced_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_forced_font_size", "get_forced_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "character_quad_scale", PROPERTY_HINT_RANGE, "0.1,2"), "set_character_quad_scale", "get_character_quad_scale");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "loc_label"), "set_loc_label", "get_loc_label");
 }
 
@@ -871,6 +904,8 @@ Label::Label(const String &p_text) {
 	expand = false;
 	max_font_size = 3000;
 	loc_label = "";
+	character_quad_scale = 1.0f;
+	forced_font_size = 0;
 }
 
 Label::~Label() {

@@ -78,7 +78,7 @@ public:
 	Variant get_default_input_value(int p_port) const;
 
 	virtual String get_caption() const = 0;
-	virtual String get_text() const = 0;
+	virtual String get_text() const;
 	virtual String get_category() const = 0;
 
 	//used by editor, this is not really saved
@@ -374,12 +374,10 @@ class VisualScriptInstance : public ScriptInstance {
 		int node;
 		int max_stack;
 		int trash_pos;
-		int return_pos;
 		int flow_stack_size;
 		int pass_stack_size;
 		int node_count;
 		int argument_count;
-		bool valid;
 	};
 
 	Map<StringName, Function> functions;

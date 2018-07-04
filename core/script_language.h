@@ -236,6 +236,8 @@ public:
 
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
+	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}
+	virtual void remove_named_global_constant(const StringName &p_name) {}
 
 	/* MULTITHREAD FUNCTIONS */
 
@@ -386,6 +388,7 @@ public:
 	bool is_breakpoint(int p_line, const StringName &p_source) const;
 	bool is_breakpoint_line(int p_line) const;
 	void clear_breakpoints();
+	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
 
 	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true) = 0;
 	virtual void idle_poll();

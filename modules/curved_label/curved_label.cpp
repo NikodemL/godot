@@ -30,7 +30,7 @@ void CurvedLabel::_notification(int p_what) {
 		float text_size_x = 0;
 		for (int i = 0; i < text.length(); i++) {
 			CharType c = text[i];
-			int char_width = font->get_char_size(c).width;
+			int char_width = font->get_char_size(c, text[i+1]).width;
 			text_size_x += char_width;
 		}
 

@@ -49,26 +49,37 @@ void CurvedLabel::_notification(int p_what) {
 		}
 
 		int font_h_expand = font->get_height() * expand_scale;
-		int space_w_expand = font->get_char_size(' ').width * expand_scale;
-		int lines_visible = size.y / font_h_expand;
 
-		float rotation = 0;
+		float rotation = rotoffset / 180 * 3.1415;
 		for (int i = 0; i < text.length(); i++) {
 			CharType c = text[i];
 			CharType n = text[i + 1];
 
-			float t = (rotation - rotoffset) * 4.0 * atan(1.0) / 180.0;
-			draw_set_transform(Vector2(get_rect().size.x / 2, get_rect().size.y / 2), t, Vector2(1, 1));
+			// We get the character size without kerning for centering (additional rotation to point to center)
+			Size2 char_size = font->get_char_size(c);
+			float char_angle = atan(char_size.width / (2 * radius));
 
-			float char_w;
+			float mirrored = mirroredtext ? -1 : 1;
+
+			// The character rotation cos/sin
+			float cosangle = cos(rotation + mirrored * char_angle / 2);
+			float sinangle = sin(rotation + mirrored * char_angle / 2);
+
+			draw_set_transform(Vector2(get_rect().size.x / 2, get_rect().size.y / 2), rotation + mirrored * char_angle / 2, Vector2(1, 1));
+
+			float advance = 0;
 			if (mirroredtext) {
-				char_w = -font->draw_char(ci, Vector2(0, radius), c, n, font_color, expand_scale);
+				// We need to offset character since it is written from left bottom corner
+				advance -= font->draw_char(ci, Vector2(-char_size.x / 2, radius), c, n, font_color, expand_scale);
 			}
 			else {
-				char_w = font->draw_char(ci, Vector2(0, -radius), c, n, font_color, expand_scale);
+				// We need to offset character since it is written from left bottom corner
+				advance += font->draw_char(ci, Vector2(-char_size.x / 2, -radius), c, n, font_color, expand_scale);
 			}
-			float char_angle = 2 * atan(char_w / (2 * radius)) * 180. / 3.1415 * space;
-			rotation += char_angle;
+
+			// Advance uses kerning and additional space
+			float advance_angle = 2 * atan((advance + mirrored * space) / (2 * radius));
+			rotation += advance_angle;
 		}
 	}
 }

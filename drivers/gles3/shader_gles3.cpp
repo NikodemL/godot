@@ -298,10 +298,15 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 	// Added UV2 support to vertex program in canvas item shader
 	strings.push_back(
+			"\n#ifdef ENABLE_UV_CHAR"
 			"\n#ifdef USE_TEXTURE_RECT\n"
-			"vec2 uv_interp2;\n"
-			"uv_interp2 = vertex.xy;\n"
-			"#endif\n");
+			"vec2 uv_interp_char;\n"
+			"uv_interp_char = vertex.xy;\n"
+			"#else\n"
+			"vec2 uv_interp_char = vec2(0,0);\n"
+			"#endif\n"
+			"#endif\n"
+			);
 
 	if (cc) {
 		code_string = cc->vertex.ascii();

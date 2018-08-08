@@ -107,8 +107,14 @@ void TDXVideoFrameOutput::Destroy(TVideoFrameOutput* vfo)
 	delete dx11vfo;
 }
 
-TDXVideoFrameOutput_Int::TDXVideoFrameOutput_Int() : isPassthrough(false), renderTex9(0), renderTexHandle(0), renderSurf9(0), renderTex11(0), renderRV11(0), initState(isNone), pFillTexture(0), pVideo(0), pDevice9(0), pDevice11(0), pDeviceCtx11(0), pCurrentFrame(0), pNextFrame(0), hasValidFrame(false), textureReleaseDelay(0)
-{
+TDXVideoFrameOutput_Int::TDXVideoFrameOutput_Int() : isPassthrough(false), renderTex9(0), renderTexHandle(0),
+	renderSurf9(0), renderTex11(0), renderRV11(0),
+	initState(isNone), pFillTexture(0), pVideo(0), pDevice9(0),
+	pDevice11(0), pDeviceCtx11(0), pCurrentFrame(0), pNextFrame(0),
+	hasValidFrame(false),
+	textureReleaseDelay(0),
+	pQuery9(0), pQuery11(0) {
+
 	memset(aTexture, 0, sizeof(aTexture));
 }
 
@@ -165,7 +171,7 @@ int TDXVideoFrameOutput_Int::BeginOutput(void* &data, int &pitch, double pts, do
 		data = pFillTexture->dataptr;
 		pitch = pFillTexture->datapitch;
 	}
-	
+
 	return 0;
 }
 
@@ -300,7 +306,7 @@ void TDXVideoFrameOutput_Int::RenderThread_ReleaseTextures()
 	aTextureFree.clear();
 	aTextureReady.clear();
 
-	for (auto const &entry : sharedTextures) 
+	for (auto const &entry : sharedTextures)
 	{
 		entry.second->Release();
 	}
@@ -365,7 +371,7 @@ void TDXVideoFrameOutput_Int::UpdateTextureClear()
 		}
 
 		textureReleaseDelay += 1;
-		
+
 		if (queryResult)
 		{
 			RenderThread_ReleaseTextures();
@@ -504,7 +510,7 @@ int TDXVideoFrameOutput_Int::GetTextureFromDecoder(TVideoTexture* vt)
 		else
 			pDeviceCtx11->Unmap(vt->tex11, 0);
 		vt->dataptr = 0;
-		
+
 		return 1;
 	}
 
@@ -544,7 +550,7 @@ int TDXVideoFrameOutput_Int::ReturnTextureToDecoder(TVideoTexture* vt)
 		if (vt->frame)
 		{
 			if (pDevice11)
-			{		
+			{
 				// On D3D11 we have to release the texture mutex so that the decoder device can use it
 				HANDLE* h = (HANDLE*)vt->frame->data[3];
 
@@ -719,7 +725,7 @@ void* TDXVideoFrameOutput_Int::GetFrame()
 
 			if (!ReturnTextureToDecoder(vt))
 				break;
-			
+
 			pVideo->SignalFrameConsumed();
 			aTextureMapQueue.erase(aTextureMapQueue.begin());
 		}

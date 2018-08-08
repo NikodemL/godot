@@ -239,7 +239,7 @@ void VideoStreamIBManager::init() {
 void VideoStreamIBManager::init_in_render(float p_unused) {
 	if (g_IsInit)
 		return;
-	
+
 	glewInit();
 
 	if (pDevice9) {
@@ -277,7 +277,7 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 
 	HRESULT hr = S_OK;
 
-	// A D3D9EX device is required to create the 
+	// A D3D9EX device is required to create the
 	Direct3DCreate9Ex(D3D_SDK_VERSION, &g_D3D);
 
 	// The interop definition states D3DCREATE_MULTITHREADED is required, but it may vary by vendor
@@ -302,7 +302,7 @@ void VideoStreamIBManager::init_in_render(float p_unused) {
 		print_error("Could not open DX device");
 		return;
 	}
-	
+
 	g_IsInit = true;
 }
 
@@ -498,7 +498,7 @@ Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 	auto it = mVideoObject.find(id);
 	if (it == mVideoObject.end())
 	{
-		MError("Video not found! GetVideoTexture(id=%d)", id);
+		// Not more frames
 		return NULL;
 	}
 	TVideoInstance &inst = it->second;
@@ -510,7 +510,7 @@ Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 	inst.pGLVideoTexture->h = inst.pVideoObject->pFrameOut->videoHeight;
 
 	VisualServer::get_singleton()->texture_set_size_override(inst.pGLVideoTexture->texture, inst.pGLVideoTexture->w, inst.pGLVideoTexture->h);
-	
+
 	return inst.pGLVideoTexture;
 }
 
@@ -522,7 +522,7 @@ void VideoStreamIBManager::render(float p_delta_tme)
 
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 
-	
+
 	// Unlock all videos so they can be used ny DX
 	auto it2 = mVideoObject.begin();
 	while (it2 != mVideoObject.end())
@@ -548,7 +548,7 @@ void VideoStreamIBManager::render(float p_delta_tme)
 		case TVideoObject::sPaused:
 			if (pDevice9) {
 				inst.pVideoTexture9 = (IDirect3DTexture9*)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetFrame();
-				
+
 				// Make it shared now if not already
 				if (inst.pVideoTexture9 != NULL && inst.pRenderTexHandle == NULL) {
 					inst.pRenderTexHandle = (HANDLE)((TDXVideoFrameOutput*)inst.pVideoObject->pFrameOut)->GetRenderTexHandle();
@@ -557,7 +557,7 @@ void VideoStreamIBManager::render(float p_delta_tme)
 
 					// gl_texture_handle is the shared texture data, now identified by the g_GLTexture name
 					inst.glTexture = VS::get_singleton()->texture_get_texid(inst.pGLVideoTexture->get_rid());
-					 
+
 					inst.pDXGLSharedHandle = wglDXRegisterObjectNV(g_hDX9Device,
 						inst.pVideoTexture9,
 						inst.glTexture,
@@ -580,13 +580,13 @@ void VideoStreamIBManager::render(float p_delta_tme)
 			MDiagnostic("UnityRenderEvent - Shutdown %d", it->first);
 			if (inst.pVideoObject->TryWaitShutdown())
 			{
-				if (inst.pDXGLSharedHandle != NULL)
-				{
+				if (inst.pDXGLSharedHandle != NULL) {
 					wglDXUnregisterObjectNV(g_hDX9Device, inst.pDXGLSharedHandle);
 					inst.pDXGLSharedHandle = NULL;
 				}
-
 				DestroyVideoInstance(inst);
+
+				// We iterate to new element and continue! (skip ++it)
 				it = mVideoObject.erase(it);
 				continue;
 			}

@@ -343,7 +343,6 @@ int VideoStreamIBManager::create_video()
 }
 
 int VideoStreamIBManager::configure_video(int id, bool presentImmediately,  bool useHwAccel) {
-	return 1;
 	//MDiagnostic("ConfigureVideo(id=%d,streamBufferVideoChunks=%d,streamBufferAudioChunks=%d,decodeBufferVideoFrames=%d,decodeBufferAudioMs=%d, presentImmediately=%d, avSyncOffset=%f, decodeThreads=%d, useHwAccell=%d)", id, streamBufferVideoChunks, streamBufferAudioChunks, decodeBufferVideoFrames, decodeBufferAudioMs, presentImmediately, avSyncOffset, decodeThreads, useHwAccel);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);

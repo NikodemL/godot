@@ -448,7 +448,7 @@ int TFFMPEGVideoObject_Int::VideoDecoderThread()
 		// Update timer if needed
 		if (!pAudioStream)
 		{
-			// Increment time (forever for streams or until end of video)	
+			// Increment time (forever for streams or until end of video)
 			if (pFrameOut->videoLength == 0.0f || syncTime < pFrameOut->videoLength)
 			{
 				double newTime = GetPreciseTime();
@@ -477,7 +477,7 @@ int TFFMPEGVideoObject_Int::VideoDecoderThread()
 					loopTimerSerial.pop();
 					//MLog("V: Time loop %d", syncSerial);
 				}
-					
+
 				if(syncTime > pFrameOut->videoLength)
 				{
 					syncTime = pFrameOut->videoLength;
@@ -485,10 +485,10 @@ int TFFMPEGVideoObject_Int::VideoDecoderThread()
 					// If end of stream and no audio then terminate video thread
 					if (isEof)
 						break;
-					
+
 					//MLog("V: Time clamped!");
 				}
-			}	
+			}
 
 			// For infinite streams, break out on eof here since it won't break out of the loop in the timing code above
 			if (pFrameOut->videoLength == 0.0f && isEof)
@@ -649,9 +649,11 @@ int TFFMPEGVideoObject_Int::VideoDecoderThread()
 				if (!useHwAccel && pVideoRescalerContext == 0)
 				{
 					AVPixelFormat outputFmt = AV_PIX_FMT_RGBA;
+
+					// We need to swap it for GL to work in sw mode
 					switch (pFrameOut->videoOutputFormat) {
-					case vofBGRA: outputFmt = AV_PIX_FMT_BGRA; break;
-					case vofRGBA: outputFmt = AV_PIX_FMT_RGBA; break;
+					case vofBGRA: outputFmt = AV_PIX_FMT_RGBA; break;
+					case vofRGBA: outputFmt = AV_PIX_FMT_BGRA; break;
 					};
 
 					pVideoRescalerContext = sws_getCachedContext(pVideoRescalerContext, videoFrame->width, videoFrame->height, static_cast<AVPixelFormat>(videoFrame->format), videoFrame->width, videoFrame->height, outputFmt, SWS_POINT, nullptr, nullptr, nullptr);
@@ -1118,7 +1120,7 @@ int TFFMPEGVideoObject_Int::StreamThread()
 		delete audioDecoderThread;
 		audioDecoderThread = NULL;
 	}
-		
+
 
 	////////////////////////////////////////
 	// Cleanup

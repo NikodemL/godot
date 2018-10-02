@@ -113,7 +113,7 @@ public:
 	double syncTime;
 	int syncSerial;
 	EState State;
-	
+
 	unsigned int streamBufferVideoChunks;
 	unsigned int streamBufferAudioChunks;
 	unsigned int decodeBufferVideoFrames;
@@ -132,7 +132,8 @@ public:
 		presentImmediately(false),
 		avSyncOffset(0.0f),
 		loopCount(0),
-		syncSerial(-1)
+		syncSerial(-1),
+		useHwAccel(true)
 	{
 		strcpy_s(fileName, "");
 	}

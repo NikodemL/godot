@@ -20,6 +20,7 @@ void CurvedLabel::_notification(int p_what) {
 
 		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
+		float effective_radius = mirroredtext ? -radius : radius;
 		int text_size_y = font->get_height();
 
 		if (text_size_y < 1) {
@@ -31,10 +32,12 @@ void CurvedLabel::_notification(int p_what) {
 		for (int i = 0; i < char_count; i++) {
 			CharType c = text[i];
 			CharType n = text[i + 1];
-			int char_width = font->get_char_size(c, n).width; // with next character so it includes kerning
-			text_size_x += char_width;
+			float char_width = font->get_char_size(c, n).width;
 			if (i < char_count - 1) {
-				text_size_x += space; // include spaces (except for the last character)
+				text_size_x += (char_width * 3 + font->get_char_size(n, text[i + 2]).width) / 4;
+				text_size_x += space; // include space
+			} else {
+				text_size_x += char_width;
 			}
 		}
 
@@ -54,12 +57,12 @@ void CurvedLabel::_notification(int p_what) {
 
 		int font_h_expand = font->get_height() * expand_scale;
 
-		float mirrored = mirroredtext ? -1 : 1;
+		//float mirrored = mirroredtext ? -1 : 1;
 		Vector2 origin = Vector2(get_rect().size.x / 2, get_rect().size.y / 2);
 		float rotation = rotoffset / 180 * Math_PI;
 
 		// in order to align left/center/right, we need to calculate the total angle
-		float total_angle = radius > 0 ? (mirrored * expand_scale * text_size_x / radius) : 0;
+		float total_angle = effective_radius != 0 ? (expand_scale * text_size_x / effective_radius) : 0;
 		// apply align
 		if (text_align == TEXT_ALIGN_CENTER) {
 			rotation -= total_angle / 2;
@@ -68,34 +71,26 @@ void CurvedLabel::_notification(int p_what) {
 			rotation -= total_angle;
 		}
 
+		// debug lines - remove when done
+		//draw_set_transform(origin, rotation, Vector2(1, 1));
+		//draw_line(Vector2(0, 0), Vector2(0, -effective_radius), Color(1, 1, 0));
+		//draw_set_transform(origin, rotation + total_angle, Vector2(1, 1));
+		//draw_line(Vector2(0, 0), Vector2(0, -effective_radius), Color(1, 0, 0));
+
 		for (int i = 0; i < char_count; i++) {
 			CharType c = text[i];
 			CharType n = text[i + 1];
 
-			Size2 char_size = font->get_char_size(c, n) * expand_scale;
-			float char_angle = atan(char_size.width / (2 * radius));
+			Size2 char_size = font->get_char_size(c, n);
 
-			draw_set_transform(origin, rotation + mirrored * char_angle / 2, Vector2(1, 1));
-
-			float advance = 0;
-			if (mirroredtext) {
-				// We need to offset character since it is written from left bottom corner
-				advance += font->draw_char(ci, Vector2(-char_size.x / 2, radius), c, n, font_color, Vector2(expand_scale, 1));
-
-				if (i + 1 < char_count) {
-					advance = -(char_size.width * 3 + font->get_char_size(n, text[i + 2]).width) / 4 * expand_scale;
-				}
-			} else {
-				// We need to offset character since it is written from left bottom corner
-				advance += font->draw_char(ci, Vector2(-char_size.x / 2, -radius), c, n, font_color, Vector2(expand_scale, 1));
-
-				if (i + 1 < char_count) {
-					advance = (font->get_char_size(c, n).width * 3 + font->get_char_size(n, text[i + 2]).width) / 4 * expand_scale;
-				}
+			draw_set_transform(origin, rotation, Vector2(1, 1));
+			float advance = font->draw_char(ci, Vector2(0, -effective_radius), c, n, font_color, Vector2(expand_scale, 1));
+			if (i + 1 < char_count) {
+				float next_char_width = font->get_char_size(n, text[i + 2]).width;
+				advance = (space + (char_size.width * 3 + next_char_width) / 4) * expand_scale;
 			}
 
-			// Advance uses kerning and additional space
-			float advance_angle = 2 * atan((advance + mirrored * space) / (2 * radius));
+			float advance_angle = 2 * atan(advance / (2 * effective_radius));
 			rotation += advance_angle;
 		}
 	}

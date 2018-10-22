@@ -58,8 +58,11 @@ void CurvedLabel::_notification(int p_what) {
 		int font_h_expand = font->get_height() * expand_scale;
 
 		//float mirrored = mirroredtext ? -1 : 1;
-		Vector2 origin = Vector2(get_rect().size.x / 2, get_rect().size.y / 2);
 		float rotation = rotoffset / 180 * Math_PI;
+		Vector2 origin = Vector2(get_rect().size.x / 2, get_rect().size.y / 2);
+		if (!axis_at_rect_center) {
+			origin += Vector2(effective_radius * sin(-rotation), effective_radius * cos(-rotation));
+		}
 
 		// in order to align left/center/right, we need to calculate the total angle
 		float total_angle = effective_radius != 0 ? (expand_scale * text_size_x / effective_radius) : 0;
@@ -67,7 +70,7 @@ void CurvedLabel::_notification(int p_what) {
 		if (text_align == TEXT_ALIGN_CENTER) {
 			rotation -= total_angle / 2;
 
-		} else if (text_align == TEXT_ALIGN_RIGHT) {
+		} else if (text_align == TEXT_ALIGN_END) {
 			rotation -= total_angle;
 		}
 
@@ -210,6 +213,15 @@ void CurvedLabel::set_text_align(CurvedLabel::TEXT_ALIGN p_text_align) {
 	update();
 }
 
+bool CurvedLabel::get_axis_mode() const {
+	return axis_at_rect_center;
+}
+
+void CurvedLabel::set_axis_mode(bool p_axis_mode) {
+	axis_at_rect_center = p_axis_mode;
+	update();
+}
+
 void CurvedLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_curved_text", "text"), &CurvedLabel::set_curved_text);
@@ -218,6 +230,8 @@ void CurvedLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_radius"), &CurvedLabel::get_radius);
 	ClassDB::bind_method(D_METHOD("get_text_align"), &CurvedLabel::get_text_align);
 	ClassDB::bind_method(D_METHOD("set_text_align"), &CurvedLabel::set_text_align);
+	ClassDB::bind_method(D_METHOD("get_axis_mode"), &CurvedLabel::get_axis_mode);
+	ClassDB::bind_method(D_METHOD("set_axis_mode"), &CurvedLabel::set_axis_mode);
 	ClassDB::bind_method(D_METHOD("set_space", "space"), &CurvedLabel::set_space);
 	ClassDB::bind_method(D_METHOD("get_space"), &CurvedLabel::get_space);
 	ClassDB::bind_method(D_METHOD("set_rotation_offset", "rotoffset"), &CurvedLabel::set_rotation_offset);
@@ -231,15 +245,16 @@ void CurvedLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_loc_label"), &CurvedLabel::get_loc_label);
 	ClassDB::bind_method(D_METHOD("set_loc_label", "loc_label"), &CurvedLabel::set_loc_label);
 
-	BIND_ENUM_CONSTANT(TEXT_ALIGN_LEFT);
+	BIND_ENUM_CONSTANT(TEXT_ALIGN_BEGIN);
 	BIND_ENUM_CONSTANT(TEXT_ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(TEXT_ALIGN_RIGHT);
+	BIND_ENUM_CONSTANT(TEXT_ALIGN_END);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_curved_text", "get_curved_text");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "text_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_align", "get_text_align");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "text_align", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_text_align", "get_text_align");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "axis_at_rect_center"), "set_axis_mode", "get_axis_mode");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "radius"), "set_radius", "get_radius");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "space"), "set_space", "get_space");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rotoffset", PROPERTY_HINT_RANGE, "-1440,1440,0.1"), "set_rotation_offset", "get_rotation_offset");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rotoffset", PROPERTY_HINT_RANGE, "-180,180,0.1"), "set_rotation_offset", "get_rotation_offset");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "mirroredText"), "set_mirrored_text", "get_mirrored_text");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_max_font_size", "get_max_font_size");
@@ -249,11 +264,12 @@ void CurvedLabel::_bind_methods() {
 CurvedLabel::CurvedLabel(const String &p_text) {
 
 	text = "";
-	radius = 500;
-	space = 1;
+	radius = 250;
+	space = 0;
 	rotoffset = 0;
 	mirroredtext = false;
 	loc_label = "";
 	expand = false;
+	axis_at_rect_center = true;
 	max_font_size = 3000;
 }

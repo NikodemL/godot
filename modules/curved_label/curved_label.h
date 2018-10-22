@@ -11,14 +11,15 @@ class CurvedLabel : public Control {
 
 public:
 	enum TEXT_ALIGN {
-		TEXT_ALIGN_LEFT,
+		TEXT_ALIGN_BEGIN,
 		TEXT_ALIGN_CENTER,
-		TEXT_ALIGN_RIGHT
+		TEXT_ALIGN_END
 	};
 
 private:
 	String text;
 	TEXT_ALIGN text_align;
+	bool axis_at_rect_center;
 	int radius;
 	float space;
 	float rotoffset;
@@ -61,6 +62,9 @@ public:
 
 	void set_text_align(TEXT_ALIGN p_text_align);
 	TEXT_ALIGN get_text_align() const;
+
+	void set_axis_mode(bool p_axis_mode);
+	bool get_axis_mode() const;
 
 	CurvedLabel(const String &p_text = String());
 };

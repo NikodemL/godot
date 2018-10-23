@@ -3,7 +3,6 @@
 #include "scene/gui/control.h"
 #include "translation.h"
 
-
 void CurvedLabel::_notification(int p_what) {
 
 	RID ci = get_canvas_item();
@@ -21,17 +20,25 @@ void CurvedLabel::_notification(int p_what) {
 
 		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
+		float effective_radius = mirroredtext ? -radius : radius;
 		int text_size_y = font->get_height();
 
 		if (text_size_y < 1) {
 			text_size_y = 1;
 		}
 
+		int char_count = text.length();
 		float text_size_x = 0;
-		for (int i = 0; i < text.length(); i++) {
+		for (int i = 0; i < char_count; i++) {
 			CharType c = text[i];
-			int char_width = font->get_char_size(c).width;
-			text_size_x += char_width;
+			CharType n = text[i + 1];
+			float char_width = font->get_char_size(c, n).width;
+			if (i < char_count - 1) {
+				text_size_x += (char_width * 3 + font->get_char_size(n, text[i + 2]).width) / 4;
+				text_size_x += space; // include space
+			} else {
+				text_size_x += char_width;
+			}
 		}
 
 		if (text_size_x < 1)
@@ -50,43 +57,43 @@ void CurvedLabel::_notification(int p_what) {
 
 		int font_h_expand = font->get_height() * expand_scale;
 
-		float rotation = rotoffset / 180 * 3.1415;
-		for (int i = 0; i < text.length(); i++) {
+		//float mirrored = mirroredtext ? -1 : 1;
+		float rotation = rotoffset / 180 * Math_PI;
+		Vector2 origin = Vector2(get_rect().size.x / 2, get_rect().size.y / 2);
+		if (!axis_at_rect_center) {
+			origin += Vector2(effective_radius * sin(-rotation), effective_radius * cos(-rotation));
+		}
+
+		// in order to align left/center/right, we need to calculate the total angle
+		float total_angle = effective_radius != 0 ? (expand_scale * text_size_x / effective_radius) : 0;
+		// apply align
+		if (text_align == TEXT_ALIGN_CENTER) {
+			rotation -= total_angle / 2;
+
+		} else if (text_align == TEXT_ALIGN_END) {
+			rotation -= total_angle;
+		}
+
+		// debug lines - remove when done
+		//draw_set_transform(origin, rotation, Vector2(1, 1));
+		//draw_line(Vector2(0, 0), Vector2(0, -effective_radius), Color(1, 1, 0));
+		//draw_set_transform(origin, rotation + total_angle, Vector2(1, 1));
+		//draw_line(Vector2(0, 0), Vector2(0, -effective_radius), Color(1, 0, 0));
+
+		for (int i = 0; i < char_count; i++) {
 			CharType c = text[i];
 			CharType n = text[i + 1];
 
-			// We get the character size without kerning for centering (additional rotation to point to center)
-			Size2 char_size = font->get_char_size(c, n) * expand_scale;
-			float char_angle = atan(char_size.width / (2 * radius));
+			Size2 char_size = font->get_char_size(c, n);
 
-			float mirrored = mirroredtext ? -1 : 1;
-
-			// The character rotation cos/sin
-			float cosangle = cos(rotation + mirrored * char_angle / 2);
-			float sinangle = sin(rotation + mirrored * char_angle / 2);
-
-			draw_set_transform(Vector2(get_rect().size.x / 2, get_rect().size.y / 2), rotation + mirrored * char_angle / 2, Vector2(1, 1));
-
-			float advance = 0;
-			if (mirroredtext) {
-				// We need to offset character since it is written from left bottom corner
-				font->draw_char(ci, Vector2(-char_size.x / 2, radius), c, n, font_color, Vector2(expand_scale, 1));
-
-				if (i + 1 < text.length()) {
-					advance = - (font->get_char_size(c, n).width * 3 + font->get_char_size(n, text[i+2]).width) / 4 * expand_scale;
-				}
-			}
-			else {
-				// We need to offset character since it is written from left bottom corner
-				advance += font->draw_char(ci, Vector2(-char_size.x / 2, -radius), c, n, font_color, Vector2(expand_scale, 1));
-
-				if (i + 1 < text.length()) {
-					advance = (font->get_char_size(c, n).width * 3 + font->get_char_size(n, text[i + 2]).width) / 4 * expand_scale;
-				}
+			draw_set_transform(origin, rotation, Vector2(1, 1));
+			float advance = font->draw_char(ci, Vector2(0, -effective_radius), c, n, font_color, Vector2(expand_scale, 1));
+			if (i + 1 < char_count) {
+				float next_char_width = font->get_char_size(n, text[i + 2]).width;
+				advance = (space + (char_size.width * 3 + next_char_width) / 4) * expand_scale;
 			}
 
-			// Advance uses kerning and additional space
-			float advance_angle = 2 * atan((advance + mirrored * space) / (2 * radius));
+			float advance_angle = 2 * atan(advance / (2 * effective_radius));
 			rotation += advance_angle;
 		}
 	}
@@ -99,13 +106,11 @@ bool CurvedLabel::update_translation() {
 		if (new_text == text)
 			return false; //nothing new
 		text = new_text;
-	}
-	else {
+	} else {
 		// If in editor or localization disabled
 		if (!can_translate_messages() || !TranslationServer::get_singleton() || !TranslationServer::get_singleton()->is_enabled()) {
 			new_text = text;
-		}
-		else {
+		} else {
 			new_text = tr(loc_label);
 			if (new_text == loc_label) {
 				new_text = loc_label + " not found";
@@ -199,12 +204,34 @@ void CurvedLabel::set_max_font_size(int p_max_font_size) {
 	update();
 }
 
+CurvedLabel::TEXT_ALIGN CurvedLabel::get_text_align() const {
+	return text_align;
+}
+
+void CurvedLabel::set_text_align(CurvedLabel::TEXT_ALIGN p_text_align) {
+	text_align = p_text_align;
+	update();
+}
+
+bool CurvedLabel::get_axis_mode() const {
+	return axis_at_rect_center;
+}
+
+void CurvedLabel::set_axis_mode(bool p_axis_mode) {
+	axis_at_rect_center = p_axis_mode;
+	update();
+}
+
 void CurvedLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_curved_text", "text"), &CurvedLabel::set_curved_text);
 	ClassDB::bind_method(D_METHOD("get_curved_text"), &CurvedLabel::get_curved_text);
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CurvedLabel::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CurvedLabel::get_radius);
+	ClassDB::bind_method(D_METHOD("get_text_align"), &CurvedLabel::get_text_align);
+	ClassDB::bind_method(D_METHOD("set_text_align"), &CurvedLabel::set_text_align);
+	ClassDB::bind_method(D_METHOD("get_axis_mode"), &CurvedLabel::get_axis_mode);
+	ClassDB::bind_method(D_METHOD("set_axis_mode"), &CurvedLabel::set_axis_mode);
 	ClassDB::bind_method(D_METHOD("set_space", "space"), &CurvedLabel::set_space);
 	ClassDB::bind_method(D_METHOD("get_space"), &CurvedLabel::get_space);
 	ClassDB::bind_method(D_METHOD("set_rotation_offset", "rotoffset"), &CurvedLabel::set_rotation_offset);
@@ -218,10 +245,16 @@ void CurvedLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_loc_label"), &CurvedLabel::get_loc_label);
 	ClassDB::bind_method(D_METHOD("set_loc_label", "loc_label"), &CurvedLabel::set_loc_label);
 
+	BIND_ENUM_CONSTANT(TEXT_ALIGN_BEGIN);
+	BIND_ENUM_CONSTANT(TEXT_ALIGN_CENTER);
+	BIND_ENUM_CONSTANT(TEXT_ALIGN_END);
+
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_curved_text", "get_curved_text");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "text_align", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_text_align", "get_text_align");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "axis_at_rect_center"), "set_axis_mode", "get_axis_mode");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "radius"), "set_radius", "get_radius");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "space"), "set_space", "get_space");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rotoffset"), "set_rotation_offset", "get_rotation_offset");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rotoffset", PROPERTY_HINT_RANGE, "-180,180,0.1"), "set_rotation_offset", "get_rotation_offset");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "mirroredText"), "set_mirrored_text", "get_mirrored_text");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_max_font_size", "get_max_font_size");
@@ -231,12 +264,12 @@ void CurvedLabel::_bind_methods() {
 CurvedLabel::CurvedLabel(const String &p_text) {
 
 	text = "";
-	radius = 500;
-	space = 1;
+	radius = 250;
+	space = 0;
 	rotoffset = 0;
 	mirroredtext = false;
 	loc_label = "";
 	expand = false;
+	axis_at_rect_center = true;
 	max_font_size = 3000;
 }
-

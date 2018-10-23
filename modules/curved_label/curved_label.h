@@ -10,10 +10,16 @@ class CurvedLabel : public Control {
 	GDCLASS(CurvedLabel, Control);
 
 public:
+	enum TEXT_ALIGN {
+		TEXT_ALIGN_BEGIN,
+		TEXT_ALIGN_CENTER,
+		TEXT_ALIGN_END
+	};
 
 private:
-
 	String text;
+	TEXT_ALIGN text_align;
+	bool axis_at_rect_center;
 	int radius;
 	float space;
 	float rotoffset;
@@ -23,13 +29,13 @@ private:
 	int max_font_size;
 
 	bool update_translation();
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
 	// bind helpers
 public:
-
 	void set_radius(int p_radius);
 	int get_radius() const;
 
@@ -54,7 +60,15 @@ public:
 	void set_loc_label(String p_loc_label);
 	String get_loc_label() const;
 
-	CurvedLabel(const String &p_text = String());
+	void set_text_align(TEXT_ALIGN p_text_align);
+	TEXT_ALIGN get_text_align() const;
 
+	void set_axis_mode(bool p_axis_mode);
+	bool get_axis_mode() const;
+
+	CurvedLabel(const String &p_text = String());
 };
+
+VARIANT_ENUM_CAST(CurvedLabel::TEXT_ALIGN);
+
 #endif

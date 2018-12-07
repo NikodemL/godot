@@ -124,13 +124,14 @@ public:
 		}
 	};
 
+public:
+	void add_logger(Logger *p_logger);
 protected:
 	friend class Main;
 
 	RenderThreadMode _render_thread_mode;
 
 	// functions used by main to initialize/deinitialize the OS
-	void add_logger(Logger *p_logger);
 
 	virtual void initialize_core() = 0;
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) = 0;

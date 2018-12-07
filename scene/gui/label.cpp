@@ -383,11 +383,11 @@ void Label::_notification(int p_what) {
 								n = String::char_uppercase(c);
 							}
 
-							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow, custom_scale);
+							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow, false, custom_scale);
 							if (use_outline) {
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow, custom_scale);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, custom_scale);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, custom_scale);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow, false, custom_scale);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, false, custom_scale);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, false, custom_scale);
 							}
 							x_ofs_shadow += move;
 							chars_total_shadow++;
@@ -404,7 +404,7 @@ void Label::_notification(int p_what) {
 							n = String::char_uppercase(c);
 						}
 
-						x_ofs += font->draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color, custom_scale);
+						x_ofs += font->draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color, false, custom_scale);
 						chars_total++;
 					}
 				}
@@ -872,11 +872,11 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE, "-1,999,1"), "set_max_lines_visible", "get_max_lines_visible");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_max_font_size", "get_max_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "forced_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_forced_font_size", "get_forced_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "character_quad_scale", PROPERTY_HINT_RANGE, "0.1,2"), "set_character_quad_scale", "get_character_quad_scale");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "loc_label"), "set_loc_label", "get_loc_label");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "loc_label"), "set_loc_label", "get_loc_label");
 }
 
 Label::Label(const String &p_text) {

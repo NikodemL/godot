@@ -87,7 +87,7 @@ void CurvedLabel::_notification(int p_what) {
 			Size2 char_size = font->get_char_size(c, n);
 
 			draw_set_transform(origin, rotation, Vector2(1, 1));
-			float advance = font->draw_char(ci, Vector2(0, -effective_radius), c, n, font_color, Vector2(expand_scale, 1));
+			float advance = font->draw_char(ci, Vector2(0, -effective_radius), c, n, font_color,false, Vector2(expand_scale, 1));
 			if (i + 1 < char_count) {
 				float next_char_width = font->get_char_size(n, text[i + 2]).width;
 				advance = (space + (char_size.width * 3 + next_char_width) / 4) * expand_scale;

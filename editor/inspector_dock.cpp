@@ -36,6 +36,22 @@
 
 void InspectorDock::_menu_option(int p_option) {
 	switch (p_option) {
+		case EXPAND_ALL: {
+			_menu_expandall();
+		} break;
+		case COLLAPSE_ALL: {
+			_menu_collapseall();
+		} break;
+		case RESOURCE_MAKE_BUILT_IN: {
+			_unref_resource();
+		} break;
+		case RESOURCE_COPY: {
+			_copy_resource();
+		} break;
+		case RESOURCE_EDIT_CLIPBOARD: {
+			_paste_resource();
+		} break;
+
 		case RESOURCE_SAVE: {
 			_save_resource(false);
 		} break;
@@ -88,6 +104,7 @@ void InspectorDock::_menu_option(int p_option) {
 								res = duplicates[res];
 
 								current->set(E->get().name, res);
+								editor->get_inspector()->update_property(E->get().name);
 							}
 						}
 					}
@@ -140,8 +157,8 @@ void InspectorDock::_load_resource(const String &p_type) {
 
 void InspectorDock::_resource_file_selected(String p_file) {
 	RES res = ResourceLoader::load(p_file);
+
 	if (res.is_null()) {
-		warning_dialog->get_ok()->set_text("Ugh");
 		warning_dialog->set_text(TTR("Failed to load resource."));
 		return;
 	};
@@ -214,11 +231,10 @@ void InspectorDock::_prepare_history() {
 
 		already.insert(id);
 
-		Ref<Texture> icon = get_icon("Object", "EditorIcons");
-		if (has_icon(obj->get_class(), "EditorIcons"))
-			icon = get_icon(obj->get_class(), "EditorIcons");
-		else
+		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj, "");
+		if (icon.is_null()) {
 			icon = base_icon;
+		}
 
 		String text;
 		if (Object::cast_to<Resource>(obj)) {
@@ -243,6 +259,8 @@ void InspectorDock::_prepare_history() {
 		}
 		history_menu->get_popup()->add_icon_item(icon, text, i);
 	}
+
+	editor_path->update_path();
 }
 
 void InspectorDock::_select_history(int p_idx) const {
@@ -292,23 +310,37 @@ void InspectorDock::_menu_expandall() {
 }
 
 void InspectorDock::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
-	AnimationPlayerEditor::singleton->get_key_editor()->insert_value_key(p_keyed, p_value, p_advance);
+	AnimationPlayerEditor::singleton->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
 }
 
 void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Transform &p_key) {
 	Spatial *s = Object::cast_to<Spatial>(sp);
 	if (!s)
 		return;
-	AnimationPlayerEditor::singleton->get_key_editor()->insert_transform_key(s, p_sub, p_key);
+	AnimationPlayerEditor::singleton->get_track_editor()->insert_transform_key(s, p_sub, p_key);
 }
 
 void InspectorDock::_warning_pressed() {
-	warning_dialog->get_ok()->set_text(TTR("Ok"));
 	warning_dialog->popup_centered_minsize();
 }
 
 Container *InspectorDock::get_addon_area() {
 	return this;
+}
+
+void InspectorDock::_notification(int p_what) {
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			set_theme(editor->get_gui_base()->get_theme());
+			resource_new_button->set_icon(get_icon("New", "EditorIcons"));
+			resource_load_button->set_icon(get_icon("Load", "EditorIcons"));
+			backward_button->set_icon(get_icon("Back", "EditorIcons"));
+			forward_button->set_icon(get_icon("Forward", "EditorIcons"));
+			history_menu->set_icon(get_icon("History", "EditorIcons"));
+			object_menu->set_icon(get_icon("Tools", "EditorIcons"));
+			warning->set_icon(get_icon("NodeWarning", "EditorIcons"));
+		} break;
+	}
 }
 
 void InspectorDock::_bind_methods() {
@@ -388,8 +420,8 @@ void InspectorDock::update(Object *p_object) {
 	PopupMenu *p = object_menu->get_popup();
 
 	p->clear();
-	p->add_shortcut(ED_SHORTCUT("property_editor/expand_all", TTR("Expand all properties")), EXPAND_ALL);
-	p->add_shortcut(ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse all properties")), COLLAPSE_ALL);
+	p->add_shortcut(ED_SHORTCUT("property_editor/expand_all", TTR("Expand All Properties")), EXPAND_ALL);
+	p->add_shortcut(ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse All Properties")), COLLAPSE_ALL);
 	p->add_separator();
 	if (is_resource) {
 		p->add_item(TTR("Save"), RESOURCE_SAVE);
@@ -399,10 +431,11 @@ void InspectorDock::update(Object *p_object) {
 	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTR("Copy Params")), OBJECT_COPY_PARAMS);
 	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTR("Paste Params")), OBJECT_PASTE_PARAMS);
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTR("Paste Resource")), RESOURCE_PASTE);
+
+	p->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTR("Edit Resource Clipboard")), RESOURCE_EDIT_CLIPBOARD);
 	if (is_resource) {
 		p->add_shortcut(ED_SHORTCUT("property_editor/copy_resource", TTR("Copy Resource")), RESOURCE_COPY);
-		p->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTR("Make Built-In")), RESOURCE_UNREF);
+		p->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTR("Make Built-In")), RESOURCE_MAKE_BUILT_IN);
 	}
 
 	if (is_resource || is_node) {
@@ -435,10 +468,14 @@ void InspectorDock::update(Object *p_object) {
 	}
 }
 
+void InspectorDock::go_back() {
+	_edit_back();
+}
+
 void InspectorDock::update_keying() {
 	bool valid = false;
 
-	if (AnimationPlayerEditor::singleton->get_key_editor()->has_keying()) {
+	if (AnimationPlayerEditor::singleton->get_track_editor()->has_keying()) {
 
 		EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 		if (editor_history->get_path_size() >= 1) {
@@ -524,7 +561,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	search = memnew(LineEdit);
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search->set_placeholder(TTR("Filter properties"));
-	search->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	search->set_right_icon(get_icon("Search", "EditorIcons"));
+	search->set_clear_button_enabled(true);
 	add_child(search);
 
 	warning = memnew(Button);
@@ -549,8 +587,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
-	inspector->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-	inspector->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
+	inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
+	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
 	inspector->set_undo_redo(&editor_data->get_undo_redo());
 

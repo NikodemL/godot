@@ -1,7 +1,7 @@
 #include "curved_label.h"
-#include "project_settings.h"
+#include "core/project_settings.h"
 #include "scene/gui/control.h"
-#include "translation.h"
+#include "core/translation.h"
 
 void CurvedLabel::_notification(int p_what) {
 
@@ -249,16 +249,16 @@ void CurvedLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXT_ALIGN_CENTER);
 	BIND_ENUM_CONSTANT(TEXT_ALIGN_END);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_curved_text", "get_curved_text");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "text_align", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_text_align", "get_text_align");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "axis_at_rect_center"), "set_axis_mode", "get_axis_mode");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "radius"), "set_radius", "get_radius");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "space"), "set_space", "get_space");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rotoffset", PROPERTY_HINT_RANGE, "-180,180,0.1"), "set_rotation_offset", "get_rotation_offset");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "mirroredText"), "set_mirrored_text", "get_mirrored_text");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_curved_text", "get_curved_text");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_align", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_text_align", "get_text_align");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_at_rect_center"), "set_axis_mode", "get_axis_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "radius"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "space"), "set_space", "get_space");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotoffset", PROPERTY_HINT_RANGE, "-180,180,0.1"), "set_rotation_offset", "get_rotation_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mirroredText"), "set_mirrored_text", "get_mirrored_text");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_font_size", PROPERTY_HINT_RANGE, "0,1000"), "set_max_font_size", "get_max_font_size");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "loc_label"), "set_loc_label", "get_loc_label");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "loc_label"), "set_loc_label", "get_loc_label");
 }
 
 CurvedLabel::CurvedLabel(const String &p_text) {

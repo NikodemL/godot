@@ -47,7 +47,9 @@ void EditorAbout::_notification(int p_what) {
 			Control *base = EditorNode::get_singleton()->get_gui_base();
 			Ref<Font> font = base->get_font("source", "EditorFonts");
 			_tpl_text->add_font_override("normal_font", font);
+			_tpl_text->add_constant_override("line_separation", 6 * EDSCALE);
 			_license_text->add_font_override("normal_font", font);
+			_license_text->add_constant_override("line_separation", 6 * EDSCALE);
 			_logo->set_texture(base->get_icon("Logo", "EditorIcons"));
 		} break;
 	}
@@ -113,7 +115,6 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 EditorAbout::EditorAbout() {
 
 	set_title(TTR("Thanks from the Godot community!"));
-	get_ok()->set_text(TTR("Thanks!"));
 	set_hide_on_ok(true);
 	set_resizable(true);
 
@@ -188,6 +189,7 @@ EditorAbout::EditorAbout() {
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap(true);
 	tpl_label->set_text(TTR("Godot Engine relies on a number of thirdparty free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such thirdparty components with their respective copyright statements and license terms."));
+	tpl_label->set_size(Size2(630, 1) * EDSCALE);
 	license_thirdparty->add_child(tpl_label);
 
 	HSplitContainer *tpl_hbc = memnew(HSplitContainer);
@@ -207,7 +209,6 @@ EditorAbout::EditorAbout() {
 	TreeItem *tpl_ti_lc = _tpl_tree->create_item(root);
 	tpl_ti_lc->set_text(0, TTR("Licenses"));
 	tpl_ti_lc->set_selectable(0, false);
-	int read_idx = 0;
 	String long_text = "";
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
 
@@ -232,7 +233,6 @@ EditorAbout::EditorAbout() {
 			String license = "\n    License: " + String(part.license) + "\n";
 			text += license;
 			long_text += license + "\n";
-			read_idx++;
 		}
 		ti->set_metadata(0, text);
 	}

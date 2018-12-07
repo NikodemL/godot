@@ -87,12 +87,25 @@ public:
 		NETWORK_COMMAND_RAW,
 	};
 
+	enum RPCMode {
+
+		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
+		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
+		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
+		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
+		RPC_MODE_SLAVE = RPC_MODE_PUPPET, // Deprecated, same as puppet
+		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method / set property in all remote peers and locally
+		RPC_MODE_SYNC = RPC_MODE_REMOTESYNC, // Deprecated. Same as RPC_MODE_REMOTESYNC
+		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
+		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method / set property in all puppets peers and locally
+	};
+
 	void poll();
 	void clear();
 	void set_root_node(Node *p_node);
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer);
 	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
-	Error send_bytes(PoolVector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST);
+	Error send_bytes(PoolVector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST, NetworkedMultiplayerPeer::TransferMode p_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 
 	// Called by Node.rpc
 	void rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
@@ -116,5 +129,7 @@ public:
 	MultiplayerAPI();
 	~MultiplayerAPI();
 };
+
+VARIANT_ENUM_CAST(MultiplayerAPI::RPCMode);
 
 #endif // MULTIPLAYER_PROTOCOL_H

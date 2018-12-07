@@ -16,7 +16,7 @@
 	</demos>
 	<methods>
 		<method name="_get" qualifiers="virtual">
-			<return type="void">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="property" type="String">
 			</argument>
@@ -184,6 +184,8 @@
 			<argument index="0" name="property" type="NodePath">
 			</argument>
 			<description>
+				Get indexed object property by String.
+				Property indices get accessed with colon separation, for example: [code]position:x[/code]
 			</description>
 		</method>
 		<method name="get_instance_id" qualifiers="const">
@@ -346,6 +348,16 @@
 				If set to true, signal emission is blocked.
 			</description>
 		</method>
+		<method name="set_deferred">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_indexed">
 			<return type="void">
 			</return>
@@ -417,6 +429,8 @@
 		</constant>
 		<constant name="CONNECT_ONESHOT" value="4" enum="ConnectFlags">
 			One shot connections disconnect themselves after emission.
+		</constant>
+		<constant name="CONNECT_REFERENCE_COUNTED" value="8" enum="ConnectFlags">
 		</constant>
 	</constants>
 </class>

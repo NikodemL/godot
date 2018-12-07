@@ -36,6 +36,7 @@
 #include "csg.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/concave_polygon_shape.h"
+#include "thirdparty/misc/mikktspace.h"
 
 class CSGShape : public VisualInstance {
 	GDCLASS(CSGShape, VisualInstance);
@@ -63,6 +64,8 @@ private:
 	Ref<ConcavePolygonShape> root_collision_shape;
 	RID root_collision_instance;
 
+	bool calculate_tangents;
+
 	Ref<ArrayMesh> root_mesh;
 
 	struct Vector3Hasher {
@@ -78,13 +81,25 @@ private:
 		PoolVector<Vector3> vertices;
 		PoolVector<Vector3> normals;
 		PoolVector<Vector2> uvs;
+		PoolVector<float> tans;
 		Ref<Material> material;
 		int last_added;
 
 		PoolVector<Vector3>::Write verticesw;
 		PoolVector<Vector3>::Write normalsw;
 		PoolVector<Vector2>::Write uvsw;
+		PoolVector<float>::Write tansw;
 	};
+
+	//mikktspace callbacks
+	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
+	static int mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace);
+	static void mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert);
+	static void mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert);
+	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
+	static void mikktSetTSpaceBasic(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fSign, const int iFace, const int iVert);
+	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
+			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 	void _update_shape();
 
@@ -114,6 +129,9 @@ public:
 
 	void set_snap(float p_snap);
 	float get_snap() const;
+
+	void set_calculate_tangents(bool p_calculate_tangents);
+	bool is_calculating_tangents() const;
 
 	bool is_root_shape() const;
 	CSGShape();
@@ -334,10 +352,13 @@ private:
 	NodePath path_node;
 	float path_interval;
 	PathRotation path_rotation;
+	bool path_local;
 
 	Node *path_cache;
 
 	bool smooth_faces;
+	bool path_continuous_u;
+	bool path_joined;
 
 	bool _is_editable_3d_polygon() const;
 	bool _has_editable_3d_polygon_no_depth() const;
@@ -374,6 +395,15 @@ public:
 
 	void set_path_rotation(PathRotation p_rotation);
 	PathRotation get_path_rotation() const;
+
+	void set_path_local(bool p_enable);
+	bool is_path_local() const;
+
+	void set_path_continuous_u(bool p_enable);
+	bool is_path_continuous_u() const;
+
+	void set_path_joined(bool p_enable);
+	bool is_path_joined() const;
 
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;

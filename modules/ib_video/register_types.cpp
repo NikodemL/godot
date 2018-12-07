@@ -3,7 +3,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "class_db.h"
+#include "core/class_db.h"
 #include "ib_video_stream.h"
 
 void register_ib_video_types() {

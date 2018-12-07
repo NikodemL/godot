@@ -8,7 +8,7 @@
 #include <list>
 #include <concurrent_queue.h>
 
-#include "image.h"
+#include "core/image.h"
 #include "video.h"
 #include "video_ffmpeg.h"
 #include "video_dxframe.h"
@@ -508,7 +508,7 @@ Ref<DirectXIBVideoTexture> VideoStreamIBManager::get_video_texture(int id)
 	inst.pGLVideoTexture->w = inst.pVideoObject->pFrameOut->videoWidth;
 	inst.pGLVideoTexture->h = inst.pVideoObject->pFrameOut->videoHeight;
 
-	VisualServer::get_singleton()->texture_set_size_override(inst.pGLVideoTexture->texture, inst.pGLVideoTexture->w, inst.pGLVideoTexture->h);
+	VisualServer::get_singleton()->texture_set_size_override(inst.pGLVideoTexture->texture, inst.pGLVideoTexture->w, inst.pGLVideoTexture->h, 0);
 
 	return inst.pGLVideoTexture;
 }

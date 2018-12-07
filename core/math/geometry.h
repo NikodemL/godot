@@ -31,14 +31,15 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-#include "dvector.h"
-#include "face3.h"
-#include "math_2d.h"
-#include "object.h"
-#include "print_string.h"
-#include "triangulate.h"
-#include "vector.h"
-#include "vector3.h"
+#include "core/dvector.h"
+#include "core/math/face3.h"
+#include "core/math/rect2.h"
+#include "core/math/triangulate.h"
+#include "core/math/vector3.h"
+#include "core/object.h"
+#include "core/print_string.h"
+#include "core/vector.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -799,6 +800,21 @@ public:
 		return Vector<Vector<Vector2> >();
 	}
 
+	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
+		int c = p_polygon.size();
+		if (c < 3)
+			return false;
+		const Vector2 *p = p_polygon.ptr();
+		real_t sum = 0;
+		for (int i = 0; i < c; i++) {
+			const Vector2 &v1 = p[i];
+			const Vector2 &v2 = p[(i + 1) % c];
+			sum += (v2.x - v1.x) * (v2.y + v1.y);
+		}
+
+		return sum > 0.0f;
+	}
+
 	static PoolVector<PoolVector<Face3> > separate_objects(PoolVector<Face3> p_array);
 
 	static PoolVector<Face3> wrap_geometry(PoolVector<Face3> p_array, real_t *p_error = NULL); ///< create a "wrap" that encloses the given geometry
@@ -890,14 +906,14 @@ public:
 		for (int i = 0; i < n; ++i) {
 			while (k >= 2 && vec2_cross(H[k - 2], H[k - 1], P[i]) <= 0)
 				k--;
-			H[k++] = P[i];
+			H.write[k++] = P[i];
 		}
 
 		// Build upper hull
 		for (int i = n - 2, t = k + 1; i >= 0; i--) {
 			while (k >= t && vec2_cross(H[k - 2], H[k - 1], P[i]) <= 0)
 				k--;
-			H[k++] = P[i];
+			H.write[k++] = P[i];
 		}
 
 		H.resize(k);

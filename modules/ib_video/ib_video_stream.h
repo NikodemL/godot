@@ -4,7 +4,7 @@
 #ifndef IB_VIDEO_STREAM_H
 #define IB_VIDEO_STREAM_H
 
-#include "resource.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
 #include <Windows.h>
 #include <d3d9.h>

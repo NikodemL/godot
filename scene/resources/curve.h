@@ -31,7 +31,7 @@
 #ifndef CURVE_H
 #define CURVE_H
 
-#include "resource.h"
+#include "core/resource.h"
 
 // y(x) curve
 class Curve : public Resource {
@@ -127,6 +127,8 @@ public:
 	int get_bake_resolution() const { return _bake_resolution; }
 	void set_bake_resolution(int p_resolution);
 	real_t interpolate_baked(real_t offset);
+
+	void ensure_default_setup(float p_min, float p_max);
 
 protected:
 	static void _bind_methods();

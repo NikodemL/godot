@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "scroll_container.h"
-#include "os/os.h"
+#include "core/os/os.h"
+
 bool ScrollContainer::clips_input() const {
 
 	return true;
@@ -170,7 +171,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			Vector2 motion = Vector2(mm->get_relative().x, mm->get_relative().y);
 			drag_accum -= motion;
 
-			if (beyond_deadzone || scroll_h && Math::abs(drag_accum.x) > deadzone || scroll_v && Math::abs(drag_accum.y) > deadzone) {
+			if (beyond_deadzone || (scroll_h && Math::abs(drag_accum.x) > deadzone) || (scroll_v && Math::abs(drag_accum.y) > deadzone)) {
 				if (!beyond_deadzone) {
 					propagate_notification(NOTIFICATION_SCROLL_BEGIN);
 					emit_signal("scroll_started");
@@ -241,11 +242,11 @@ void ScrollContainer::_notification(int p_what) {
 		size -= sb->get_minimum_size();
 		ofs += sb->get_offset();
 
-		if (h_scroll->is_visible_in_tree())
+		if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) //scrolls may have been moved out for reasons
 			size.y -= h_scroll->get_minimum_size().y;
 
-		if (v_scroll->is_visible_in_tree())
-			size.x -= h_scroll->get_minimum_size().x;
+		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) //scrolls may have been moved out for reasons
+			size.x -= v_scroll->get_minimum_size().x;
 
 		for (int i = 0; i < get_child_count(); i++) {
 
@@ -482,6 +483,16 @@ String ScrollContainer::get_configuration_warning() const {
 		return "";
 }
 
+HScrollBar *ScrollContainer::get_h_scrollbar() {
+
+	return h_scroll;
+}
+
+VScrollBar *ScrollContainer::get_v_scrollbar() {
+
+	return v_scroll;
+}
+
 void ScrollContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_scroll_moved"), &ScrollContainer::_scroll_moved);
@@ -497,6 +508,9 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ScrollContainer::get_v_scroll);
 	ClassDB::bind_method(D_METHOD("set_deadzone", "deadzone"), &ScrollContainer::set_deadzone);
 	ClassDB::bind_method(D_METHOD("get_deadzone"), &ScrollContainer::get_deadzone);
+
+	ClassDB::bind_method(D_METHOD("get_h_scrollbar"), &ScrollContainer::get_h_scrollbar);
+	ClassDB::bind_method(D_METHOD("get_v_scrollbar"), &ScrollContainer::get_v_scrollbar);
 
 	ADD_SIGNAL(MethodInfo("scroll_started"));
 	ADD_SIGNAL(MethodInfo("scroll_ended"));

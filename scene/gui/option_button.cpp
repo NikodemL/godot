@@ -29,14 +29,14 @@
 /*************************************************************************/
 
 #include "option_button.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
 Size2 OptionButton::get_minimum_size() const {
 
 	Size2 minsize = Button::get_minimum_size();
 
 	if (has_icon("arrow"))
-		minsize.width += Control::get_icon("arrow")->get_width();
+		minsize.width += Control::get_icon("arrow")->get_width() + get_constant("hseparation");
 
 	return minsize;
 }

@@ -47,6 +47,7 @@ void CSGShape::set_use_collision(bool p_enable) {
 		PhysicsServer::get_singleton()->body_set_state(root_collision_instance, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
 		PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 		PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
+		PhysicsServer::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
 		_make_dirty(); //force update
 	} else {
 		PhysicsServer::get_singleton()->free(root_collision_instance);
@@ -159,9 +160,77 @@ CSGBrush *CSGShape::_get_brush() {
 	return brush;
 }
 
+int CSGShape::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	return surface.vertices.size() / 3;
+}
+
+int CSGShape::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
+	// always 3
+	return 3;
+}
+
+void CSGShape::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	Vector3 v = surface.verticesw[iFace * 3 + iVert];
+	fvPosOut[0] = v.x;
+	fvPosOut[1] = v.y;
+	fvPosOut[2] = v.z;
+}
+
+void CSGShape::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	Vector3 n = surface.normalsw[iFace * 3 + iVert];
+	fvNormOut[0] = n.x;
+	fvNormOut[1] = n.y;
+	fvNormOut[2] = n.z;
+}
+
+void CSGShape::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	Vector2 t = surface.uvsw[iFace * 3 + iVert];
+	fvTexcOut[0] = t.x;
+	fvTexcOut[1] = t.y;
+}
+
+void CSGShape::mikktSetTSpaceBasic(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fSign, const int iFace, const int iVert) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	int i = (iFace * 3 + iVert) * 4;
+
+	surface.tansw[i++] = fvTangent[0];
+	surface.tansw[i++] = fvTangent[1];
+	surface.tansw[i++] = fvTangent[2];
+	surface.tansw[i++] = fSign;
+}
+
+void CSGShape::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
+		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
+
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	int i = iFace * 3 + iVert;
+	Vector3 normal = surface.normalsw[i];
+	Vector3 tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
+	Vector3 bitangent = Vector3(fvBiTangent[0], fvBiTangent[1], fvBiTangent[2]);
+	float d = bitangent.dot(normal.cross(tangent));
+
+	i *= 4;
+	surface.tansw[i++] = tangent.x;
+	surface.tansw[i++] = tangent.y;
+	surface.tansw[i++] = tangent.z;
+	surface.tansw[i++] = d < 0 ? -1 : 1;
+}
+
 void CSGShape::_update_shape() {
 
-	//print_line("updating shape for " + String(get_path()));
+	if (parent)
+		return;
+
 	set_base(RID());
 	root_mesh.unref(); //byebye root mesh
 
@@ -173,7 +242,7 @@ void CSGShape::_update_shape() {
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
 	for (int i = 0; i < face_count.size(); i++) {
-		face_count[i] = 0;
+		face_count.write[i] = 0;
 	}
 
 	for (int i = 0; i < n->faces.size(); i++) {
@@ -196,7 +265,7 @@ void CSGShape::_update_shape() {
 			}
 		}
 
-		face_count[idx]++;
+		face_count.write[idx]++;
 	}
 
 	Vector<ShapeUpdateSurface> surfaces;
@@ -206,18 +275,24 @@ void CSGShape::_update_shape() {
 	//create arrays
 	for (int i = 0; i < surfaces.size(); i++) {
 
-		surfaces[i].vertices.resize(face_count[i] * 3);
-		surfaces[i].normals.resize(face_count[i] * 3);
-		surfaces[i].uvs.resize(face_count[i] * 3);
-		surfaces[i].last_added = 0;
+		surfaces.write[i].vertices.resize(face_count[i] * 3);
+		surfaces.write[i].normals.resize(face_count[i] * 3);
+		surfaces.write[i].uvs.resize(face_count[i] * 3);
+		if (calculate_tangents) {
+			surfaces.write[i].tans.resize(face_count[i] * 3 * 4);
+		}
+		surfaces.write[i].last_added = 0;
 
 		if (i != surfaces.size() - 1) {
-			surfaces[i].material = n->materials[i];
+			surfaces.write[i].material = n->materials[i];
 		}
 
-		surfaces[i].verticesw = surfaces[i].vertices.write();
-		surfaces[i].normalsw = surfaces[i].normals.write();
-		surfaces[i].uvsw = surfaces[i].uvs.write();
+		surfaces.write[i].verticesw = surfaces.write[i].vertices.write();
+		surfaces.write[i].normalsw = surfaces.write[i].normals.write();
+		surfaces.write[i].uvsw = surfaces.write[i].uvs.write();
+		if (calculate_tangents) {
+			surfaces.write[i].tansw = surfaces.write[i].tans.write();
+		}
 	}
 
 	//fill arrays
@@ -272,12 +347,22 @@ void CSGShape::_update_shape() {
 					normal = -normal;
 				}
 
-				surfaces[idx].verticesw[last + order[j]] = v;
-				surfaces[idx].uvsw[last + order[j]] = n->faces[i].uvs[j];
-				surfaces[idx].normalsw[last + order[j]] = normal;
+				int k = last + order[j];
+				surfaces[idx].verticesw[k] = v;
+				surfaces[idx].uvsw[k] = n->faces[i].uvs[j];
+				surfaces[idx].normalsw[k] = normal;
+
+				if (calculate_tangents) {
+					// zero out our tangents for now
+					k *= 4;
+					surfaces[idx].tansw[k++] = 0.0;
+					surfaces[idx].tansw[k++] = 0.0;
+					surfaces[idx].tansw[k++] = 0.0;
+					surfaces[idx].tansw[k++] = 0.0;
+				}
 			}
 
-			surfaces[idx].last_added += 3;
+			surfaces.write[idx].last_added += 3;
 		}
 	}
 
@@ -285,20 +370,43 @@ void CSGShape::_update_shape() {
 	//create surfaces
 
 	for (int i = 0; i < surfaces.size(); i++) {
+		// calculate tangents for this surface
+		bool have_tangents = calculate_tangents;
+		if (have_tangents) {
+			SMikkTSpaceInterface mkif;
+			mkif.m_getNormal = mikktGetNormal;
+			mkif.m_getNumFaces = mikktGetNumFaces;
+			mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
+			mkif.m_getPosition = mikktGetPosition;
+			mkif.m_getTexCoord = mikktGetTexCoord;
+			mkif.m_setTSpace = mikktSetTSpaceDefault;
+			mkif.m_setTSpaceBasic = NULL;
 
-		surfaces[i].verticesw = PoolVector<Vector3>::Write();
-		surfaces[i].normalsw = PoolVector<Vector3>::Write();
-		surfaces[i].uvsw = PoolVector<Vector2>::Write();
+			SMikkTSpaceContext msc;
+			msc.m_pInterface = &mkif;
+			msc.m_pUserData = &surfaces.write[i];
+			have_tangents = genTangSpaceDefault(&msc);
+		}
+
+		// unset write access
+		surfaces.write[i].verticesw = PoolVector<Vector3>::Write();
+		surfaces.write[i].normalsw = PoolVector<Vector3>::Write();
+		surfaces.write[i].uvsw = PoolVector<Vector2>::Write();
+		surfaces.write[i].tansw = PoolVector<float>::Write();
 
 		if (surfaces[i].last_added == 0)
 			continue;
 
+		// and convert to surface array
 		Array array;
 		array.resize(Mesh::ARRAY_MAX);
 
 		array[Mesh::ARRAY_VERTEX] = surfaces[i].vertices;
 		array[Mesh::ARRAY_NORMAL] = surfaces[i].normals;
 		array[Mesh::ARRAY_TEX_UV] = surfaces[i].uvs;
+		if (have_tangents) {
+			array[Mesh::ARRAY_TANGENT] = surfaces[i].tans;
+		}
 
 		int idx = root_mesh->get_surface_count();
 		root_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
@@ -349,6 +457,10 @@ void CSGShape::_notification(int p_what) {
 		Node *parentn = get_parent();
 		if (parentn) {
 			parent = Object::cast_to<CSGShape>(parentn);
+			if (parent) {
+				set_base(RID());
+				root_mesh.unref();
+			}
 		}
 
 		if (use_collision && is_root_shape()) {
@@ -357,6 +469,7 @@ void CSGShape::_notification(int p_what) {
 			PhysicsServer::get_singleton()->body_set_state(root_collision_instance, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
 			PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 			PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
+			PhysicsServer::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
 		}
 
 		_make_dirty();
@@ -364,13 +477,13 @@ void CSGShape::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 
-		//print_line("local xform changed");
 		if (parent) {
 			parent->_make_dirty();
 		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
+
 		if (parent)
 			parent->_make_dirty();
 		parent = NULL;
@@ -394,6 +507,15 @@ CSGShape::Operation CSGShape::get_operation() const {
 	return operation;
 }
 
+void CSGShape::set_calculate_tangents(bool p_calculate_tangents) {
+	calculate_tangents = p_calculate_tangents;
+	_make_dirty();
+}
+
+bool CSGShape::is_calculating_tangents() const {
+	return calculate_tangents;
+}
+
 void CSGShape::_validate_property(PropertyInfo &property) const {
 	if (is_inside_tree() && property.name.begins_with("use_collision") && !is_root_shape()) {
 		//hide collision if not root
@@ -415,9 +537,13 @@ void CSGShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape::set_snap);
 	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape::get_snap);
 
+	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape::set_calculate_tangents);
+	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape::is_calculating_tangents);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "calculate_tangents"), "set_calculate_tangents", "is_calculating_tangents");
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_INTERSECTION);
@@ -432,6 +558,7 @@ CSGShape::CSGShape() {
 	use_collision = false;
 	operation = OPERATION_UNION;
 	snap = 0.001;
+	calculate_tangents = true;
 }
 
 CSGShape::~CSGShape() {
@@ -515,6 +642,11 @@ CSGBrush *CSGMesh::_build_brush() {
 
 		Array arrays = mesh->surface_get_arrays(i);
 
+		if (arrays.size() == 0) {
+			_make_dirty();
+			ERR_FAIL_COND_V(arrays.size() == 0, NULL);
+		}
+
 		PoolVector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
 		if (avertices.size() == 0)
 			continue;
@@ -587,8 +719,8 @@ CSGBrush *CSGMesh::_build_brush() {
 				mw[j / 3] = mat;
 			}
 		} else {
-			int is = vertices.size();
-			int as = avertices.size();
+			int as = vertices.size();
+			int is = avertices.size();
 
 			vertices.resize(as + is);
 			smooth.resize((as + is) / 3);
@@ -632,7 +764,6 @@ CSGBrush *CSGMesh::_build_brush() {
 		}
 	}
 
-	//print_line("total vertices? " + itos(vertices.size()));
 	if (vertices.size() == 0)
 		return NULL;
 
@@ -912,7 +1043,7 @@ CSGBrush *CSGBox::_build_brush() {
 
 		int face = 0;
 
-		Vector3 vertex_mul(width, height, depth);
+		Vector3 vertex_mul(width * 0.5, height * 0.5, depth * 0.5);
 
 		{
 
@@ -1046,9 +1177,9 @@ Ref<Material> CSGBox::get_material() const {
 
 CSGBox::CSGBox() {
 	// defaults
-	width = 1.0;
-	height = 1.0;
-	depth = 1.0;
+	width = 2.0;
+	height = 2.0;
+	depth = 2.0;
 }
 
 ///////////////
@@ -1535,6 +1666,24 @@ CSGBrush *CSGPolygon::_build_brush() {
 	Path *path = NULL;
 	Ref<Curve3D> curve;
 
+	// get bounds for our polygon
+	Vector2 final_polygon_min;
+	Vector2 final_polygon_max;
+	for (int i = 0; i < final_polygon.size(); i++) {
+		Vector2 p = final_polygon[i];
+		if (i == 0) {
+			final_polygon_min = p;
+			final_polygon_max = final_polygon_min;
+		} else {
+			if (p.x < final_polygon_min.x) final_polygon_min.x = p.x;
+			if (p.y < final_polygon_min.y) final_polygon_min.y = p.y;
+
+			if (p.x > final_polygon_max.x) final_polygon_max.x = p.x;
+			if (p.y > final_polygon_max.y) final_polygon_max.y = p.y;
+		}
+	}
+	Vector2 final_polygon_size = final_polygon_max - final_polygon_min;
+
 	if (mode == MODE_PATH) {
 		if (!has_node(path_node))
 			return NULL;
@@ -1568,7 +1717,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 	}
 	CSGBrush *brush = memnew(CSGBrush);
 
-	int face_count;
+	int face_count = 0;
 
 	switch (mode) {
 		case MODE_DEPTH: face_count = triangles.size() * 2 / 3 + (final_polygon.size()) * 2; break;
@@ -1576,7 +1725,11 @@ CSGBrush *CSGPolygon::_build_brush() {
 		case MODE_PATH: {
 			float bl = curve->get_baked_length();
 			int splits = MAX(2, Math::ceil(bl / path_interval));
-			face_count = triangles.size() * 2 / 3 + splits * final_polygon.size() * 2;
+			if (path_joined) {
+				face_count = splits * final_polygon.size() * 2;
+			} else {
+				face_count = triangles.size() * 2 / 3 + splits * final_polygon.size() * 2;
+			}
 		} break;
 	}
 
@@ -1622,6 +1775,10 @@ CSGBrush *CSGPolygon::_build_brush() {
 								v.z -= depth;
 							}
 							facesw[face * 3 + k] = v;
+							uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
+							if (i == 0) {
+								uvsw[face * 3 + k].x = 1.0 - uvsw[face * 3 + k].x; /* flip x */
+							}
 						}
 
 						smoothw[face] = false;
@@ -1753,6 +1910,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = v;
+								uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
 							}
 
 							smoothw[face] = false;
@@ -1770,6 +1928,8 @@ CSGBrush *CSGPolygon::_build_brush() {
 								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(normali_n.x * p.x, p.y, normali_n.z * p.x);
 								facesw[face * 3 + k] = v;
+								uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
+								uvsw[face * 3 + k].x = 1.0 - uvsw[face * 3 + k].x; /* flip x */
 							}
 
 							smoothw[face] = false;
@@ -1784,8 +1944,14 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 				float bl = curve->get_baked_length();
 				int splits = MAX(2, Math::ceil(bl / path_interval));
+				float u1 = 0.0;
+				float u2 = path_continuous_u ? 0.0 : 1.0;
 
-				Transform path_to_this = get_global_transform().affine_inverse() * path->get_global_transform();
+				Transform path_to_this;
+				if (!path_local) {
+					// center on paths origin
+					path_to_this = get_global_transform().affine_inverse() * path->get_global_transform();
+				}
 
 				Transform prev_xf;
 
@@ -1803,6 +1969,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 				for (int i = 0; i <= splits; i++) {
 
 					float ofs = i * path_interval;
+					if (i == splits && path_joined) {
+						ofs = 0.0;
+					}
 
 					Transform xf;
 					xf.origin = curve->interpolate_baked(ofs);
@@ -1827,6 +1996,11 @@ CSGBrush *CSGPolygon::_build_brush() {
 					xf = path_to_this * xf;
 
 					if (i > 0) {
+						if (path_continuous_u) {
+							u1 = u2;
+							u2 += (prev_xf.origin - xf.origin).length();
+						};
+
 						//put triangles where they belong
 						//add triangles for depth
 						for (int j = 0; j < final_polygon.size(); j++) {
@@ -1841,10 +2015,10 @@ CSGBrush *CSGPolygon::_build_brush() {
 							};
 
 							Vector2 u[4] = {
-								Vector2(0, 0),
-								Vector2(0, 1),
-								Vector2(1, 1),
-								Vector2(1, 0)
+								Vector2(u1, 1),
+								Vector2(u1, 0),
+								Vector2(u2, 0),
+								Vector2(u2, 1)
 							};
 
 							// face 1
@@ -1879,7 +2053,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 						}
 					}
 
-					if (i == 0) {
+					if (i == 0 && !path_joined) {
 
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
@@ -1887,6 +2061,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = xf.xform(v);
+								uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
 							}
 
 							smoothw[face] = false;
@@ -1896,7 +2071,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 						}
 					}
 
-					if (i == splits) {
+					if (i == splits && !path_joined) {
 
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
@@ -1904,6 +2079,8 @@ CSGBrush *CSGPolygon::_build_brush() {
 								Vector2 p = final_polygon[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = xf.xform(v);
+								uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
+								uvsw[face * 3 + k].x = 1.0 - uvsw[face * 3 + k].x; /* flip x */
 							}
 
 							smoothw[face] = false;
@@ -1928,6 +2105,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 			} else {
 				aabb.expand_to(facesw[i]);
 			}
+
+			// invert UVs on the Y-axis OpenGL = upside down
+			uvsw[i].y = 1.0 - uvsw[i].y;
 		}
 	}
 
@@ -1994,6 +2174,15 @@ void CSGPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_rotation", "mode"), &CSGPolygon::set_path_rotation);
 	ClassDB::bind_method(D_METHOD("get_path_rotation"), &CSGPolygon::get_path_rotation);
 
+	ClassDB::bind_method(D_METHOD("set_path_local", "enable"), &CSGPolygon::set_path_local);
+	ClassDB::bind_method(D_METHOD("is_path_local"), &CSGPolygon::is_path_local);
+
+	ClassDB::bind_method(D_METHOD("set_path_continuous_u", "enable"), &CSGPolygon::set_path_continuous_u);
+	ClassDB::bind_method(D_METHOD("is_path_continuous_u"), &CSGPolygon::is_path_continuous_u);
+
+	ClassDB::bind_method(D_METHOD("set_path_joined", "enable"), &CSGPolygon::set_path_joined);
+	ClassDB::bind_method(D_METHOD("is_path_joined"), &CSGPolygon::is_path_joined);
+
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGPolygon::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGPolygon::get_material);
 
@@ -2011,9 +2200,12 @@ void CSGPolygon::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spin_degrees", PROPERTY_HINT_RANGE, "1,360,0.1"), "set_spin_degrees", "get_spin_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spin_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_spin_sides", "get_spin_sides");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node"), "set_path_node", "get_path_node");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path"), "set_path_node", "get_path_node");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_interval", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_path_interval", "get_path_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_joined"), "set_path_joined", "is_path_joined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "SpatialMaterial,ShaderMaterial"), "set_material", "get_material");
 
@@ -2056,6 +2248,15 @@ void CSGPolygon::set_depth(const float p_depth) {
 
 float CSGPolygon::get_depth() const {
 	return depth;
+}
+
+void CSGPolygon::set_path_continuous_u(bool p_enable) {
+	path_continuous_u = p_enable;
+	_make_dirty();
+}
+
+bool CSGPolygon::is_path_continuous_u() const {
+	return path_continuous_u;
 }
 
 void CSGPolygon::set_spin_degrees(const float p_spin_degrees) {
@@ -2110,6 +2311,26 @@ CSGPolygon::PathRotation CSGPolygon::get_path_rotation() const {
 	return path_rotation;
 }
 
+void CSGPolygon::set_path_local(bool p_enable) {
+	path_local = p_enable;
+	_make_dirty();
+	update_gizmo();
+}
+
+bool CSGPolygon::is_path_local() const {
+	return path_local;
+}
+
+void CSGPolygon::set_path_joined(bool p_enable) {
+	path_joined = p_enable;
+	_make_dirty();
+	update_gizmo();
+}
+
+bool CSGPolygon::is_path_joined() const {
+	return path_joined;
+}
+
 void CSGPolygon::set_smooth_faces(const bool p_smooth_faces) {
 	smooth_faces = p_smooth_faces;
 	_make_dirty();
@@ -2151,5 +2372,8 @@ CSGPolygon::CSGPolygon() {
 	smooth_faces = false;
 	path_interval = 1;
 	path_rotation = PATH_ROTATION_PATH;
+	path_local = false;
+	path_continuous_u = false;
+	path_joined = false;
 	path_cache = NULL;
 }

@@ -73,6 +73,12 @@
 				Update a file information. Call this if an external program (not Godot) modified the file.
 			</description>
 		</method>
+		<method name="update_script_classes">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="filesystem_changed">
@@ -85,6 +91,12 @@
 			</argument>
 			<description>
 				Remitted if a resource is reimported.
+			</description>
+		</signal>
+		<signal name="resources_reload">
+			<argument index="0" name="resources" type="PoolStringArray">
+			</argument>
+			<description>
 			</description>
 		</signal>
 		<signal name="sources_changed">

@@ -1,5 +1,5 @@
 #include "register_types.h"
-#include "class_db.h"
+#include "core/class_db.h"
 #include "scene/gui/control.h"
 #include "curved_label.h"
 #include "scene/resources/default_theme/default_theme.h"

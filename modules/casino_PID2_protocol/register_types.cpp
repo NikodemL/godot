@@ -3,7 +3,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "class_db.h"
+#include "core/class_db.h"
 #include "casino_PID2_protocol.h"
 
 void register_casino_PID2_protocol_types() {

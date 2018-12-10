@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "http_client.h"
-#include "io/stream_peer_ssl.h"
+
+#include "core/io/stream_peer_ssl.h"
+#include "core/version.h"
 
 const char *HTTPClient::_methods[METHOD_MAX] = {
 	"GET",
@@ -121,15 +123,29 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 		request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
 	}
 	bool add_clen = p_body.size() > 0;
+	bool add_uagent = true;
+	bool add_accept = true;
 	for (int i = 0; i < p_headers.size(); i++) {
 		request += p_headers[i] + "\r\n";
-		if (add_clen && p_headers[i].find("Content-Length:") == 0) {
+		if (add_clen && p_headers[i].findn("Content-Length:") == 0) {
 			add_clen = false;
+		}
+		if (add_uagent && p_headers[i].findn("User-Agent:") == 0) {
+			add_uagent = false;
+		}
+		if (add_accept && p_headers[i].findn("Accept:") == 0) {
+			add_accept = false;
 		}
 	}
 	if (add_clen) {
 		request += "Content-Length: " + itos(p_body.size()) + "\r\n";
 		// Should it add utf8 encoding?
+	}
+	if (add_uagent) {
+		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
+	}
+	if (add_accept) {
+		request += "Accept: */*\r\n";
 	}
 	request += "\r\n";
 	CharString cs = request.utf8();
@@ -173,16 +189,30 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 	} else {
 		request += "Host: " + conn_host + ":" + itos(conn_port) + "\r\n";
 	}
+	bool add_uagent = true;
+	bool add_accept = true;
 	bool add_clen = p_body.length() > 0;
 	for (int i = 0; i < p_headers.size(); i++) {
 		request += p_headers[i] + "\r\n";
-		if (add_clen && p_headers[i].find("Content-Length:") == 0) {
+		if (add_clen && p_headers[i].findn("Content-Length:") == 0) {
 			add_clen = false;
+		}
+		if (add_uagent && p_headers[i].findn("User-Agent:") == 0) {
+			add_uagent = false;
+		}
+		if (add_accept && p_headers[i].findn("Accept:") == 0) {
+			add_accept = false;
 		}
 	}
 	if (add_clen) {
 		request += "Content-Length: " + itos(p_body.utf8().length()) + "\r\n";
 		// Should it add utf8 encoding?
+	}
+	if (add_uagent) {
+		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
+	}
+	if (add_accept) {
+		request += "Accept: */*\r\n";
 	}
 	request += "\r\n";
 	request += p_body;
@@ -245,11 +275,12 @@ void HTTPClient::close() {
 
 	response_headers.clear();
 	response_str.clear();
-	body_size = 0;
+	body_size = -1;
 	body_left = 0;
 	chunk_left = 0;
 	read_until_eof = false;
 	response_num = 0;
+	handshaking = false;
 }
 
 Error HTTPClient::poll() {
@@ -298,16 +329,40 @@ Error HTTPClient::poll() {
 				} break;
 				case StreamPeerTCP::STATUS_CONNECTED: {
 					if (ssl) {
-						Ref<StreamPeerSSL> ssl = StreamPeerSSL::create();
-						Error err = ssl->connect_to_stream(tcp_connection, ssl_verify_host, conn_host);
-						if (err != OK) {
+						Ref<StreamPeerSSL> ssl;
+						if (!handshaking) {
+							// Connect the StreamPeerSSL and start handshaking
+							ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+							ssl->set_blocking_handshake_enabled(false);
+							Error err = ssl->connect_to_stream(tcp_connection, ssl_verify_host, conn_host);
+							if (err != OK) {
+								close();
+								status = STATUS_SSL_HANDSHAKE_ERROR;
+								return ERR_CANT_CONNECT;
+							}
+							connection = ssl;
+							handshaking = true;
+						} else {
+							// We are already handshaking, which means we can use your already active SSL connection
+							ssl = static_cast<Ref<StreamPeerSSL> >(connection);
+							ssl->poll(); // Try to finish the handshake
+						}
+
+						if (ssl->get_status() == StreamPeerSSL::STATUS_CONNECTED) {
+							// Handshake has been successful
+							handshaking = false;
+							status = STATUS_CONNECTED;
+							return OK;
+						} else if (ssl->get_status() != StreamPeerSSL::STATUS_HANDSHAKING) {
+							// Handshake has failed
 							close();
 							status = STATUS_SSL_HANDSHAKE_ERROR;
 							return ERR_CANT_CONNECT;
 						}
-						connection = ssl;
+						// ... we will need to poll more for handshake to finish
+					} else {
+						status = STATUS_CONNECTED;
 					}
-					status = STATUS_CONNECTED;
 					return OK;
 				} break;
 				case StreamPeerTCP::STATUS_ERROR:
@@ -319,7 +374,20 @@ Error HTTPClient::poll() {
 				} break;
 			}
 		} break;
+		case STATUS_BODY:
 		case STATUS_CONNECTED: {
+			// Check if we are still connected
+			if (ssl) {
+				Ref<StreamPeerSSL> tmp = connection;
+				tmp->poll();
+				if (tmp->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
+					status = STATUS_CONNECTION_ERROR;
+					return ERR_CONNECTION_ERROR;
+				}
+			} else if (tcp_connection->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
+				status = STATUS_CONNECTION_ERROR;
+				return ERR_CONNECTION_ERROR;
+			}
 			// Connection established, requests can now be made
 			return OK;
 		} break;
@@ -349,7 +417,7 @@ Error HTTPClient::poll() {
 					String response;
 					response.parse_utf8((const char *)response_str.ptr());
 					Vector<String> responses = response.split("\n");
-					body_size = 0;
+					body_size = -1;
 					chunked = false;
 					body_left = 0;
 					chunk_left = 0;
@@ -393,7 +461,7 @@ Error HTTPClient::poll() {
 						}
 					}
 
-					if (body_size || chunked) {
+					if (body_size != -1 || chunked) {
 
 						status = STATUS_BODY;
 					} else if (!keep_alive) {
@@ -413,7 +481,8 @@ Error HTTPClient::poll() {
 		case STATUS_DISCONNECTED: {
 			return ERR_UNCONFIGURED;
 		} break;
-		case STATUS_CONNECTION_ERROR: {
+		case STATUS_CONNECTION_ERROR:
+		case STATUS_SSL_HANDSHAKE_ERROR: {
 			return ERR_CONNECTION_ERROR;
 		} break;
 		case STATUS_CANT_CONNECT: {
@@ -498,7 +567,7 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 			} else {
 
 				int rec = 0;
-				err = _get_http_data(&chunk[chunk.size() - chunk_left], chunk_left, rec);
+				err = _get_http_data(&chunk.write[chunk.size() - chunk_left], chunk_left, rec);
 				if (rec == 0) {
 					break;
 				}
@@ -610,11 +679,24 @@ Error HTTPClient::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received
 
 	if (blocking) {
 
-		Error err = connection->get_data(p_buffer, p_bytes);
-		if (err == OK)
-			r_received = p_bytes;
-		else
-			r_received = 0;
+		// We can't use StreamPeer.get_data, since when reaching EOF we will get an
+		// error without knowing how many bytes we received.
+		Error err = ERR_FILE_EOF;
+		int read = 0;
+		int left = p_bytes;
+		r_received = 0;
+		while (left > 0) {
+			err = connection->get_partial_data(p_buffer + r_received, left, read);
+			if (err == OK) {
+				r_received += read;
+			} else if (err == ERR_FILE_EOF) {
+				r_received += read;
+				return err;
+			} else {
+				return err;
+			}
+			left -= read;
+		}
 		return err;
 	} else {
 		return connection->get_partial_data(p_buffer, p_bytes, r_received);
@@ -628,11 +710,11 @@ void HTTPClient::set_read_chunk_size(int p_size) {
 
 HTTPClient::HTTPClient() {
 
-	tcp_connection = StreamPeerTCP::create_ref();
+	tcp_connection.instance();
 	resolving = IP::RESOLVER_INVALID_ID;
 	status = STATUS_DISCONNECTED;
 	conn_port = -1;
-	body_size = 0;
+	body_size = -1;
 	chunked = false;
 	body_left = 0;
 	read_until_eof = false;
@@ -640,6 +722,7 @@ HTTPClient::HTTPClient() {
 	response_num = 0;
 	ssl = false;
 	blocking = false;
+	handshaking = false;
 	read_chunk_size = 4096;
 }
 

@@ -7,7 +7,7 @@
 #define PROTOCOL_PID2_H
 
 #include <array>
-#include "reference.h"
+#include "core/reference.h"
 #include "casinogameclient.h"
 
 // Additional definitions not in casinogameclient.h

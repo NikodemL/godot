@@ -62,8 +62,8 @@ private:
 	Map<StringName, PropertyInfo> _properties_info;
 	Map<StringName, MethodInfo> _signals_info;
 	Map<StringName, MethodInfo> _methods_info;
-	Map<StringName, ScriptInstance::RPCMode> _variables_rset_mode;
-	Map<StringName, ScriptInstance::RPCMode> _methods_rpc_mode;
+	Map<StringName, MultiplayerAPI::RPCMode> _variables_rset_mode;
+	Map<StringName, MultiplayerAPI::RPCMode> _methods_rpc_mode;
 
 	Set<Object *> _instances;
 	//exported members
@@ -102,6 +102,7 @@ public:
 	PropertyInfo get_property_info(const StringName &p_property) const;
 
 	bool is_tool() const { return _tool; }
+	bool is_valid() const { return true; }
 
 	virtual ScriptLanguage *get_language() const;
 
@@ -116,8 +117,8 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const;
 
-	ScriptInstance::RPCMode get_rpc_mode(const StringName &p_method) const;
-	ScriptInstance::RPCMode get_rset_mode(const StringName &p_variable) const;
+	MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	PluginScript();
 	void init(PluginScriptLanguage *language);

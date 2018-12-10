@@ -31,13 +31,14 @@
 #ifndef OS_H
 #define OS_H
 
-#include "engine.h"
-#include "image.h"
-#include "io/logger.h"
-#include "list.h"
-#include "os/main_loop.h"
-#include "ustring.h"
-#include "vector.h"
+#include "core/engine.h"
+#include "core/image.h"
+#include "core/io/logger.h"
+#include "core/list.h"
+#include "core/os/main_loop.h"
+#include "core/ustring.h"
+#include "core/vector.h"
+
 #include <stdarg.h>
 
 /**
@@ -73,6 +74,9 @@ class OS {
 	void *_stack_bottom;
 
 	CompositeLogger *_logger;
+
+	bool restart_on_exit;
+	List<String> restart_commandline;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -120,16 +124,15 @@ public:
 		}
 	};
 
+public:
+	void add_logger(Logger *p_logger);
 protected:
 	friend class Main;
 
 	RenderThreadMode _render_thread_mode;
 
-	// functions used by main to initialize/deintialize the OS
-public:
-	void add_logger(Logger *p_logger);
+	// functions used by main to initialize/deinitialize the OS
 
-protected:
 	virtual void initialize_core() = 0;
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) = 0;
 
@@ -184,9 +187,13 @@ public:
 
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
-
+	virtual int get_current_video_driver() const = 0;
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
+
+	virtual PoolStringArray get_connected_midi_inputs();
+	virtual void open_midi_inputs();
+	virtual void close_midi_inputs();
 
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }
@@ -234,6 +241,7 @@ public:
 	virtual Size2 get_layered_buffer_size() { return Size2(0, 0); }
 	virtual void swap_layered_buffer() {}
 
+	virtual void set_ime_active(const bool p_active) {}
 	virtual void set_ime_position(const Point2 &p_pos) {}
 	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {}
 
@@ -497,6 +505,11 @@ public:
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
+
+	void set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments);
+	bool is_restart_on_exit_set() const;
+	List<String> get_restart_on_exit_arguments() const;
+
 	OS();
 	virtual ~OS();
 };

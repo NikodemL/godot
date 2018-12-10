@@ -40,13 +40,15 @@ class VisualScriptFunction : public VisualScriptNode {
 	struct Argument {
 		String name;
 		Variant::Type type;
+		PropertyHint hint;
+		String hint_string;
 	};
 
 	Vector<Argument> arguments;
 
 	bool stack_less;
 	int stack_size;
-	ScriptInstance::RPCMode rpc_mode;
+	MultiplayerAPI::RPCMode rpc_mode;
 	bool sequenced;
 
 protected:
@@ -70,7 +72,7 @@ public:
 	virtual String get_text() const;
 	virtual String get_category() const { return "flow_control"; }
 
-	void add_argument(Variant::Type p_type, const String &p_name, int p_index = -1);
+	void add_argument(Variant::Type p_type, const String &p_name, int p_index = -1, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(""));
 	void set_argument_type(int p_argidx, Variant::Type p_type);
 	Variant::Type get_argument_type(int p_argidx) const;
 	void set_argument_name(int p_argidx, const String &p_name);
@@ -93,8 +95,8 @@ public:
 	void set_return_type(Variant::Type p_type);
 	Variant::Type get_return_type() const;
 
-	void set_rpc_mode(ScriptInstance::RPCMode p_mode);
-	ScriptInstance::RPCMode get_rpc_mode() const;
+	void set_rpc_mode(MultiplayerAPI::RPCMode p_mode);
+	MultiplayerAPI::RPCMode get_rpc_mode() const;
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 

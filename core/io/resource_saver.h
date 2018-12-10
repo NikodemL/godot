@@ -31,7 +31,7 @@
 #ifndef RESOURCE_SAVER_H
 #define RESOURCE_SAVER_H
 
-#include "resource.h"
+#include "core/resource.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -46,7 +46,7 @@ public:
 	virtual ~ResourceFormatSaver() {}
 };
 
-typedef void (*ResourceSavedCallback)(const String &p_path);
+typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceSaver {
 
@@ -76,6 +76,8 @@ public:
 	static void add_resource_format_saver(ResourceFormatSaver *p_format_saver, bool p_at_front = false);
 
 	static void set_timestamp_on_save(bool p_timestamp) { timestamp_on_save = p_timestamp; }
+	static bool get_timestamp_on_save() { return timestamp_on_save; }
+
 	static void set_save_callback(ResourceSavedCallback p_callback);
 };
 

@@ -31,11 +31,12 @@
 #include "polygon_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/os/file_access.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
-#include "os/file_access.h"
-#include "os/input.h"
-#include "os/keyboard.h"
 #include "scene/2d/skeleton_2d.h"
+
 Node2D *Polygon2DEditor::_get_node() const {
 
 	return node;
@@ -82,7 +83,6 @@ void Polygon2DEditor::_notification(int p_what) {
 
 void Polygon2DEditor::_sync_bones() {
 
-	print_line("syncinc");
 	if (!node->has_node(node->get_skeleton())) {
 		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
 		error->popup_centered_minsize();
@@ -100,8 +100,6 @@ void Polygon2DEditor::_sync_bones() {
 
 	Array prev_bones = node->call("_get_bones");
 	node->clear_bones();
-
-	print_line("bones in skeleton: " + itos(skeleton->get_bone_count()));
 
 	for (int i = 0; i < skeleton->get_bone_count(); i++) {
 		NodePath path = skeleton->get_path_to(skeleton->get_bone(i));
@@ -563,6 +561,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				if (uv_move_current == UV_MODE_REMOVE_SPLIT) {
 
+					splits_prev = node->get_splits();
 					for (int i = 0; i < splits_prev.size(); i += 2) {
 						if (splits_prev[i] < 0 || splits_prev[i] >= points_prev.size())
 							continue;
@@ -768,6 +767,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						node->set_polygon(uv_new);
 					}
 				} break;
+				default: {}
 			}
 
 			if (bone_painting) {
@@ -963,22 +963,32 @@ void Polygon2DEditor::_uv_draw() {
 
 					bool current = bone_path == skeleton->get_path_to(bone);
 
+					bool found_child = false;
+
 					for (int j = 0; j < bone->get_child_count(); j++) {
 
-						Node2D *n = Object::cast_to<Node2D>(bone->get_child(j));
+						Bone2D *n = Object::cast_to<Bone2D>(bone->get_child(j));
 						if (!n)
 							continue;
 
-						bool edit_bone = n->has_meta("_edit_bone_") && n->get_meta("_edit_bone_");
-						if (edit_bone) {
+						found_child = true;
 
-							Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
-							Transform2D endpoint_xform = bone_xform * n->get_transform();
+						Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
+						Transform2D endpoint_xform = bone_xform * n->get_transform();
 
-							Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
-							uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), current ? 5 : 4);
-							uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, current ? 3 : 2);
-						}
+						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), current ? 5 : 4);
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, current ? 3 : 2);
+					}
+
+					if (!found_child) {
+						//draw normally
+						Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
+						Transform2D endpoint_xform = bone_xform * Transform2D(0, Vector2(bone->get_default_length(), 0));
+
+						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), current ? 5 : 4);
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, current ? 3 : 2);
 					}
 				}
 			}

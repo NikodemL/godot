@@ -34,7 +34,7 @@
 
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "servers/visual/visual_server_raster.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 
 #include "main/main.h"
 
@@ -62,11 +62,6 @@ const char *OSIPhone::get_video_driver_name(int p_driver) const {
 OSIPhone *OSIPhone::get_singleton() {
 
 	return (OSIPhone *)OS::get_singleton();
-};
-
-uint8_t OSIPhone::get_orientations() const {
-
-	return supported_orientations;
 };
 
 extern int gl_view_base_fb; // from gl_view.mm
@@ -98,24 +93,25 @@ void OSIPhone::initialize_core() {
 	set_data_dir(data_dir);
 };
 
+int OSIPhone::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	supported_orientations = 0;
-	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_horizontal", true) ? 1 : 0) << LandscapeLeft);
-	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_horizontal_flipped", false) ? 1 : 0) << LandscapeRight);
-	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_vertical", false) ? 1 : 0) << PortraitDown);
-	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_vertical_flipped", false) ? 1 : 0) << PortraitUp);
+	video_driver_index = VIDEO_DRIVER_GLES3;
 
+	if (RasterizerGLES3::is_viable() != OK) {
+		return ERR_UNAVAILABLE;
+	}
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();
 
-	visual_server = memnew(VisualServerRaster());
-	/*
-		FIXME: Reimplement threaded rendering? Or remove?
+	visual_server = memnew(VisualServerRaster);
+	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
-	};
-	*/
+	}
 
 	visual_server->init();
 	//visual_server->cursor_set_visible(false, 0);

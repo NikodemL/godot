@@ -155,12 +155,7 @@ void TextureRect::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_hframes", "hframes"), &TextureRect::set_hframes);
 	ClassDB::bind_method(D_METHOD("get_hframes"), &TextureRect::get_hframes);
-
-
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
-
+	
 	ADD_GROUP("Flip", "");
    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vflip"), "set_vflip", "has_vflip");
    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hflip"), "set_hflip", "has_hflip");

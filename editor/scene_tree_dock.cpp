@@ -1067,10 +1067,14 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 
 	p_renames->push_back(npp);
 
-	for (int i = 0; i < p_node->get_child_count(); i++) {
+   // Stop on non editable scene, otherwise the children of a reparented scene will get broken
+   if( p_node->get_filename() == "")
+   {
+	   for (int i = 0; i < p_node->get_child_count(); i++) {
 
-		_fill_path_renames(base_path, new_base_path, p_node->get_child(i), p_renames);
-	}
+		   _fill_path_renames(base_path, new_base_path, p_node->get_child(i), p_renames);
+	   }
+   }
 }
 
 void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath> > *p_renames) {

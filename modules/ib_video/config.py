@@ -6,7 +6,7 @@ def can_build(platform):
     return True
 
 def configure(env):
-   if env=="win64":
+   if env["bits"]=="64":
       env.Append(LINKFLAGS=['modules/ib_video/ffmpeg/win64/lib/avcodec.lib',
                           'modules/ib_video/ffmpeg/win64/lib/avdevice.lib',
                           'modules/ib_video/ffmpeg/win64/lib/avfilter.lib',
@@ -31,7 +31,7 @@ def configure(env):
 	if not os.path.exists('bin'):
 		os.makedirs('bin')
 	
-   if env=="win64":
+   if env["bits"]=="64":
       shutil.copyfile('modules/ib_video/GL/x64/glew32.dll', 'bin/glew32.dll')
       shutil.copyfile('modules/ib_video/ffmpeg/win64/bin/avcodec-57.dll', 'bin/avcodec-57.dll')
       shutil.copyfile('modules/ib_video/ffmpeg/win64/bin/avdevice-57.dll', 'bin/avdevice-57.dll')

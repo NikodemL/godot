@@ -328,7 +328,7 @@ int VideoStreamIBManager::create_video()
 	// Fail if no valid GFX device is set
 	if (!pDevice9 && !pDevice11)
 		return 0;
-	TVideoInstance inst = { 0 };
+	TVideoInstance inst = {};
 	InitVideoInstance(inst);
 	inst.id = nextVideoId;
 

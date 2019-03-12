@@ -1,6 +1,6 @@
 # config.py
 
-def can_build(platform):
+def can_build(env, platform):
     # Disable build by default
     return False
 

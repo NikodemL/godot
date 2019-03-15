@@ -3157,7 +3157,9 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorScript>();
 	ClassDB::register_class<EditorSelection>();
 	ClassDB::register_class<EditorFileDialog>();
+	ClassDB::set_current_api(ClassDB::API_CORE);
 	ClassDB::register_virtual_class<EditorSettings>();
+	ClassDB::set_current_api(ClassDB::API_EDITOR);
 	ClassDB::register_class<EditorSpatialGizmo>();
 	ClassDB::register_virtual_class<EditorResourcePreview>();
 	ClassDB::register_class<EditorResourcePreviewGenerator>();

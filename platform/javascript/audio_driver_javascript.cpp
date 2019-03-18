@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,6 +146,15 @@ void AudioDriverJavaScript::start() {
 	/* clang-format on */
 }
 
+void AudioDriverJavaScript::resume() {
+	/* clang-format off */
+	EM_ASM({
+		if (_audioDriver_audioContext.resume)
+			_audioDriver_audioContext.resume();
+	});
+	/* clang-format on */
+}
+
 int AudioDriverJavaScript::get_mix_rate() const {
 
 	/* clang-format off */
@@ -200,7 +209,7 @@ Error AudioDriverJavaScript::capture_start() {
 		}
 
 		function gotMediaInputError(e) {
-			console.log(e);
+			out(e);
 		}
 
 		if (navigator.mediaDevices.getUserMedia) {

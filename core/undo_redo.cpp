@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -234,7 +234,13 @@ void UndoRedo::_pop_history_tail() {
 	}
 
 	actions.remove(0);
-	current_action--;
+	if (current_action >= 0) {
+		current_action--;
+	}
+}
+
+bool UndoRedo::is_commiting_action() const {
+	return commiting > 0;
 }
 
 void UndoRedo::commit_action() {
@@ -244,8 +250,9 @@ void UndoRedo::commit_action() {
 	if (action_level > 0)
 		return; //still nested
 
+	commiting++;
 	redo(); // perform action
-
+	commiting--;
 	if (callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
 	}
@@ -258,17 +265,31 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 		Operation &op = E->get();
 
 		Object *obj = ObjectDB::get_instance(op.object);
-		if (!obj) {
-			//corruption
-			clear_history();
-			ERR_FAIL_COND(!obj);
-		}
+		if (!obj) //may have been deleted and this is fine
+			continue;
 
 		switch (op.type) {
 
 			case Operation::TYPE_METHOD: {
 
-				obj->call(op.name, VARIANT_ARGS_FROM_ARRAY(op.args));
+				Vector<const Variant *> argptrs;
+				argptrs.resize(VARIANT_ARG_MAX);
+				int argc = 0;
+
+				for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+					if (op.args[i].get_type() == Variant::NIL) {
+						break;
+					}
+					argptrs.write[i] = &op.args[i];
+					argc++;
+				}
+				argptrs.resize(argc);
+
+				Variant::CallError ce;
+				obj->call(op.name, (const Variant **)argptrs.ptr(), argc, ce);
+				if (ce.error != Variant::CallError::CALL_OK) {
+					ERR_PRINTS("Error calling method from signal '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, (const Variant **)argptrs.ptr(), argc, ce));
+				}
 #ifdef TOOLS_ENABLED
 				Resource *res = Object::cast_to<Resource>(obj);
 				if (res)
@@ -305,6 +326,7 @@ bool UndoRedo::redo() {
 
 	if ((current_action + 1) >= actions.size())
 		return false; //nothing to redo
+
 	current_action++;
 
 	_process_operation_list(actions.write[current_action].do_ops.front());
@@ -321,7 +343,6 @@ bool UndoRedo::undo() {
 	_process_operation_list(actions.write[current_action].undo_ops.front());
 	current_action--;
 	version--;
-
 	return true;
 }
 
@@ -370,6 +391,7 @@ void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_ca
 
 UndoRedo::UndoRedo() {
 
+	commiting = 0;
 	version = 1;
 	action_level = 0;
 	current_action = -1;
@@ -468,6 +490,7 @@ void UndoRedo::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE));
 	ClassDB::bind_method(D_METHOD("commit_action"), &UndoRedo::commit_action);
+	ClassDB::bind_method(D_METHOD("is_commiting_action"), &UndoRedo::is_commiting_action);
 
 	//ClassDB::bind_method(D_METHOD("add_do_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_do_method);
 	//ClassDB::bind_method(D_METHOD("add_undo_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_undo_method);

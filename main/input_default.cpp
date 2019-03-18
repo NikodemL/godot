@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -280,7 +280,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && !mb->is_doubleclick()) {
+	if (mb.is_valid()) {
 
 		if (mb->is_pressed()) {
 			mouse_button_mask |= (1 << (mb->get_button_index() - 1));
@@ -355,6 +355,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 				Ref<InputEventMouseButton> button_event;
 				button_event.instance();
 
+				button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
 				button_event->set_position(st->get_position());
 				button_event->set_global_position(st->get_position());
 				button_event->set_pressed(st->is_pressed());
@@ -383,6 +384,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			Ref<InputEventMouseMotion> motion_event;
 			motion_event.instance();
 
+			motion_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
 			motion_event->set_position(sd->get_position());
 			motion_event->set_global_position(sd->get_position());
 			motion_event->set_relative(sd->get_relative());
@@ -600,6 +602,7 @@ void InputDefault::ensure_touch_mouse_raised() {
 		Ref<InputEventMouseButton> button_event;
 		button_event.instance();
 
+		button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
 		button_event->set_position(mouse_pos);
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
@@ -657,8 +660,35 @@ void InputDefault::set_mouse_in_window(bool p_in_window) {
 	*/
 }
 
+void InputDefault::accumulate_input_event(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (!use_accumulated_input) {
+		parse_input_event(p_event);
+		return;
+	}
+	if (!accumulated_events.empty() && accumulated_events.back()->get()->accumulate(p_event)) {
+		return; //event was accumulated, exit
+	}
+
+	accumulated_events.push_back(p_event);
+}
+void InputDefault::flush_accumulated_events() {
+
+	while (accumulated_events.front()) {
+		parse_input_event(accumulated_events.front()->get());
+		accumulated_events.pop_front();
+	}
+}
+
+void InputDefault::set_use_accumulated_input(bool p_enable) {
+
+	use_accumulated_input = p_enable;
+}
+
 InputDefault::InputDefault() {
 
+	use_accumulated_input = true;
 	mouse_button_mask = 0;
 	emulate_touch_from_mouse = false;
 	emulate_mouse_from_touch = false;
@@ -1084,7 +1114,7 @@ Array InputDefault::get_connected_joypads() {
 	return ret;
 }
 
-static const char *_buttons[] = {
+static const char *_buttons[JOY_BUTTON_MAX] = {
 	"Face Button Bottom",
 	"Face Button Right",
 	"Face Button Left",
@@ -1103,7 +1133,7 @@ static const char *_buttons[] = {
 	"DPAD Right"
 };
 
-static const char *_axes[] = {
+static const char *_axes[JOY_AXIS_MAX] = {
 	"Left Stick X",
 	"Left Stick Y",
 	"Right Stick X",
@@ -1111,7 +1141,9 @@ static const char *_axes[] = {
 	"",
 	"",
 	"L2",
-	"R2"
+	"R2",
+	"",
+	""
 };
 
 String InputDefault::get_joy_button_string(int p_button) {

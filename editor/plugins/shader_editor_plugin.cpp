@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,12 +47,16 @@ Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 }
 void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 
+	if (shader == p_shader) {
+		return;
+	}
 	shader = p_shader;
 
 	_load_theme_settings();
 
 	get_text_edit()->set_text(p_shader->get_code());
 
+	_validate_script();
 	_line_col_changed();
 }
 
@@ -350,9 +354,9 @@ void ShaderEditor::_menu_option(int p_option) {
 
 void ShaderEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-	}
-	if (p_what == NOTIFICATION_DRAW) {
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		//if (is_visible_in_tree())
+		//	shader_editor->get_text_edit()->grab_focus();
 	}
 }
 
@@ -389,7 +393,6 @@ void ShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_menu_option", &ShaderEditor::_menu_option);
 	ClassDB::bind_method("_params_changed", &ShaderEditor::_params_changed);
 	ClassDB::bind_method("apply_shaders", &ShaderEditor::apply_shaders);
-	//ClassDB::bind_method("_close_current_tab",&ShaderEditor::_close_current_tab);
 }
 
 void ShaderEditor::ensure_select_current() {
@@ -405,9 +408,17 @@ void ShaderEditor::ensure_select_current() {
 	}*/
 }
 
+void ShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
+
+	shader_editor->goto_line_selection(p_line, p_begin, p_end);
+}
+
 void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 
 	if (p_shader.is_null() || !p_shader->is_text_shader())
+		return;
+
+	if (shader == p_shader)
 		return;
 
 	shader = p_shader;
@@ -433,8 +444,12 @@ void ShaderEditor::save_external_data() {
 void ShaderEditor::apply_shaders() {
 
 	if (shader.is_valid()) {
-		shader->set_code(shader_editor->get_text_edit()->get_text());
-		shader->set_edited(true);
+		String shader_code = shader->get_code();
+		String editor_code = shader_editor->get_text_edit()->get_text();
+		if (shader_code != editor_code) {
+			shader->set_code(editor_code);
+			shader->set_edited(true);
+		}
 	}
 }
 
@@ -527,9 +542,8 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
-	//edit_menu->set_position(Point2(5, -1));
 	edit_menu->set_text(TTR("Edit"));
-
+	edit_menu->set_switch_on_hover(true);
 	edit_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
@@ -549,12 +563,11 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
-
 	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	search_menu = memnew(MenuButton);
-	//search_menu->set_position(Point2(38, -1));
 	search_menu->set_text(TTR("Search"));
+	search_menu->set_switch_on_hover(true);
 	search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);

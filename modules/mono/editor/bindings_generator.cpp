@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,6 +80,7 @@
 #define ICALL_GET_METHODBIND ICALL_PREFIX "Object_ClassDB_get_method"
 
 #define C_LOCAL_RET "ret"
+#define C_LOCAL_VARARG_RET "vararg_ret"
 #define C_LOCAL_PTRCALL_ARGS "call_args"
 #define C_MACRO_OBJECT_CONSTRUCT "GODOTSHARP_INSTANCE_OBJECT"
 
@@ -96,7 +97,7 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(5)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(7)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -364,8 +365,8 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 		p_output.push_back(enum_proxy_name);
 		p_output.push_back("\n" INDENT1 OPEN_BLOCK);
 
-		for (const List<ConstantInterface>::Element *E = ienum.constants.front(); E; E = E->next()) {
-			const ConstantInterface &iconstant = E->get();
+		for (const List<ConstantInterface>::Element *F = ienum.constants.front(); F; F = F->next()) {
+			const ConstantInterface &iconstant = F->get();
 
 			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 				p_output.push_back(INDENT2 "/// <summary>\n");
@@ -388,7 +389,7 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 			p_output.push_back(iconstant.proxy_name);
 			p_output.push_back(" = ");
 			p_output.push_back(itos(iconstant.value));
-			p_output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
+			p_output.push_back(F != ienum.constants.back() ? ",\n" : "\n");
 		}
 
 		p_output.push_back(INDENT1 CLOSE_BLOCK);
@@ -471,8 +472,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 		String output_dir = output_file.get_base_dir();
 
 		if (!DirAccess::exists(output_dir)) {
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-			ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
 			Error err = da->make_dir_recursive(ProjectSettings::get_singleton()->globalize_path(output_dir));
 			ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 		}
@@ -704,7 +703,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
 	if (verbose_output)
-		OS::get_singleton()->print(String("Generating " + itype.proxy_name + ".cs...\n").utf8());
+		OS::get_singleton()->print("Generating %s.cs...\n", itype.proxy_name.utf8().get_data());
 
 	String ctor_method(ICALL_PREFIX + itype.proxy_name + "_Ctor"); // Used only for derived types
 
@@ -805,8 +804,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.push_back(ienum.cname.operator String());
 			output.push_back(MEMBER_BEGIN OPEN_BLOCK);
 
-			for (const List<ConstantInterface>::Element *E = ienum.constants.front(); E; E = E->next()) {
-				const ConstantInterface &iconstant = E->get();
+			for (const List<ConstantInterface>::Element *F = ienum.constants.front(); F; F = F->next()) {
+				const ConstantInterface &iconstant = F->get();
 
 				if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 					output.push_back(INDENT3 "/// <summary>\n");
@@ -829,7 +828,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output.push_back(iconstant.proxy_name);
 				output.push_back(" = ");
 				output.push_back(itos(iconstant.value));
-				output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
+				output.push_back(F != ienum.constants.back() ? ",\n" : "\n");
 			}
 
 			output.push_back(INDENT2 CLOSE_BLOCK);
@@ -848,8 +847,16 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 	}
 
+	// TODO: BINDINGS_NATIVE_NAME_FIELD should be StringName, once we support it in C#
+
 	if (itype.is_singleton) {
 		// Add the type name and the singleton pointer as static fields
+
+		output.push_back(MEMBER_BEGIN "private static Godot.Object singleton;\n");
+		output.push_back(MEMBER_BEGIN "public static Godot.Object Singleton\n" INDENT2 "{\n" INDENT3
+									  "get\n" INDENT3 "{\n" INDENT4 "if (singleton == null)\n" INDENT5
+									  "singleton = Engine.GetSingleton(" BINDINGS_NATIVE_NAME_FIELD ");\n" INDENT4
+									  "return singleton;\n" INDENT3 "}\n" INDENT2 "}\n");
 
 		output.push_back(MEMBER_BEGIN "private const string " BINDINGS_NATIVE_NAME_FIELD " = \"");
 		output.push_back(itype.name);
@@ -1273,7 +1280,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 		List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
-		OS::get_singleton()->print(String("Generating " + itype.name + "...\n").utf8());
+		OS::get_singleton()->print("Generating %s...\n", itype.name.utf8().get_data());
 
 		String ctor_method(ICALL_PREFIX + itype.proxy_name + "_Ctor"); // Used only for derived types
 
@@ -1501,6 +1508,15 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			String ptrcall_return_type;
 			String initialization;
 
+			if (p_imethod.is_vararg && return_type->cname != name_cache.type_Variant) {
+				// VarArg methods always return Variant, but there are some cases in which MethodInfo provides
+				// a specific return type. We trust this information is valid. We need a temporary local to keep
+				// the Variant alive until the method returns. Otherwise, if the returned Variant holds a RefPtr,
+				// it could be deleted too early. This is the case with GDScript.new() which returns OBJECT.
+				// Alternatively, we could just return Variant, but that would result in a worse API.
+				p_output.push_back("\tVariant " C_LOCAL_VARARG_RET ";\n");
+			}
+
 			if (return_type->is_object_type) {
 				ptrcall_return_type = return_type->is_reference ? "Ref<Reference>" : return_type->c_type;
 				initialization = return_type->is_reference ? "" : " = NULL";
@@ -1558,12 +1574,23 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 		if (p_imethod.is_vararg) {
 			p_output.push_back("\tVariant::CallError vcall_error;\n\t");
 
-			if (!ret_void)
-				p_output.push_back(C_LOCAL_RET " = ");
+			if (!ret_void) {
+				// See the comment on the C_LOCAL_VARARG_RET declaration
+				if (return_type->cname != name_cache.type_Variant) {
+					p_output.push_back(C_LOCAL_VARARG_RET " = ");
+				} else {
+					p_output.push_back(C_LOCAL_RET " = ");
+				}
+			}
 
 			p_output.push_back(CS_PARAM_METHODBIND "->call(" CS_PARAM_INSTANCE ", ");
 			p_output.push_back(p_imethod.arguments.size() ? "(const Variant**)" C_LOCAL_PTRCALL_ARGS ".ptr()" : "NULL");
 			p_output.push_back(", total_length, vcall_error);\n");
+
+			// See the comment on the C_LOCAL_VARARG_RET declaration
+			if (return_type->cname != name_cache.type_Variant) {
+				p_output.push_back("\t" C_LOCAL_RET " = " C_LOCAL_VARARG_RET ";\n");
+			}
 		} else {
 			p_output.push_back("\t" CS_PARAM_METHODBIND "->ptrcall(" CS_PARAM_INSTANCE ", ");
 			p_output.push_back(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ", " : "NULL, ");
@@ -1860,8 +1887,8 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			}
 
 			if (!imethod.is_virtual && imethod.name[0] == '_') {
-				for (const List<PropertyInterface>::Element *E = itype.properties.front(); E; E = E->next()) {
-					const PropertyInterface &iprop = E->get();
+				for (const List<PropertyInterface>::Element *F = itype.properties.front(); F; F = F->next()) {
+					const PropertyInterface &iprop = F->get();
 
 					if (iprop.setter == imethod.name || iprop.getter == imethod.name) {
 						imethod.is_internal = true;
@@ -2323,9 +2350,9 @@ void BindingsGenerator::_populate_global_constants() {
 
 			if (enum_name != StringName()) {
 				EnumInterface ienum(enum_name);
-				List<EnumInterface>::Element *match = global_enums.find(ienum);
-				if (match) {
-					match->get().constants.push_back(iconstant);
+				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
+				if (enum_match) {
+					enum_match->get().constants.push_back(iconstant);
 				} else {
 					ienum.constants.push_back(iconstant);
 					global_enums.push_back(ienum);

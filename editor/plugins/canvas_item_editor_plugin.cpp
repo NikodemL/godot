@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,9 +42,9 @@
 #include "scene/2d/light_2d.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/polygon_2d.h"
-#include "scene/2d/screen_button.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite.h"
+#include "scene/2d/touch_screen_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/main/canvas_layer.h"
@@ -398,10 +398,10 @@ Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_li
 
 	// Expand with the other ones
 	for (List<CanvasItem *>::Element *E = p_list.front(); E; E = E->next()) {
-		CanvasItem *canvas_item = E->get();
-		Transform2D xform = canvas_item->get_global_transform_with_canvas();
+		CanvasItem *canvas_item2 = E->get();
+		Transform2D xform = canvas_item2->get_global_transform_with_canvas();
 
-		Rect2 current_rect = canvas_item->_edit_get_rect();
+		Rect2 current_rect = canvas_item2->_edit_get_rect();
 		rect.expand_to(xform.xform(current_rect.position));
 		rect.expand_to(xform.xform(current_rect.position + Vector2(current_rect.size.x, 0)));
 		rect.expand_to(xform.xform(current_rect.position + current_rect.size));
@@ -456,7 +456,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	if (Object::cast_to<Viewport>(p_node))
 		return;
 
-	const real_t grab_distance = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+	const real_t grab_distance = EDITOR_GET("editors/poly_editor/point_grab_radius");
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 
 	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
@@ -474,7 +474,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 
 	if (canvas_item && canvas_item->is_visible_in_tree()) {
 		Transform2D xform = (p_parent_xform * p_canvas_xform * canvas_item->get_transform()).affine_inverse();
-		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length();
+		const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
 		if (canvas_item->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
 			Node2D *node = Object::cast_to<Node2D>(canvas_item);
 
@@ -573,10 +573,10 @@ bool CanvasItemEditor::_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *
 	Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().from));
 	Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().to));
 
-	if (!from_node->is_inside_tree())
-		return false; //may have been removed
 	if (!from_node)
 		return false;
+	if (!from_node->is_inside_tree())
+		return false; //may have been removed
 
 	if (!to_node && bone->get().length == 0)
 		return false;
@@ -816,10 +816,10 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 		undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
 		undo_redo->add_undo_method(canvas_item, "_edit_set_state", se->undo_state);
 		if (commit_bones) {
-			for (List<Dictionary>::Element *E = se->pre_drag_bones_undo_state.front(); E; E = E->next()) {
+			for (List<Dictionary>::Element *F = se->pre_drag_bones_undo_state.front(); F; F = F->next()) {
 				canvas_item = Object::cast_to<CanvasItem>(canvas_item->get_parent());
 				undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
-				undo_redo->add_undo_method(canvas_item, "_edit_set_state", E->get());
+				undo_redo->add_undo_method(canvas_item, "_edit_set_state", F->get());
 			}
 		}
 	}
@@ -1921,9 +1921,9 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			if (drag_selection.size() == 1) {
 				Node2D *node_2d = Object::cast_to<Node2D>(drag_selection[0]);
 				if (node_2d && move_local_base_rotated) {
-					Transform2D m;
-					m.rotate(node_2d->get_rotation());
-					new_pos += m.xform(drag_to);
+					Transform2D m2;
+					m2.rotate(node_2d->get_rotation());
+					new_pos += m2.xform(drag_to);
 				} else if (move_local_base) {
 					new_pos += drag_to;
 				} else {
@@ -2033,16 +2033,19 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 			// Find the item to select
 			CanvasItem *canvas_item = NULL;
-			Vector<_SelectResult> selection;
-
-			// Retrieve the items
-			_get_canvas_items_at_pos(click, selection);
 
 			// Retrieve the bones
+			Vector<_SelectResult> selection = Vector<_SelectResult>();
 			_get_bones_at_pos(click, selection);
-
 			if (!selection.empty()) {
 				canvas_item = selection[0].item;
+			} else {
+				// Retrieve the canvas items
+				selection = Vector<_SelectResult>();
+				_get_canvas_items_at_pos(click, selection);
+				if (!selection.empty()) {
+					canvas_item = selection[0].item;
+				}
 			}
 
 			if (!canvas_item) {
@@ -2062,18 +2065,18 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				// Start dragging
 				if (still_selected) {
 					// Drag the node(s) if requested
-					List<CanvasItem *> selection = _get_edited_canvas_items();
+					List<CanvasItem *> selection2 = _get_edited_canvas_items();
 
 					// Remove not movable nodes
-					for (int i = 0; i < selection.size(); i++) {
-						if (!_is_node_movable(selection[i], true)) {
-							selection.erase(selection[i]);
+					for (int i = 0; i < selection2.size(); i++) {
+						if (!_is_node_movable(selection2[i], true)) {
+							selection2.erase(selection2[i]);
 						}
 					}
 
-					if (selection.size() > 0) {
+					if (selection2.size() > 0) {
 						drag_type = DRAG_MOVE;
-						drag_selection = selection;
+						drag_selection = selection2;
 						drag_from = click;
 						_save_canvas_item_state(drag_selection);
 					}
@@ -2735,8 +2738,15 @@ void CanvasItemEditor::_draw_selection() {
 
 		if (single && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) { //kind of sucks
 			// Draw the pivot
-			if (canvas_item->_edit_get_pivot() != Vector2() || drag_type == DRAG_PIVOT || tool == TOOL_EDIT_PIVOT) { // This is not really clean :/
-				viewport->draw_texture(pivot_icon, (xform.xform(canvas_item->_edit_get_pivot()) - (pivot_icon->get_size() / 2)).floor());
+			if (canvas_item->_edit_use_pivot()) {
+
+				// Draw the node's pivot
+				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position() + canvas_item->_edit_get_pivot())).orthonormalized();
+				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
+				viewport->draw_set_transform_matrix(simple_xform);
+				viewport->draw_texture(pivot_icon, -(pivot_icon->get_size() / 2).floor());
+				viewport->draw_set_transform_matrix(viewport->get_transform());
 			}
 
 			// Draw control-related helpers
@@ -3268,7 +3278,24 @@ void CanvasItemEditor::_notification(int p_what) {
 		pivot_button->set_disabled(nb_having_pivot == 0);
 
 		// Show / Hide the layout button
-		presets_menu->set_visible(nb_control > 0 && nb_control == selection.size());
+		if (nb_control > 0 && nb_control == selection.size()) {
+			presets_menu->set_visible(true);
+			presets_menu->set_tooltip(TTR("Presets for the anchors and margins values of a Control node."));
+
+			// Disable if the selected node is child of a container
+			presets_menu->set_disabled(false);
+			for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
+				Control *control = Object::cast_to<Control>(E->get());
+				if (!control || Object::cast_to<Container>(control->get_parent())) {
+					presets_menu->set_disabled(true);
+					presets_menu->set_tooltip(TTR("Children of containers have their anchors and margins values overridden by their parent."));
+					break;
+				}
+			}
+
+		} else {
+			presets_menu->set_visible(false);
+		}
 
 		// Update the viewport if bones changes
 		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
@@ -4532,6 +4559,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_grid = true;
 	snap_guides = true;
 	snap_rotation = false;
+	snap_relative = false;
 	snap_pixel = false;
 
 	skeleton_show_bones = true;
@@ -4606,7 +4634,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	warning_child_of_container = memnew(Label);
 	warning_child_of_container->hide();
-	warning_child_of_container->set_text("Warning: Children of a container get their position and size determined only by their parent");
+	warning_child_of_container->set_text(TTR("Warning: Children of a container get their position and size determined only by their parent."));
 	add_control_to_info_overlay(warning_child_of_container);
 
 	h_scroll = memnew(HScrollBar);
@@ -4626,19 +4654,19 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom_minus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_minus);
 	zoom_minus->connect("pressed", this, "_button_zoom_minus");
-	zoom_minus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_minus", TTR("Zoom out"), KEY_MASK_CMD | KEY_MINUS));
+	zoom_minus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_minus", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS));
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 
 	zoom_reset = memnew(ToolButton);
 	zoom_hb->add_child(zoom_reset);
 	zoom_reset->connect("pressed", this, "_button_zoom_reset");
-	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom reset"), KEY_MASK_CMD | KEY_0));
+	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KEY_MASK_CMD | KEY_0));
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 
 	zoom_plus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_plus);
 	zoom_plus->connect("pressed", this, "_button_zoom_plus");
-	zoom_plus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_plus", TTR("Zoom in"), KEY_MASK_CMD | KEY_EQUAL)); // Usually direct access key for PLUS
+	zoom_plus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_plus", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL)); // Usually direct access key for PLUS
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 
 	updating_scroll = false;

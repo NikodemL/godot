@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,13 +27,17 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef JAVASCRIPT_ENABLED
 
 #include "lws_client.h"
 #include "core/io/ip.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/project_settings.h"
-#include "tls/mbedtls/wrapper/include/openssl/ssl.h"
+#if defined(LWS_OPENSSL_SUPPORT)
+// Not openssl, just the mbedtls wrapper
+#include "openssl/ssl.h"
+#endif
 
 Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
 
@@ -120,6 +124,7 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 	LWSPeer::PeerData *peer_data = (LWSPeer::PeerData *)user;
 
 	switch (reason) {
+#if defined(LWS_OPENSSL_SUPPORT)
 		case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS: {
 			PoolByteArray arr = StreamPeerSSL::get_project_cert_array();
 			if (arr.size() > 0)
@@ -127,7 +132,7 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			else if (verify_ssl)
 				WARN_PRINTS("No CA cert specified in project settings, SSL will not work");
 		} break;
-
+#endif
 		case LWS_CALLBACK_CLIENT_ESTABLISHED:
 			peer->set_wsi(wsi, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 			peer_data->peer_id = 0;
@@ -143,9 +148,9 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 
 		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: {
 			int code;
-			String reason = peer->get_close_reason(in, len, code);
+			String reason2 = peer->get_close_reason(in, len, code);
 			peer_data->clean_close = true;
-			_on_close_request(code, reason);
+			_on_close_request(code, reason2);
 			return 0;
 		}
 

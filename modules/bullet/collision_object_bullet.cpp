@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,8 +69,12 @@ void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_s
 CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		RIDBullet(),
 		type(p_type),
+		instance_id(0),
+		collisionLayer(0),
+		collisionMask(0),
 		collisionsEnabled(true),
 		m_isStatic(false),
+		ray_pickable(false),
 		bt_collision_object(NULL),
 		body_scale(1., 1., 1.),
 		force_shape_reset(false),

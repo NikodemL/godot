@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -200,7 +200,6 @@ private:
 	Control *theme_base;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
-	PanelContainer *play_button_panel;
 	OptionButton *video_driver;
 
 	ConfirmationDialog *video_restart_dialog;
@@ -243,7 +242,6 @@ private:
 	Control *vp_base;
 	PaneDrag *pd;
 
-	CenterContainer *play_cc;
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
@@ -255,7 +253,6 @@ private:
 	ToolButton *export_button;
 	ToolButton *prev_scene;
 	ToolButton *play_button;
-	MenuButton *native_play_button;
 	ToolButton *pause_button;
 	ToolButton *stop_button;
 	ToolButton *run_settings_button;
@@ -445,6 +442,8 @@ private:
 	void _show_messages();
 	void _vp_resized();
 
+	int _save_external_resources();
+
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
@@ -453,7 +452,6 @@ private:
 
 	void _instance_request(const Vector<String> &p_files);
 
-	void _hide_top_editors();
 	void _display_top_editors(bool p_display);
 	void _set_top_editors(Vector<EditorPlugin *> p_editor_plugins_over);
 	void _set_editing_top_editors(Object *p_current_object);
@@ -471,6 +469,8 @@ private:
 	void _open_recent_scene(int p_idx);
 	void _dropped_files(const Vector<String> &p_files, int p_screen);
 	String _recent_scene;
+
+	void _exit_editor();
 
 	bool convert_old;
 
@@ -640,8 +640,8 @@ public:
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
-	static void add_editor_plugin(EditorPlugin *p_editor);
-	static void remove_editor_plugin(EditorPlugin *p_editor);
+	static void add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
+	static void remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
 
@@ -654,7 +654,7 @@ public:
 	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_dock(Control *p_control);
 
-	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled);
+	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
@@ -675,7 +675,9 @@ public:
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void edit_item(Object *p_object);
+	void edit_item_resource(RES p_resource);
 	bool item_has_editor(Object *p_object);
+	void hide_top_editors();
 
 	void open_request(const String &p_path);
 
@@ -783,13 +785,15 @@ public:
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
 
-	void save_all_scenes_and_restart();
+	void save_all_scenes();
+	void restart_editor();
 
 	void dim_editor(bool p_dimming);
 
 	void edit_current() { _edit_current(); };
 
 	void update_keying() const { inspector_dock->update_keying(); };
+	bool has_scenes_in_session();
 
 	EditorNode();
 	~EditorNode();
@@ -836,6 +840,7 @@ public:
 	void forward_spatial_draw_over_viewport(Control *p_overlay);
 	void forward_spatial_force_draw_over_viewport(Control *p_overlay);
 	void add_plugin(EditorPlugin *p_plugin);
+	void remove_plugin(EditorPlugin *p_plugin);
 	void clear();
 	bool empty();
 

@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  editor_folding.cpp                                                   */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "editor_folding.h"
 
 #include "core/os/file_access.h"
@@ -141,9 +171,9 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	ERR_FAIL_COND(res_unfolds.size() & 1);
 
 	for (int i = 0; i < unfolds.size(); i += 2) {
-		NodePath path = unfolds[i];
+		NodePath path2 = unfolds[i];
 		PoolVector<String> un = unfolds[i + 1];
-		Node *node = p_scene->get_node(path);
+		Node *node = p_scene->get_node_or_null(path2);
 		if (!node) {
 			continue;
 		}
@@ -151,17 +181,17 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	}
 
 	for (int i = 0; i < res_unfolds.size(); i += 2) {
-		String path = res_unfolds[i];
+		String path2 = res_unfolds[i];
 		RES res;
-		if (ResourceCache::has(path)) {
-			res = RES(ResourceCache::get(path));
+		if (ResourceCache::has(path2)) {
+			res = RES(ResourceCache::get(path2));
 		}
 		if (res.is_null()) {
 			continue;
 		}
 
-		PoolVector<String> unfolds = res_unfolds[i + 1];
-		_set_unfolds(res.ptr(), unfolds);
+		PoolVector<String> unfolds2 = res_unfolds[i + 1];
+		_set_unfolds(res.ptr(), unfolds2);
 	}
 }
 

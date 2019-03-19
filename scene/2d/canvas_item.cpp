@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@
 #include "servers/visual_server.h"
 
 Mutex *CanvasItemMaterial::material_mutex = NULL;
-SelfList<CanvasItemMaterial>::List CanvasItemMaterial::dirty_materials;
+SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = NULL;
 Map<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData> CanvasItemMaterial::shader_map;
 CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = NULL;
 
@@ -51,6 +51,8 @@ void CanvasItemMaterial::init_shaders() {
 #ifndef NO_THREADS
 	material_mutex = Mutex::create();
 #endif
+
+	dirty_materials = memnew(SelfList<CanvasItemMaterial>::List);
 
 	shader_names = memnew(ShaderNames);
 
@@ -61,6 +63,10 @@ void CanvasItemMaterial::init_shaders() {
 
 void CanvasItemMaterial::finish_shaders() {
 
+	memdelete(dirty_materials);
+	memdelete(shader_names);
+	dirty_materials = NULL;
+
 #ifndef NO_THREADS
 	memdelete(material_mutex);
 #endif
@@ -68,7 +74,7 @@ void CanvasItemMaterial::finish_shaders() {
 
 void CanvasItemMaterial::_update_shader() {
 
-	dirty_materials.remove(&element);
+	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
 	if (mk.key == current_key.key)
@@ -125,19 +131,15 @@ void CanvasItemMaterial::_update_shader() {
 
 		code += "\tVERTEX.xy /= vec2(h_frames, v_frames);\n";
 
-		code += "\tint total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
-		code += "\tint frame = int(float(total_frames) * INSTANCE_CUSTOM.z);\n";
-		code += "\tif (particles_anim_loop) {\n";
-		code += "\t\tframe = abs(frame) % total_frames;\n";
+		code += "\tfloat particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
+		code += "\tfloat particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
+		code += "\tif (!particles_anim_loop) {\n";
+		code += "\t\tparticle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
 		code += "\t} else {\n";
-		code += "\t\tframe = clamp(frame, 0, total_frames - 1);\n";
-		code += "\t}\n";
-
-		code += "\tfloat frame_w = 1.0 / h_frames;\n";
-		code += "\tfloat frame_h = 1.0 / v_frames;\n";
-		code += "\tUV.x = UV.x * frame_w + frame_w * float(frame % particles_anim_h_frames);\n";
-		code += "\tUV.y = UV.y * frame_h + frame_h * float(frame / particles_anim_h_frames);\n";
-
+		code += "\t\tparticle_frame = mod(particle_frame, particle_total_frames);\n";
+		code += "\t}";
+		code += "\tUV /= vec2(h_frames, v_frames);\n";
+		code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
 		code += "}\n";
 	}
 
@@ -157,9 +159,9 @@ void CanvasItemMaterial::flush_changes() {
 	if (material_mutex)
 		material_mutex->lock();
 
-	while (dirty_materials.first()) {
+	while (dirty_materials->first()) {
 
-		dirty_materials.first()->self()->_update_shader();
+		dirty_materials->first()->self()->_update_shader();
 	}
 
 	if (material_mutex)
@@ -172,7 +174,7 @@ void CanvasItemMaterial::_queue_shader_change() {
 		material_mutex->lock();
 
 	if (!element.in_list()) {
-		dirty_materials.add(&element);
+		dirty_materials->add(&element);
 	}
 
 	if (material_mutex)
@@ -428,6 +430,11 @@ void CanvasItem::hide() {
 	_change_notify("visible");
 }
 
+CanvasItem *CanvasItem::current_item_drawn = NULL;
+CanvasItem *CanvasItem::get_current_item_drawn() {
+	return current_item_drawn;
+}
+
 void CanvasItem::_update_callback() {
 
 	if (!is_inside_tree()) {
@@ -443,11 +450,13 @@ void CanvasItem::_update_callback() {
 			first_draw = false;
 		}
 		drawing = true;
+		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringNames::get_singleton()->draw);
 		if (get_script_instance()) {
 			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_draw, NULL, 0);
 		}
+		current_item_drawn = NULL;
 		drawing = false;
 	}
 	//todo updating = false

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1198,6 +1198,9 @@ bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 
 bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
 
+	if (sync_to_physics) {
+		ERR_PRINT("Functions move_and_slide and move_and_collide do not work together with 'sync to physics' option. Please read the documentation.");
+	}
 	Transform2D gt = get_global_transform();
 	Physics2DServer::MotionResult result;
 	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, margin, &result, p_exclude_raycast_shapes);
@@ -1279,7 +1282,6 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				colliders.push_back(collision);
 				motion = collision.remainder;
 
-				bool is_on_slope = false;
 				if (p_floor_direction == Vector2()) {
 					//all is a wall
 					on_wall = true;
@@ -1291,15 +1293,13 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if (Vector2() == lv_n + p_floor_direction) {
+							if ((lv_n + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
 								Transform2D gt = get_global_transform();
-								gt.elements[2] -= collision.travel;
+								gt.elements[2] -= collision.travel.project(p_floor_direction.tangent());
 								set_global_transform(gt);
 								return Vector2();
 							}
 						}
-
-						is_on_slope = true;
 
 					} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
 						on_ceiling = true;
@@ -1308,18 +1308,10 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 					}
 				}
 
-				if (p_stop_on_slope && is_on_slope) {
-					motion = motion.slide(p_floor_direction);
-					lv = lv.slide(p_floor_direction);
-				} else {
-					Vector2 n = collision.normal;
-					motion = motion.slide(n);
-					lv = lv.slide(n);
-				}
+				Vector2 n = collision.normal;
+				motion = motion.slide(n);
+				lv = lv.slide(n);
 			}
-
-			if (p_stop_on_slope)
-				break;
 		}
 
 		if (!found_collision) {
@@ -1346,13 +1338,27 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 	Transform2D gt = get_global_transform();
 
 	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
-		gt.elements[2] += col.travel;
-		if (p_floor_direction != Vector2() && Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
-			on_floor = true;
-			on_floor_body = col.collider_rid;
-			floor_velocity = col.collider_vel;
+		bool apply = true;
+		if (p_floor_direction != Vector2()) {
+			if (Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
+				on_floor = true;
+				on_floor_body = col.collider_rid;
+				floor_velocity = col.collider_vel;
+				if (p_stop_on_slope) {
+					// move and collide may stray the object a bit because of pre un-stucking,
+					// so only ensure that motion happens on floor direction in this case.
+					col.travel = p_floor_direction * p_floor_direction.dot(col.travel);
+				}
+
+			} else {
+				apply = false;
+			}
 		}
-		set_global_transform(gt);
+
+		if (apply) {
+			gt.elements[2] += col.travel;
+			set_global_transform(gt);
+		}
 	}
 
 	return ret;

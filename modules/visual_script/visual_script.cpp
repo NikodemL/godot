@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,22 +48,12 @@ bool VisualScriptNode::is_breakpoint() const {
 void VisualScriptNode::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		_update_input_ports();
-	}
-}
-
-void VisualScriptNode::_update_input_ports() {
-	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
-	int port_count = get_input_value_port_count();
-	for (int i = 0; i < port_count; i++) {
-		Variant::Type expected = get_input_value_port_info(i).type;
-		Variant::CallError ce;
-		set_default_input_value(i, Variant::construct(expected, NULL, 0, ce, false));
+		validate_input_default_values();
 	}
 }
 
 void VisualScriptNode::ports_changed_notify() {
-	_update_input_ports();
+	validate_input_default_values();
 	emit_signal("ports_changed");
 }
 
@@ -92,8 +82,7 @@ void VisualScriptNode::_set_default_input_values(Array p_values) {
 }
 
 void VisualScriptNode::validate_input_default_values() {
-
-	default_input_values.resize(get_input_value_port_count());
+	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
 
 	//actually validate on save
 	for (int i = 0; i < get_input_value_port_count(); i++) {
@@ -119,8 +108,10 @@ void VisualScriptNode::validate_input_default_values() {
 Array VisualScriptNode::_get_default_input_values() const {
 
 	//validate on save, since on load there is little info about this
+	Array values = default_input_values;
+	values.resize(get_input_value_port_count());
 
-	return default_input_values;
+	return values;
 }
 
 String VisualScriptNode::get_text() const {
@@ -1165,9 +1156,9 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 
 		Array nodes = func["nodes"];
 
-		for (int i = 0; i < nodes.size(); i += 3) {
+		for (int j = 0; j < nodes.size(); j += 3) {
 
-			add_node(name, nodes[i], nodes[i + 2], nodes[i + 1]);
+			add_node(name, nodes[j], nodes[j + 2], nodes[j + 1]);
 		}
 
 		Array sequence_connections = func["sequence_connections"];

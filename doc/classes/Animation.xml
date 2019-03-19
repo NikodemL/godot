@@ -513,7 +513,7 @@
 			<argument index="1" name="interpolation" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the track at [code]idx[/code] wraps the interpolation loop.
+				If [code]true[/code], the track at [code]idx[/code] wraps the interpolation loop.
 			</description>
 		</method>
 		<method name="track_set_interpolation_type">
@@ -648,6 +648,12 @@
 			The animation step value.
 		</member>
 	</members>
+	<signals>
+		<signal name="tracks_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be Interpolated.

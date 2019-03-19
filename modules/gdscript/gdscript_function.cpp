@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -329,10 +329,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 
 					if (!argument_types[i].is_type(*p_args[i], true)) {
-						r_err.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
-						r_err.argument = i;
-						r_err.expected = argument_types[i].kind == GDScriptDataType::BUILTIN ? argument_types[i].builtin_type : Variant::OBJECT;
-						return Variant();
+						if (argument_types[i].is_type(Variant(), true)) {
+							memnew_placement(&stack[i], Variant);
+							continue;
+						} else {
+							r_err.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+							r_err.argument = i;
+							r_err.expected = argument_types[i].kind == GDScriptDataType::BUILTIN ? argument_types[i].builtin_type : Variant::OBJECT;
+							return Variant();
+						}
 					}
 					if (argument_types[i].kind == GDScriptDataType::BUILTIN) {
 						Variant arg = Variant::construct(argument_types[i].builtin_type, &p_args[i], 1, r_err);
@@ -1083,7 +1088,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						if (argc >= 1) {
 							methodstr = String(*argptrs[0]) + " (via call)";
 							if (err.error == Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
-								err.argument -= 1;
+								err.argument += 1;
 							}
 						}
 					} else if (methodstr == "free") {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,7 @@ public:
 	void environment_set_background(RID p_env, VS::EnvironmentBG p_bg) {}
 	void environment_set_sky(RID p_env, RID p_sky) {}
 	void environment_set_sky_custom_fov(RID p_env, float p_scale) {}
+	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {}
 	void environment_set_bg_color(RID p_env, const Color &p_color) {}
 	void environment_set_bg_energy(RID p_env, float p_energy) {}
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer) {}
@@ -240,6 +241,7 @@ public:
 	void textures_keep_original(bool p_enable) {}
 
 	void texture_set_proxy(RID p_proxy, RID p_base) {}
+	virtual Size2 texture_size_with_proxy(RID p_texture) const { return Size2(); }
 	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {}
 
 	/* SKY API */
@@ -459,6 +461,7 @@ public:
 	RID skeleton_create() { return RID(); }
 	void skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) {}
 	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {}
+	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform) {}
 	int skeleton_get_bone_count(RID p_skeleton) const { return 0; }
 	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {}
 	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const { return Transform(); }

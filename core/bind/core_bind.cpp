@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -132,7 +132,7 @@ bool _ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 void _ResourceLoader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load_interactive", "path", "type_hint"), &_ResourceLoader::load_interactive, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "p_no_cache"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "no_cache"), &_ResourceLoader::load, DEFVAL(""), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &_ResourceLoader::get_recognized_extensions_for_type);
 	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources", "abort"), &_ResourceLoader::set_abort_on_missing_resources);
 	ClassDB::bind_method(D_METHOD("get_dependencies", "path"), &_ResourceLoader::get_dependencies);
@@ -225,8 +225,12 @@ int _OS::get_video_driver_count() const {
 	return OS::get_singleton()->get_video_driver_count();
 }
 
-String _OS::get_video_driver_name(int p_driver) const {
-	return OS::get_singleton()->get_video_driver_name(p_driver);
+String _OS::get_video_driver_name(VideoDriver p_driver) const {
+	return OS::get_singleton()->get_video_driver_name((int)p_driver);
+}
+
+_OS::VideoDriver _OS::get_current_video_driver() const {
+	return (VideoDriver)OS::get_singleton()->get_current_video_driver();
 }
 
 int _OS::get_audio_driver_count() const {
@@ -378,12 +382,20 @@ bool _OS::get_borderless_window() const {
 
 void _OS::set_ime_active(const bool p_active) {
 
-	return OS::get_singleton()->set_ime_active(p_active);
+	OS::get_singleton()->set_ime_active(p_active);
 }
 
 void _OS::set_ime_position(const Point2 &p_pos) {
 
-	return OS::get_singleton()->set_ime_position(p_pos);
+	OS::get_singleton()->set_ime_position(p_pos);
+}
+
+Point2 _OS::get_ime_selection() const {
+	return OS::get_singleton()->get_ime_selection();
+}
+
+String _OS::get_ime_text() const {
+	return OS::get_singleton()->get_ime_text();
 }
 
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
@@ -584,17 +596,17 @@ struct Time {
 };
 */
 
-int _OS::get_static_memory_usage() const {
+uint64_t _OS::get_static_memory_usage() const {
 
 	return OS::get_singleton()->get_static_memory_usage();
 }
 
-int _OS::get_static_memory_peak_usage() const {
+uint64_t _OS::get_static_memory_peak_usage() const {
 
 	return OS::get_singleton()->get_static_memory_peak_usage();
 }
 
-int _OS::get_dynamic_memory_usage() const {
+uint64_t _OS::get_dynamic_memory_usage() const {
 
 	return OS::get_singleton()->get_dynamic_memory_usage();
 }
@@ -817,6 +829,10 @@ uint64_t _OS::get_unix_time() const {
 
 uint64_t _OS::get_system_time_secs() const {
 	return OS::get_singleton()->get_system_time_secs();
+}
+
+uint64_t _OS::get_system_time_msecs() const {
+	return OS::get_singleton()->get_system_time_msecs();
 }
 
 void _OS::delay_usec(uint32_t p_usec) const {
@@ -1081,6 +1097,11 @@ void _OS::alert(const String &p_alert, const String &p_title) {
 	OS::get_singleton()->alert(p_alert, p_title);
 }
 
+bool _OS::request_permission(const String &p_name) {
+
+	return OS::get_singleton()->request_permission(p_name);
+}
+
 _OS *_OS::singleton = NULL;
 
 void _OS::_bind_methods() {
@@ -1100,6 +1121,8 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_video_driver_count"), &_OS::get_video_driver_count);
 	ClassDB::bind_method(D_METHOD("get_video_driver_name", "driver"), &_OS::get_video_driver_name);
+	ClassDB::bind_method(D_METHOD("get_current_video_driver"), &_OS::get_current_video_driver);
+
 	ClassDB::bind_method(D_METHOD("get_audio_driver_count"), &_OS::get_audio_driver_count);
 	ClassDB::bind_method(D_METHOD("get_audio_driver_name", "driver"), &_OS::get_audio_driver_name);
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &_OS::get_connected_midi_inputs);
@@ -1138,7 +1161,10 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_window_per_pixel_transparency_enabled"), &_OS::get_window_per_pixel_transparency_enabled);
 	ClassDB::bind_method(D_METHOD("set_window_per_pixel_transparency_enabled", "enabled"), &_OS::set_window_per_pixel_transparency_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_ime_active", "active"), &_OS::set_ime_active);
 	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &_OS::set_ime_position);
+	ClassDB::bind_method(D_METHOD("get_ime_selection"), &_OS::get_ime_selection);
+	ClassDB::bind_method(D_METHOD("get_ime_text"), &_OS::get_ime_text);
 
 	ClassDB::bind_method(D_METHOD("set_screen_orientation", "orientation"), &_OS::set_screen_orientation);
 	ClassDB::bind_method(D_METHOD("get_screen_orientation"), &_OS::get_screen_orientation);
@@ -1176,6 +1202,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"), &_OS::get_datetime_from_unix_time);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"), &_OS::get_unix_time_from_datetime);
 	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
+	ClassDB::bind_method(D_METHOD("get_system_time_msecs"), &_OS::get_system_time_msecs);
 
 	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &_OS::set_icon);
 
@@ -1248,6 +1275,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_power_seconds_left"), &_OS::get_power_seconds_left);
 	ClassDB::bind_method(D_METHOD("get_power_percent_left"), &_OS::get_power_percent_left);
 
+	ClassDB::bind_method(D_METHOD("request_permission", "name"), &_OS::request_permission);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "clipboard"), "set_clipboard", "get_clipboard");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "exit_code"), "set_exit_code", "get_exit_code");
@@ -1264,6 +1293,9 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_resizable"), "set_window_resizable", "is_window_resizable");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_position"), "set_window_position", "get_window_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_size"), "set_window_size", "get_window_size");
+
+	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES2);
+	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES3);
 
 	BIND_ENUM_CONSTANT(DAY_SUNDAY);
 	BIND_ENUM_CONSTANT(DAY_MONDAY);
@@ -2412,7 +2444,7 @@ void _Thread::_start_func(void *ud) {
 			} break;
 			case Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
 
-				reason = "Too Many Arguments";
+				reason = "Too Few Arguments";
 			} break;
 			case Variant::CallError::CALL_ERROR_INVALID_METHOD: {
 

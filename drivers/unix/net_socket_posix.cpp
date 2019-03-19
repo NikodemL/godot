@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -167,10 +167,10 @@ void NetSocketPosix::cleanup() {
 #endif
 }
 
-NetSocketPosix::NetSocketPosix() {
-	_sock = SOCK_EMPTY;
-	_ip_type = IP::TYPE_NONE;
-	_is_stream = false;
+NetSocketPosix::NetSocketPosix() :
+		_sock(SOCK_EMPTY),
+		_ip_type(IP::TYPE_NONE),
+		_is_stream(false) {
 }
 
 NetSocketPosix::~NetSocketPosix() {
@@ -543,7 +543,7 @@ void NetSocketPosix::set_blocking_enabled(bool p_enabled) {
 
 void NetSocketPosix::set_ipv6_only_enabled(bool p_enabled) {
 	ERR_FAIL_COND(!is_open());
-	// This option is only avaiable in IPv6 sockets.
+	// This option is only available in IPv6 sockets.
 	ERR_FAIL_COND(_ip_type == IP::TYPE_IPV4);
 
 	int par = p_enabled ? 1 : 0;

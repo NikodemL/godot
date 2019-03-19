@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,7 +90,8 @@ public:
 			}
 			CanvasKey(const RID &p_canvas, int p_layer, int p_sublayer) {
 				canvas = p_canvas;
-				stacking = ((int64_t)p_layer << 32) + p_sublayer;
+				int64_t sign = p_layer < 0 ? -1 : 1;
+				stacking = sign * (((int64_t)ABS(p_layer)) << 32) + p_sublayer;
 			}
 			int get_layer() const { return stacking >> 32; }
 		};

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -382,36 +382,30 @@ void Sprite3D::_draw() {
 
 	VS::get_singleton()->immediate_clear(immediate);
 	if (!texture.is_valid())
-		return; //no texuture no life
+		return;
 	Vector2 tsize = texture->get_size();
 	if (tsize.x == 0 || tsize.y == 0)
 		return;
 
-	Size2i s;
-	Rect2 src_rect;
+	Rect2 base_rect;
+	if (region)
+		base_rect = region_rect;
+	else
+		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
 
-	if (region) {
+	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
+	Point2 frame_offset = Point2(frame % hframes, frame / hframes);
+	frame_offset *= frame_size;
 
-		s = region_rect.size;
-		src_rect = region_rect;
-	} else {
-		s = texture->get_size();
-		s = s / Size2(hframes, vframes);
-
-		src_rect.size = s;
-		src_rect.position.x += (frame % hframes) * s.x;
-		src_rect.position.y += (frame / hframes) * s.y;
-	}
-
-	Point2 ofs = get_offset();
+	Point2 dest_offset = get_offset();
 	if (is_centered())
-		ofs -= s / 2;
+		dest_offset -= frame_size / 2;
 
-	Rect2 dst_rect(ofs, s);
-
+	Rect2 src_rect(base_rect.position + frame_offset, frame_size);
+	Rect2 final_dst_rect(dest_offset, frame_size);
 	Rect2 final_rect;
 	Rect2 final_src_rect;
-	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_src_rect))
+	if (!texture->get_rect_region(final_dst_rect, src_rect, final_rect, final_src_rect))
 		return;
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0)
@@ -463,9 +457,9 @@ void Sprite3D::_draw() {
 
 	Plane tangent;
 	if (axis == Vector3::AXIS_X) {
-		tangent = Plane(0, 0, -1, -1);
+		tangent = Plane(0, 0, -1, 1);
 	} else {
-		tangent = Plane(1, 0, 0, -1);
+		tangent = Plane(1, 0, 0, 1);
 	}
 
 	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);

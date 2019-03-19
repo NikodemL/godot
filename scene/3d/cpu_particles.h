@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -104,6 +104,7 @@ private:
 	float inactive_time;
 	float frame_remainder;
 	int cycle;
+	bool redraw;
 
 	RID multimesh;
 
@@ -177,6 +178,8 @@ private:
 	Mutex *update_mutex;
 
 	void _update_render_thread();
+
+	void _set_redraw(bool p_redraw);
 
 protected:
 	static void _bind_methods();

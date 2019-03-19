@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -103,6 +103,11 @@ protected:
 	static _OS *singleton;
 
 public:
+	enum VideoDriver {
+		VIDEO_DRIVER_GLES3,
+		VIDEO_DRIVER_GLES2,
+	};
+
 	enum PowerState {
 		POWERSTATE_UNKNOWN, /**< cannot determine power status */
 		POWERSTATE_ON_BATTERY, /**< Not plugged in, running on the battery */
@@ -152,7 +157,8 @@ public:
 	Array get_fullscreen_mode_list(int p_screen = 0) const;
 
 	virtual int get_video_driver_count() const;
-	virtual String get_video_driver_name(int p_driver) const;
+	virtual String get_video_driver_name(VideoDriver p_driver) const;
+	virtual VideoDriver get_current_video_driver() const;
 
 	virtual int get_audio_driver_count() const;
 	virtual String get_audio_driver_name(int p_driver) const;
@@ -195,6 +201,8 @@ public:
 
 	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
+	virtual Point2 get_ime_selection() const;
+	virtual String get_ime_text() const;
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	bool native_video_is_playing();
@@ -279,10 +287,11 @@ public:
 	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
 	uint64_t get_system_time_secs() const;
+	uint64_t get_system_time_msecs() const;
 
-	int get_static_memory_usage() const;
-	int get_static_memory_peak_usage() const;
-	int get_dynamic_memory_usage() const;
+	uint64_t get_static_memory_usage() const;
+	uint64_t get_static_memory_peak_usage() const;
+	uint64_t get_dynamic_memory_usage() const;
 
 	void delay_usec(uint32_t p_usec) const;
 	void delay_msec(uint32_t p_msec) const;
@@ -348,12 +357,14 @@ public:
 	bool has_feature(const String &p_feature) const;
 
 	void add_logger(const String& file);
+	bool request_permission(const String &p_name);
 
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
 };
 
+VARIANT_ENUM_CAST(_OS::VideoDriver);
 VARIANT_ENUM_CAST(_OS::PowerState);
 VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);

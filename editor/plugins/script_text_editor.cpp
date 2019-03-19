@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -273,11 +273,12 @@ void ScriptTextEditor::_set_theme_for_script() {
 	}
 }
 
-void ScriptTextEditor::_toggle_warning_pannel(const Ref<InputEvent> &p_event) {
-	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-		warnings_panel->set_visible(!warnings_panel->is_visible());
-	}
+void ScriptTextEditor::_show_warnings_panel(bool p_show) {
+	warnings_panel->set_visible(p_show);
+}
+
+void ScriptTextEditor::_error_pressed() {
+	code_editor->goto_error();
 }
 
 void ScriptTextEditor::_warning_clicked(Variant p_line) {
@@ -461,7 +462,7 @@ void ScriptTextEditor::_validate_script() {
 		}
 	}
 
-	code_editor->get_warning_count_label()->set_text(itos(warnings.size()));
+	code_editor->set_warning_nb(warnings.size());
 	warnings_panel->clear();
 	warnings_panel->push_table(3);
 	for (List<ScriptLanguage::Warning>::Element *E = warnings.front(); E; E = E->next()) {
@@ -1076,7 +1077,7 @@ void ScriptTextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) 
 	if (p_highlighter != NULL)
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
 	else
-		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text("Standard"), true);
+		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(TTR("Standard")), true);
 }
 
 void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
@@ -1100,7 +1101,8 @@ void ScriptTextEditor::_bind_methods() {
 	ClassDB::bind_method("_goto_line", &ScriptTextEditor::_goto_line);
 	ClassDB::bind_method("_lookup_symbol", &ScriptTextEditor::_lookup_symbol);
 	ClassDB::bind_method("_text_edit_gui_input", &ScriptTextEditor::_text_edit_gui_input);
-	ClassDB::bind_method("_toggle_warning_pannel", &ScriptTextEditor::_toggle_warning_pannel);
+	ClassDB::bind_method("_show_warnings_panel", &ScriptTextEditor::_show_warnings_panel);
+	ClassDB::bind_method("_error_pressed", &ScriptTextEditor::_error_pressed);
 	ClassDB::bind_method("_warning_clicked", &ScriptTextEditor::_warning_clicked);
 	ClassDB::bind_method("_color_changed", &ScriptTextEditor::_color_changed);
 
@@ -1419,7 +1421,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	code_editor = memnew(CodeTextEditor);
 	editor_box->add_child(code_editor);
-	code_editor->add_constant_override("separation", 0);
+	code_editor->add_constant_override("separation", 2);
 	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	code_editor->connect("validate_script", this, "_validate_script");
 	code_editor->connect("load_theme_settings", this, "_load_theme_settings");
@@ -1437,8 +1439,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 
-	code_editor->get_warning_label()->connect("gui_input", this, "_toggle_warning_pannel");
-	code_editor->get_warning_count_label()->connect("gui_input", this, "_toggle_warning_pannel");
+	code_editor->connect("error_pressed", this, "_error_pressed");
+	code_editor->connect("show_warnings_panel", this, "_show_warnings_panel");
 	warnings_panel->connect("meta_clicked", this, "_warning_clicked");
 
 	update_settings();
@@ -1466,6 +1468,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_switch_on_hover(true);
 	edit_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
@@ -1509,7 +1512,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F6), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", this, "_edit_option");
 
-	highlighters["Standard"] = NULL;
+	highlighters[TTR("Standard")] = NULL;
 	highlighter_menu = memnew(PopupMenu);
 	highlighter_menu->set_name("highlighter_menu");
 	edit_menu->get_popup()->add_child(highlighter_menu);
@@ -1520,6 +1523,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTR("Search"));
+	search_menu->set_switch_on_hover(true);
 	search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);

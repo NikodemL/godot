@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,9 @@
 #include "geometry.h"
 
 #include "core/print_string.h"
+#include "thirdparty/misc/triangulator.h"
 
+/* this implementation is very inefficient, commenting unless bugs happen. See the other one.
 bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
 
 	Vector<int> indices = Geometry::triangulate_polygon(p_polygon);
@@ -42,6 +44,7 @@ bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2>
 	}
 	return false;
 }
+*/
 
 void Geometry::MeshData::optimize_vertices() {
 
@@ -733,6 +736,40 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 		*p_error = voxelsize.length();
 
 	return wrapped_faces;
+}
+
+Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> polygon) {
+	Vector<Vector<Vector2> > decomp;
+	List<TriangulatorPoly> in_poly, out_poly;
+
+	TriangulatorPoly inp;
+	inp.Init(polygon.size());
+	for (int i = 0; i < polygon.size(); i++) {
+		inp.GetPoint(i) = polygon[i];
+	}
+	inp.SetOrientation(TRIANGULATOR_CCW);
+	in_poly.push_back(inp);
+	TriangulatorPartition tpart;
+	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
+		ERR_PRINT("Convex decomposing failed!");
+		return decomp;
+	}
+
+	decomp.resize(out_poly.size());
+	int idx = 0;
+	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
+		TriangulatorPoly &tp = I->get();
+
+		decomp.write[idx].resize(tp.GetNumPoints());
+
+		for (int i = 0; i < tp.GetNumPoints(); i++) {
+			decomp.write[idx].write[i] = tp.GetPoint(i);
+		}
+
+		idx++;
+	}
+
+	return decomp;
 }
 
 Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes) {

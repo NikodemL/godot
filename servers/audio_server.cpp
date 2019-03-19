@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,12 +90,16 @@ void AudioDriver::input_buffer_init(int driver_buffer_frames) {
 
 void AudioDriver::input_buffer_write(int32_t sample) {
 
-	input_buffer.write[input_position++] = sample;
-	if (input_position >= input_buffer.size()) {
-		input_position = 0;
-	}
-	if (input_size < input_buffer.size()) {
-		input_size++;
+	if ((int)input_position < input_buffer.size()) {
+		input_buffer.write[input_position++] = sample;
+		if ((int)input_position >= input_buffer.size()) {
+			input_position = 0;
+		}
+		if ((int)input_size < input_buffer.size()) {
+			input_size++;
+		}
+	} else {
+		WARN_PRINTS("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
 	}
 }
 
@@ -145,6 +149,8 @@ AudioDriver::AudioDriver() {
 
 	_last_mix_time = 0;
 	_mix_amount = 0;
+	input_position = 0;
+	input_size = 0;
 
 #ifdef DEBUG_ENABLED
 	prof_time = 0;
@@ -172,6 +178,7 @@ int AudioDriverManager::get_driver_count() {
 }
 
 void AudioDriverManager::initialize(int p_driver) {
+	GLOBAL_DEF_RST("audio/enable_audio_input", false);
 	int failed_driver = -1;
 
 	// Check if there is a selected driver
@@ -252,11 +259,13 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 
 					float l = CLAMP(buf[from + j].l, -1.0, 1.0);
 					int32_t vl = l * ((1 << 20) - 1);
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 0] = vl << 11;
+					int32_t vl2 = (vl < 0 ? -1 : 1) * (ABS(vl) << 11);
+					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 0] = vl2;
 
 					float r = CLAMP(buf[from + j].r, -1.0, 1.0);
 					int32_t vr = r * ((1 << 20) - 1);
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 1] = vr << 11;
+					int32_t vr2 = (vr < 0 ? -1 : 1) * (ABS(vr) << 11);
+					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 1] = vr2;
 				}
 
 			} else {
@@ -737,6 +746,12 @@ float AudioServer::get_bus_volume_db(int p_bus) const {
 	return buses[p_bus]->volume_db;
 }
 
+int AudioServer::get_bus_channels(int p_bus) const {
+
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
+	return buses[p_bus]->channels.size();
+}
+
 void AudioServer::set_bus_send(int p_bus, const StringName &p_send) {
 
 	ERR_FAIL_INDEX(p_bus, buses.size());
@@ -970,7 +985,7 @@ void AudioServer::update() {
 		uint64_t driver_time = AudioDriver::get_singleton()->get_profiling_time();
 		uint64_t server_time = prof_time;
 
-		// Substract the server time from the driver time
+		// Subtract the server time from the driver time
 		if (driver_time > server_time)
 			driver_time -= server_time;
 
@@ -988,7 +1003,7 @@ void AudioServer::update() {
 				values.push_back(String(bus->name) + bus->effects[j].effect->get_name());
 				values.push_back(USEC_TO_SEC(bus->effects[j].prof_time));
 
-				// Substract the effect time from the driver and server times
+				// Subtract the effect time from the driver and server times
 				if (driver_time > bus->effects[j].prof_time)
 					driver_time -= bus->effects[j].prof_time;
 				if (server_time > bus->effects[j].prof_time)
@@ -1021,6 +1036,11 @@ void AudioServer::update() {
 	AudioDriver::get_singleton()->reset_profiling_time();
 	prof_time = 0;
 #endif
+
+	for (Set<CallbackItem>::Element *E = update_callbacks.front(); E; E = E->next()) {
+
+		E->get().callback(E->get().userdata);
+	}
 }
 
 void AudioServer::load_default_bus_layout() {
@@ -1146,6 +1166,25 @@ void AudioServer::remove_callback(AudioCallback p_callback, void *p_userdata) {
 	unlock();
 }
 
+void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata) {
+	lock();
+	CallbackItem ci;
+	ci.callback = p_callback;
+	ci.userdata = p_userdata;
+	update_callbacks.insert(ci);
+	unlock();
+}
+
+void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userdata) {
+
+	lock();
+	CallbackItem ci;
+	ci.callback = p_callback;
+	ci.userdata = p_userdata;
+	update_callbacks.erase(ci);
+	unlock();
+}
+
 void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 
 	ERR_FAIL_COND(p_bus_layout.is_null() || p_bus_layout->buses.size() == 0);
@@ -1266,6 +1305,8 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus_name", "bus_idx", "name"), &AudioServer::set_bus_name);
 	ClassDB::bind_method(D_METHOD("get_bus_name", "bus_idx"), &AudioServer::get_bus_name);
 	ClassDB::bind_method(D_METHOD("get_bus_index", "bus_name"), &AudioServer::get_bus_index);
+
+	ClassDB::bind_method(D_METHOD("get_bus_channels", "bus_idx"), &AudioServer::get_bus_channels);
 
 	ClassDB::bind_method(D_METHOD("set_bus_volume_db", "bus_idx", "volume_db"), &AudioServer::set_bus_volume_db);
 	ClassDB::bind_method(D_METHOD("get_bus_volume_db", "bus_idx"), &AudioServer::get_bus_volume_db);

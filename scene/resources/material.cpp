@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,6 +113,9 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 			if (n.find("param/") == 0) { //backwards compatibility
 				pr = n.substr(6, n.length());
 			}
+			if (n.find("shader_param/") == 0) { //backwards compatibility
+				pr = n.replace_first("shader_param/", "");
+			}
 		}
 		if (pr) {
 			VisualServer::get_singleton()->material_set_param(_get_material(), pr, p_value);
@@ -128,6 +131,16 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 	if (shader.is_valid()) {
 
 		StringName pr = shader->remap_param(p_name);
+		if (!pr) {
+			String n = p_name;
+			if (n.find("param/") == 0) { //backwards compatibility
+				pr = n.substr(6, n.length());
+			}
+			if (n.find("shader_param/") == 0) { //backwards compatibility
+				pr = n.replace_first("shader_param/", "");
+			}
+		}
+
 		if (pr) {
 			r_ret = VisualServer::get_singleton()->material_get_param(_get_material(), pr);
 			return true;
@@ -258,7 +271,7 @@ ShaderMaterial::~ShaderMaterial() {
 /////////////////////////////////
 
 Mutex *SpatialMaterial::material_mutex = NULL;
-SelfList<SpatialMaterial>::List SpatialMaterial::dirty_materials;
+SelfList<SpatialMaterial>::List *SpatialMaterial::dirty_materials = NULL;
 Map<SpatialMaterial::MaterialKey, SpatialMaterial::ShaderData> SpatialMaterial::shader_map;
 SpatialMaterial::ShaderNames *SpatialMaterial::shader_names = NULL;
 
@@ -267,6 +280,8 @@ void SpatialMaterial::init_shaders() {
 #ifndef NO_THREADS
 	material_mutex = Mutex::create();
 #endif
+
+	dirty_materials = memnew(SelfList<SpatialMaterial>::List);
 
 	shader_names = memnew(ShaderNames);
 
@@ -348,12 +363,15 @@ void SpatialMaterial::finish_shaders() {
 	memdelete(material_mutex);
 #endif
 
+	memdelete(dirty_materials);
+	dirty_materials = NULL;
+
 	memdelete(shader_names);
 }
 
 void SpatialMaterial::_update_shader() {
 
-	dirty_materials.remove(&element);
+	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
 	if (mk.key == current_key.key)
@@ -589,17 +607,17 @@ void SpatialMaterial::_update_shader() {
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);\n";
 
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz),0,0,0),vec4(0,length(WORLD_MATRIX[1].xyz),0,0),vec4(0,0,length(WORLD_MATRIX[2].xyz),0),vec4(0,0,0,1));\n";
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(WORLD_MATRIX[1].xyz), 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
 		} break;
 		case BILLBOARD_FIXED_Y: {
 
-			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)),0.0),WORLD_MATRIX[3]);\n";
+			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)), 0.0),WORLD_MATRIX[3]);\n";
 
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
-				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz),0,0,0),vec4(0,1,0,0),vec4(0,0,length(WORLD_MATRIX[2].xyz),0),vec4(0,0,0,1));\n";
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, 1.0, 0.0, 0.0),vec4(0.0, 0.0, length(WORLD_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			} else {
-				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(1,0,0,0),vec4(0,1.0/length(WORLD_MATRIX[1].xyz),0,0),vec4(0,0,1,0),vec4(0,0,0,1));\n";
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(1.0, 0.0, 0.0, 0.0),vec4(0.0, 1.0/length(WORLD_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0),vec4(0.0, 0.0, 0.0 ,1.0));\n";
 			}
 		} break;
 		case BILLBOARD_PARTICLES: {
@@ -607,16 +625,22 @@ void SpatialMaterial::_update_shader() {
 			//make billboard
 			code += "\tmat4 mat_world = mat4(normalize(CAMERA_MATRIX[0])*length(WORLD_MATRIX[0]),normalize(CAMERA_MATRIX[1])*length(WORLD_MATRIX[0]),normalize(CAMERA_MATRIX[2])*length(WORLD_MATRIX[2]),WORLD_MATRIX[3]);\n";
 			//rotate by rotation
-			code += "\tmat_world = mat_world * mat4( vec4(cos(INSTANCE_CUSTOM.x),-sin(INSTANCE_CUSTOM.x),0.0,0.0), vec4(sin(INSTANCE_CUSTOM.x),cos(INSTANCE_CUSTOM.x),0.0,0.0),vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0));\n";
+			code += "\tmat_world = mat_world * mat4( vec4(cos(INSTANCE_CUSTOM.x),-sin(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0),vec4(0.0, 0.0, 1.0, 0.0),vec4(0.0, 0.0, 0.0, 1.0));\n";
 			//set modelview
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat_world;\n";
 
 			//handle animation
+			code += "\tfloat h_frames = float(particles_anim_h_frames);\n";
+			code += "\tfloat v_frames = float(particles_anim_v_frames);\n";
 			code += "\tfloat particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
 			code += "\tfloat particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
-			code += "\tif (!particles_anim_loop) particle_frame=clamp(particle_frame,0.0,particle_total_frames-1.0); else particle_frame=mod(particle_frame,float(particle_total_frames));\n";
-			code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
-			code += "\tUV += vec2(mod(particle_frame,float(particles_anim_h_frames)) / float(particles_anim_h_frames), floor(particle_frame / float(particles_anim_h_frames)) / float(particles_anim_v_frames));\n";
+			code += "\tif (!particles_anim_loop) {\n";
+			code += "\t\tparticle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
+			code += "\t} else {\n";
+			code += "\t\tparticle_frame = mod(particle_frame, particle_total_frames);\n";
+			code += "\t}";
+			code += "\tUV /= vec2(h_frames, v_frames);\n";
+			code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
 		} break;
 	}
 
@@ -697,9 +721,9 @@ void SpatialMaterial::_update_shader() {
 		code += "\tvec2 base_uv2 = UV2;\n";
 	}
 
-	if (features[FEATURE_DEPTH_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //depthmap not supported with triplanar
+	if (!VisualServer::get_singleton()->is_low_end() && features[FEATURE_DEPTH_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //depthmap not supported with triplanar
 		code += "\t{\n";
-		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*depth_flip.x,BINORMAL*depth_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace
+		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*depth_flip.x,-BINORMAL*depth_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
 
 		if (deep_parallax) {
 			code += "\t\tfloat num_layers = mix(float(depth_max_layers),float(depth_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
@@ -819,7 +843,7 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
 
-	if (!VisualServer::get_singleton()->is_low_end() && proximity_fade_enabled) {
+	if (proximity_fade_enabled) {
 		code += "\tfloat depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
 		code += "\tvec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex*2.0-1.0,1.0);\n";
 		code += "\tworld_pos.xyz/=world_pos.w;\n";
@@ -1002,9 +1026,9 @@ void SpatialMaterial::flush_changes() {
 	if (material_mutex)
 		material_mutex->lock();
 
-	while (dirty_materials.first()) {
+	while (dirty_materials->first()) {
 
-		dirty_materials.first()->self()->_update_shader();
+		dirty_materials->first()->self()->_update_shader();
 	}
 
 	if (material_mutex)
@@ -1017,7 +1041,7 @@ void SpatialMaterial::_queue_shader_change() {
 		material_mutex->lock();
 
 	if (!element.in_list()) {
-		dirty_materials.add(&element);
+		dirty_materials->add(&element);
 	}
 
 	if (material_mutex)
@@ -1315,7 +1339,7 @@ void SpatialMaterial::set_flag(Flags p_flag, bool p_enabled) {
 		return;
 
 	flags[p_flag] = p_enabled;
-	if (p_flag == FLAG_USE_ALPHA_SCISSOR) {
+	if (p_flag == FLAG_USE_ALPHA_SCISSOR || p_flag == FLAG_UNSHADED) {
 		_change_notify();
 	}
 	_queue_shader_change();
@@ -1420,6 +1444,48 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 
 	if ((property.name == "depth_min_layers" || property.name == "depth_max_layers") && !deep_parallax) {
 		property.usage = 0;
+	}
+
+	if (flags[FLAG_UNSHADED]) {
+		if (property.name.begins_with("anisotropy")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("ao")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("clearcoat")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("emission")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("metallic")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("normal")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("rim")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("roughness")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("subsurf_scatter")) {
+			property.usage = 0;
+		}
+
+		if (property.name.begins_with("transmission")) {
+			property.usage = 0;
+		}
 	}
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef JAVASCRIPT_ENABLED
 
 #include "lws_server.h"
@@ -108,9 +109,9 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			if (_peer_map.has(id)) {
 				int code;
 				Ref<LWSPeer> peer = _peer_map[id];
-				String reason = peer->get_close_reason(in, len, code);
+				String reason2 = peer->get_close_reason(in, len, code);
 				peer_data->clean_close = true;
-				_on_close_request(id, code, reason);
+				_on_close_request(id, code, reason2);
 			}
 			return 0;
 		}

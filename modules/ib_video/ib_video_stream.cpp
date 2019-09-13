@@ -15,6 +15,8 @@
 #include "video_wasapiaudio.h"
 #include "dxva2decoder.h"
 
+#include "core/method_bind_ext.gen.inc"
+
 
 
 
@@ -342,7 +344,7 @@ int VideoStreamIBManager::create_video()
 	return inst.id;
 }
 
-int VideoStreamIBManager::configure_video(int id, bool presentImmediately,  bool useHwAccel) {
+int VideoStreamIBManager::configure_video(int id, int streamBufferVideoChunks, int streamBufferAudioChunks, int decodeBufferVideoFrames, int decodeBufferAudioMs, bool presentImmediately, float avSyncOffset, int numDecodeThreads, bool useHwAccel) {
 	//MDiagnostic("ConfigureVideo(id=%d,streamBufferVideoChunks=%d,streamBufferAudioChunks=%d,decodeBufferVideoFrames=%d,decodeBufferAudioMs=%d, presentImmediately=%d, avSyncOffset=%f, decodeThreads=%d, useHwAccell=%d)", id, streamBufferVideoChunks, streamBufferAudioChunks, decodeBufferVideoFrames, decodeBufferAudioMs, presentImmediately, avSyncOffset, decodeThreads, useHwAccel);
 	std::lock_guard<std::mutex> scopeLock(videoMutex);
 	auto it = mVideoObject.find(id);
@@ -352,14 +354,16 @@ int VideoStreamIBManager::configure_video(int id, bool presentImmediately,  bool
 		return -1;
 	}
 	TVideoInstance &inst = it->second;
-	//inst.pVideoObject->streamBufferVideoChunks = streamBufferVideoChunks;
-	//inst.pVideoObject->streamBufferAudioChunks = streamBufferAudioChunks;
-	//inst.pVideoObject->decodeBufferVideoFrames = decodeBufferVideoFrames;
-	//inst.pVideoObject->decodeBufferAudioMs = decodeBufferAudioMs;
+	
+	inst.pVideoObject->streamBufferVideoChunks = streamBufferVideoChunks; //150;
+	inst.pVideoObject->streamBufferAudioChunks = streamBufferAudioChunks; //150;
+	inst.pVideoObject->decodeBufferVideoFrames = decodeBufferVideoFrames; //5;
+	inst.pVideoObject->decodeBufferAudioMs = decodeBufferAudioMs; // 100;
 	inst.pVideoObject->presentImmediately = presentImmediately;
-	//inst.pVideoObject->avSyncOffset = avSyncOffset;
-	//inst.pVideoObject->numDecodeThreads = decodeThreads;
+	inst.pVideoObject->avSyncOffset = avSyncOffset; //0 .0f;
+	inst.pVideoObject->numDecodeThreads = numDecodeThreads; //2;
 	inst.pVideoObject->useHwAccel = useHwAccel;
+
 	return (int)inst.pVideoObject->State;
 }
 
@@ -631,7 +635,7 @@ void VideoStreamIBManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_video", "id", "filename", "options"), &VideoStreamIBManager::open_video);
 
 	// We do not bind as such, too many parameters
-	ClassDB::bind_method(D_METHOD("configure_video", "id", "present_immediatelly", "use_hardware"), &VideoStreamIBManager::configure_video);
+	ClassDB::bind_method(D_METHOD("configure_video", "id", "streamBufferVideoChunks", "streamBufferAudioChunks", "decodeBufferVideoFrames", "decodeBufferAudioMs", "present_immediatelly", "avSyncOffset", "numDecodeThreads", "use_hardware"), &VideoStreamIBManager::configure_video);
 	ClassDB::bind_method(D_METHOD("get_video_state", "id"), &VideoStreamIBManager::get_video_state);
 	ClassDB::bind_method(D_METHOD("play_video", "id", "loop"), &VideoStreamIBManager::play_video);
 	ClassDB::bind_method(D_METHOD("pause_video", "id"), &VideoStreamIBManager::pause_video);

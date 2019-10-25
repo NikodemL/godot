@@ -45,10 +45,6 @@
 
 #include <stdio.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ShaderGLES3 {
 protected:
 	struct Enum {
@@ -289,7 +285,9 @@ private:
 
 				glUniformMatrix4fv(p_uniform, 1, false, matrix);
 			} break;
-			default: { ERR_FAIL(); } // do nothing
+			default: {
+				ERR_FAIL();
+			} // do nothing
 		}
 	}
 

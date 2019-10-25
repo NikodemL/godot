@@ -38,10 +38,6 @@
 #include "core/safe_refcount.h"
 #include "core/self_list.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #define RES_BASE_EXTENSION(m_ext)                                                                                   \
 public:                                                                                                             \
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
@@ -137,6 +133,12 @@ public:
 
 	virtual RID get_rid() const; // some resources may offer conversion to RID
 
+#ifdef TOOLS_ENABLED
+	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
+	void set_id_for_path(const String &p_path, int p_id);
+	int get_id_for_path(const String &p_path) const;
+#endif
+
 	Resource();
 	~Resource();
 };
@@ -148,6 +150,10 @@ class ResourceCache {
 	friend class ResourceLoader; //need the lock
 	static RWLock *lock;
 	static HashMap<String, Resource *> resources;
+#ifdef TOOLS_ENABLED
+	static HashMap<String, HashMap<String, int> > resource_path_cache; // each tscn has a set of resource paths and IDs
+	static RWLock *path_cache_lock;
+#endif // TOOLS_ENABLED
 	friend void unregister_core_types();
 	static void clear();
 	friend void register_core_types();

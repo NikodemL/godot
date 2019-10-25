@@ -47,8 +47,6 @@
 
 #include "semaphore_iphone.h"
 
-#include "ios.h"
-
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
@@ -64,8 +62,7 @@ const char *OSIPhone::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
 };
 
 OSIPhone *OSIPhone::get_singleton() {
@@ -84,14 +81,14 @@ void OSIPhone::set_data_dir(String p_dir) {
 	memdelete(da);
 };
 
-void OSIPhone::set_unique_id(String p_ID) {
+void OSIPhone::set_unique_id(String p_id) {
 
-	unique_ID = p_ID;
+	unique_id = p_id;
 };
 
 String OSIPhone::get_unique_id() const {
 
-	return unique_ID;
+	return unique_id;
 };
 
 void OSIPhone::initialize_core() {
@@ -167,6 +164,8 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	input = memnew(InputDefault);
 
+	camera_server = memnew(CameraIOS);
+
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
@@ -183,7 +182,8 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
 	//icloud->connect();
 #endif
-	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", memnew(iOS)));
+	ios = memnew(iOS);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
 	return OK;
 };
@@ -361,6 +361,11 @@ void OSIPhone::finalize() {
 	if (main_loop) // should not happen?
 		memdelete(main_loop);
 
+	if (camera_server) {
+		memdelete(camera_server);
+		camera_server = NULL;
+	}
+
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
@@ -464,6 +469,7 @@ extern void _show_keyboard(String p_existing);
 extern void _hide_keyboard();
 extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
+extern void _vibrate();
 
 void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 	_show_keyboard(p_existing_text);
@@ -490,21 +496,24 @@ void OSIPhone::set_keep_screen_on(bool p_enabled) {
 	_set_keep_screen_on(p_enabled);
 };
 
-void OSIPhone::set_cursor_shape(CursorShape p_shape){
-
-};
-
 String OSIPhone::get_user_data_dir() const {
 
 	return data_dir;
 };
 
-void OSIPhone::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot){};
-
-String OSIPhone::get_name() {
+String OSIPhone::get_name() const {
 
 	return "iOS";
 };
+
+String OSIPhone::get_model_name() const {
+
+	String model = ios->get_model();
+	if (model != "")
+		return model;
+
+	return OS_Unix::get_model_name();
+}
 
 Size2 OSIPhone::get_window_size() const {
 
@@ -583,6 +592,11 @@ void OSIPhone::native_video_focus_out() {
 void OSIPhone::native_video_stop() {
 	if (native_video_is_playing())
 		_stop_video();
+}
+
+void OSIPhone::vibrate_handheld(int p_duration_ms) {
+	// iOS does not support duration for vibration
+	_vibrate();
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {

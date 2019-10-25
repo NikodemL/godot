@@ -350,8 +350,8 @@ void AnimationNodeOneShot::_bind_methods() {
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
 
-	BIND_ENUM_CONSTANT(MIX_MODE_BLEND)
-	BIND_ENUM_CONSTANT(MIX_MODE_ADD)
+	BIND_ENUM_CONSTANT(MIX_MODE_BLEND);
+	BIND_ENUM_CONSTANT(MIX_MODE_ADD);
 }
 
 AnimationNodeOneShot::AnimationNodeOneShot() {
@@ -363,6 +363,7 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 	fade_out = 0.1;
 	autorestart = false;
 	autorestart_delay = 1;
+	autorestart_random_delay = 0;
 
 	mix = MIX_MODE_BLEND;
 	sync = false;
@@ -857,6 +858,7 @@ AnimationNodeTransition::AnimationNodeTransition() {
 	time = "time";
 	current = "current";
 	prev_current = "prev_current";
+	xfade = 0.0;
 
 	enabled_inputs = 0;
 	for (int i = 0; i < MAX_INPUTS; i++) {
@@ -1047,7 +1049,7 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 		return CONNECTION_ERROR_NO_INPUT;
 	}
 
-	if (!nodes.has(p_input_node)) {
+	if (p_input_node == p_output_node) {
 		return CONNECTION_ERROR_SAME_NODE;
 	}
 

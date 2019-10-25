@@ -98,6 +98,11 @@ real_t Vector2::cross(const Vector2 &p_other) const {
 	return x * p_other.y - y * p_other.x;
 }
 
+Vector2 Vector2::sign() const {
+
+	return Vector2(SGN(x), SGN(y));
+}
+
 Vector2 Vector2::floor() const {
 
 	return Vector2(Math::floor(x), Math::floor(y));
@@ -119,6 +124,14 @@ Vector2 Vector2::rotated(real_t p_by) const {
 	v.set_rotation(angle() + p_by);
 	v *= length();
 	return v;
+}
+
+Vector2 Vector2::posmod(const real_t p_mod) const {
+	return Vector2(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod));
+}
+
+Vector2 Vector2::posmodv(const Vector2 &p_modv) const {
+	return Vector2(Math::fposmod(x, p_modv.x), Math::fposmod(y, p_modv.y));
 }
 
 Vector2 Vector2::project(const Vector2 &p_b) const {
@@ -162,6 +175,13 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 						(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
 						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
+}
+
+Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
+	Vector2 v = *this;
+	Vector2 vd = p_to - v;
+	real_t len = vd.length();
+	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
 }
 
 // slide returns the component of the vector along the given plane, specified by its normal vector.

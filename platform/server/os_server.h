@@ -47,9 +47,6 @@
 #include "servers/visual_server.h"
 
 #undef CursorShape
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class OS_Server : public OS_Unix {
 
@@ -74,6 +71,7 @@ class OS_Server : public OS_Unix {
 #endif
 
 	CrashHandler crash_handler;
+	CameraServer *camera_server;
 
 	int video_driver_index;
 
@@ -93,10 +91,7 @@ protected:
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-	virtual String get_name();
-
-	virtual void set_cursor_shape(CursorShape p_shape);
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
+	virtual String get_name() const;
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);

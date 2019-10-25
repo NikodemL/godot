@@ -52,13 +52,12 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 			type = ObjectDB::get_instance(p_id)->get_class();
 		print_line("Failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
-		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 	msg->args = p_argcount;
-	msg->instance_ID = p_id;
+	msg->instance_id = p_id;
 	msg->target = p_method;
 	msg->type = TYPE_CALL;
 	if (p_show_error)
@@ -103,13 +102,12 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 			type = ObjectDB::get_instance(p_id)->get_class();
 		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
-		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 	msg->args = 1;
-	msg->instance_ID = p_id;
+	msg->instance_id = p_id;
 	msg->target = p_prop;
 	msg->type = TYPE_SET;
 
@@ -136,14 +134,13 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 			type = ObjectDB::get_instance(p_id)->get_class();
 		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
-		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 
 	msg->type = TYPE_NOTIFICATION;
-	msg->instance_ID = p_id;
+	msg->instance_id = p_id;
 	//msg->target;
 	msg->notification = p_notification;
 
@@ -177,7 +174,7 @@ void MessageQueue::statistics() {
 	while (read_pos < buffer_end) {
 		Message *message = (Message *)&buffer[read_pos];
 
-		Object *target = ObjectDB::get_instance(message->instance_ID);
+		Object *target = ObjectDB::get_instance(message->instance_id);
 
 		if (target != NULL) {
 
@@ -256,7 +253,7 @@ void MessageQueue::_call_function(Object *p_target, const StringName &p_func, co
 	p_target->call(p_func, argptrs, p_argcount, ce);
 	if (p_show_error && ce.error != Variant::CallError::CALL_OK) {
 
-		ERR_PRINTS("Error calling deferred method: " + Variant::get_call_error_text(p_target, p_func, argptrs, p_argcount, ce));
+		ERR_PRINTS("Error calling deferred method: " + Variant::get_call_error_text(p_target, p_func, argptrs, p_argcount, ce) + ".");
 	}
 }
 
@@ -289,7 +286,7 @@ void MessageQueue::flush() {
 
 		_THREAD_SAFE_UNLOCK_
 
-		Object *target = ObjectDB::get_instance(message->instance_ID);
+		Object *target = ObjectDB::get_instance(message->instance_id);
 
 		if (target != NULL) {
 
@@ -301,10 +298,6 @@ void MessageQueue::flush() {
 					// messages don't expect a return value
 
 					_call_function(target, message->target, args, message->args, message->type & FLAG_SHOW_ERROR);
-
-					for (int i = 0; i < message->args; i++) {
-						args[i].~Variant();
-					}
 
 				} break;
 				case TYPE_NOTIFICATION: {
@@ -319,8 +312,14 @@ void MessageQueue::flush() {
 					// messages don't expect a return value
 					target->set(message->target, *arg);
 
-					arg->~Variant();
 				} break;
+			}
+		}
+
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
+			Variant *args = (Variant *)(message + 1);
+			for (int i = 0; i < message->args; i++) {
+				args[i].~Variant();
 			}
 		}
 
@@ -341,7 +340,7 @@ bool MessageQueue::is_flushing() const {
 
 MessageQueue::MessageQueue() {
 
-	ERR_FAIL_COND(singleton != NULL);
+	ERR_FAIL_COND_MSG(singleton != NULL, "MessageQueue singleton already exist.");
 	singleton = this;
 	flushing = false;
 

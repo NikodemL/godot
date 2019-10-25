@@ -32,7 +32,7 @@
 
 #include "servers/physics_server.h"
 
-Vector<Vector3> ConcavePolygonShape::_gen_debug_mesh_lines() {
+Vector<Vector3> ConcavePolygonShape::get_debug_mesh_lines() {
 
 	Set<DrawEdge> edges;
 
@@ -65,6 +65,7 @@ Vector<Vector3> ConcavePolygonShape::_gen_debug_mesh_lines() {
 }
 
 void ConcavePolygonShape::_update_shape() {
+	Shape::_update_shape();
 }
 
 void ConcavePolygonShape::set_faces(const PoolVector<Vector3> &p_faces) {

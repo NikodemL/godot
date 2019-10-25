@@ -31,7 +31,7 @@
 #include "box_shape.h"
 #include "servers/physics_server.h"
 
-Vector<Vector3> BoxShape::_gen_debug_mesh_lines() {
+Vector<Vector3> BoxShape::get_debug_mesh_lines() {
 
 	Vector<Vector3> lines;
 	AABB aabb;
@@ -51,6 +51,7 @@ Vector<Vector3> BoxShape::_gen_debug_mesh_lines() {
 void BoxShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), extents);
+	Shape::_update_shape();
 }
 
 void BoxShape::set_extents(const Vector3 &p_extents) {

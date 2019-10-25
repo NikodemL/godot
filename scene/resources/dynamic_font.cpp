@@ -118,8 +118,7 @@ Error DynamicFontAtSize::_load() {
 
 	int error = FT_Init_FreeType(&library);
 
-	ERR_EXPLAIN(TTR("Error initializing FreeType."));
-	ERR_FAIL_COND_V(error != 0, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(error != 0, ERR_CANT_CREATE, "Error initializing FreeType.");
 
 	// FT_OPEN_STREAM is extremely slow only on Android.
 	if (OS::get_singleton()->get_name() == "Android" && font->font_mem == NULL && font->font_path != String()) {
@@ -132,7 +131,7 @@ Error DynamicFontAtSize::_load() {
 		else {
 
 			FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-			ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+			ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
 
 			size_t len = f->get_len();
 			_fontdata[font->font_path] = Vector<uint8_t>();
@@ -147,7 +146,7 @@ Error DynamicFontAtSize::_load() {
 	if (font->font_mem == NULL && font->font_path != String()) {
 
 		FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
 
 		memset(&stream, 0, sizeof(FT_StreamRec));
 		stream.base = NULL;
@@ -178,36 +177,25 @@ Error DynamicFontAtSize::_load() {
 		fargs.stream = &stream;
 		error = FT_Open_Face(library, &fargs, 0, &face);
 
-	}
-	else {
-		ERR_EXPLAIN("DynamicFont uninitialized");
-		ERR_FAIL_V(ERR_UNCONFIGURED);
+	} else {
+		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "DynamicFont uninitialized.");
 	}
 
 	//error = FT_New_Face( library, src_path.utf8().get_data(),0,&face );
 
 	if (error == FT_Err_Unknown_File_Format) {
-		ERR_EXPLAIN(TTR("Unknown font format."));
+
 		FT_Done_FreeType(library);
+		ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, "Unknown font format.");
 
 	}
 	else if (error) {
 
-		ERR_EXPLAIN(TTR("Error loading font."));
 		FT_Done_FreeType(library);
+		ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, "Error loading font.");
 	}
 
-	ERR_FAIL_COND_V(error, ERR_FILE_CANT_OPEN);
-
-	/*error = FT_Set_Char_Size(face,0,64*size,512,512);
-
-	if ( error ) {
-	FT_Done_FreeType( library );
-	ERR_EXPLAIN(TTR("Invalid font size."));
-	ERR_FAIL_COND_V( error, ERR_INVALID_PARAMETER );
-	}*/
-
-	if (FT_HAS_COLOR(face)) {
+	if (FT_HAS_COLOR(face) && face->num_fixed_sizes > 0) {
 		int best_match = 0;
 		int diff = ABS(id.size - ((int64_t)face->available_sizes[0].width));
 		scale_color_font = float(id.size) / face->available_sizes[0].width;
@@ -495,28 +483,27 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 				int ofs = ((i + tex_pos.y + rect_margin) * tex.texture_size + j + tex_pos.x + rect_margin) * color_size;
 				ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), Character::not_found());
 				switch (bitmap.pixel_mode) {
-				case FT_PIXEL_MODE_MONO: {
-					int byte = i * bitmap.pitch + (j >> 3);
-					int bit = 1 << (7 - (j % 8));
-					wr[ofs + 0] = 255; //grayscale as 1
-					wr[ofs + 1] = bitmap.buffer[byte] & bit ? 255 : 0;
-				} break;
-				case FT_PIXEL_MODE_GRAY:
-					wr[ofs + 0] = 255; //grayscale as 1
-					wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
-					break;
-				case FT_PIXEL_MODE_BGRA: {
-					int ofs_color = i * bitmap.pitch + (j << 2);
-					wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
-					wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
-					wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
-					wr[ofs + 3] = bitmap.buffer[ofs_color + 3];
-				} break;
+					case FT_PIXEL_MODE_MONO: {
+						int byte = i * bitmap.pitch + (j >> 3);
+						int bit = 1 << (7 - (j % 8));
+						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
+					} break;
+					case FT_PIXEL_MODE_GRAY:
+						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
+						break;
+					case FT_PIXEL_MODE_BGRA: {
+						int ofs_color = i * bitmap.pitch + (j << 2);
+						wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
+						wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
+						wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
+						wr[ofs + 3] = bitmap.buffer[ofs_color + 3];
+					} break;
 					// TODO: FT_PIXEL_MODE_LCD
-				default:
-					ERR_EXPLAIN("Font uses unsupported pixel format: " + itos(bitmap.pixel_mode));
-					ERR_FAIL_V(Character::not_found());
-					break;
+					default:
+						ERR_FAIL_V_MSG(Character::not_found(), "Font uses unsupported pixel format: " + itos(bitmap.pixel_mode) + ".");
+						break;
 				}
 			}
 		}
@@ -1026,7 +1013,7 @@ void DynamicFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_count"), &DynamicFont::get_fallback_count);
 
 	ADD_GROUP("Settings", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_RANGE, "1,255,1"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,255,1"), "set_outline_size", "get_outline_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_color"), "set_outline_color", "get_outline_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_mipmaps"), "set_use_mipmaps", "get_use_mipmaps");

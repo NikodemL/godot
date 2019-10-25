@@ -40,7 +40,7 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 
 	int read_data_block(int p_offset, int p_size, uint8_t *p_dest = 0) const {
 
-		ERR_FAIL_COND_V(!f.is_open(), -1);
+		ERR_FAIL_COND_V_MSG(!f.is_open(), -1, "Can't read data block when file is not opened.");
 
 		((T *)&f)->seek(p_offset);
 
@@ -141,6 +141,14 @@ public:
 	virtual uint64_t _get_modified_time(const String &p_file) {
 
 		return f._get_modified_time(p_file);
+	}
+
+	virtual uint32_t _get_unix_permissions(const String &p_file) {
+		return f._get_unix_permissions(p_file);
+	}
+
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+		return f._set_unix_permissions(p_file, p_permissions);
 	}
 
 	FileAccessBufferedFA(){

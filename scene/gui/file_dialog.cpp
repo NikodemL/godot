@@ -46,13 +46,31 @@ VBoxContainer *FileDialog::get_vbox() {
 
 void FileDialog::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 
-		refresh->set_icon(get_icon("reload"));
-		dir_up->set_icon(get_icon("parent_folder"));
-	}
+		if (p_what == NOTIFICATION_ENTER_TREE) {
+			dir_up->set_icon(get_icon("parent_folder"));
+			refresh->set_icon(get_icon("reload"));
+			show_hidden->set_icon(get_icon("toggle_hidden"));
+		}
 
-	if (p_what == NOTIFICATION_POPUP_HIDE) {
+		Color font_color = get_color("font_color", "ToolButton");
+		Color font_color_hover = get_color("font_color_hover", "ToolButton");
+		Color font_color_pressed = get_color("font_color_pressed", "ToolButton");
+
+		dir_up->add_color_override("icon_color_normal", font_color);
+		dir_up->add_color_override("icon_color_hover", font_color_hover);
+		dir_up->add_color_override("icon_color_pressed", font_color_pressed);
+
+		refresh->add_color_override("icon_color_normal", font_color);
+		refresh->add_color_override("icon_color_hover", font_color_hover);
+		refresh->add_color_override("icon_color_pressed", font_color_pressed);
+
+		show_hidden->add_color_override("icon_color_normal", font_color);
+		show_hidden->add_color_override("icon_color_hover", font_color_hover);
+		show_hidden->add_color_override("icon_color_pressed", font_color_pressed);
+
+	} else if (p_what == NOTIFICATION_POPUP_HIDE) {
 
 		set_process_unhandled_input(false);
 	}
@@ -86,7 +104,9 @@ void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 					_dir_entered("..");
 				} break;
-				default: { handled = false; }
+				default: {
+					handled = false;
+				}
 			}
 
 			if (handled)
@@ -299,11 +319,8 @@ bool FileDialog::_is_open_should_be_disabled() {
 	Dictionary d = ti->get_metadata(0);
 
 	// Opening a file, but selected a folder? Forbidden.
-	if (((mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES) && d["dir"]) || // Flipped case, also forbidden.
-			(mode == MODE_OPEN_DIR && !d["dir"]))
-		return true;
-
-	return false;
+	return ((mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES) && d["dir"]) || // Flipped case, also forbidden.
+		   (mode == MODE_OPEN_DIR && !d["dir"]);
 }
 
 void FileDialog::_go_up() {
@@ -381,6 +398,18 @@ void FileDialog::_tree_item_activated() {
 	}
 }
 
+void FileDialog::update_file_name() {
+	int idx = filter->get_selected() - 1;
+	if ((idx == -1 && filter->get_item_count() == 2) || (filter->get_item_count() > 2 && idx >= 0 && idx < filter->get_item_count() - 2)) {
+		if (idx == -1) idx += 1;
+		String filter_str = filters[idx];
+		String file_str = file->get_text();
+		String base_name = file_str.get_basename();
+		file_str = base_name + "." + filter_str.strip_edges().to_lower();
+		file->set_text(file_str);
+	}
+}
+
 void FileDialog::update_file_list() {
 
 	tree->clear();
@@ -388,23 +417,22 @@ void FileDialog::update_file_list() {
 
 	TreeItem *root = tree->create_item();
 	Ref<Texture> folder = get_icon("folder");
+	const Color folder_color = get_color("folder_icon_modulate");
 	List<String> files;
 	List<String> dirs;
 
-	bool isdir;
-	bool ishidden;
-	bool show_hidden = show_hidden_files;
+	bool is_hidden;
 	String item;
 
-	while ((item = dir_access->get_next(&isdir)) != "") {
+	while ((item = dir_access->get_next()) != "") {
 
 		if (item == "." || item == "..")
 			continue;
 
-		ishidden = dir_access->current_is_hidden();
+		is_hidden = dir_access->current_is_hidden();
 
-		if (show_hidden || !ishidden) {
-			if (!isdir)
+		if (show_hidden_files || !is_hidden) {
+			if (!dir_access->current_is_dir())
 				files.push_back(item);
 			else
 				dirs.push_back(item);
@@ -419,6 +447,7 @@ void FileDialog::update_file_list() {
 		TreeItem *ti = tree->create_item(root);
 		ti->set_text(0, dir_name);
 		ti->set_icon(0, folder);
+		ti->set_icon_modulate(0, folder_color);
 
 		Dictionary d;
 		d["name"] = dir_name;
@@ -428,8 +457,6 @@ void FileDialog::update_file_list() {
 
 		dirs.pop_front();
 	}
-
-	dirs.clear();
 
 	List<String> patterns;
 	// build filter
@@ -505,12 +532,11 @@ void FileDialog::update_file_list() {
 
 	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == NULL)
 		tree->get_root()->get_children()->select(0);
-
-	files.clear();
 }
 
 void FileDialog::_filter_selected(int) {
 
+	update_file_name();
 	update_file_list();
 }
 
@@ -627,6 +653,8 @@ bool FileDialog::is_mode_overriding_title() const {
 }
 
 void FileDialog::set_mode(Mode p_mode) {
+
+	ERR_FAIL_INDEX((int)p_mode, 5);
 
 	mode = p_mode;
 	switch (mode) {
@@ -802,6 +830,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_select_drive"), &FileDialog::_select_drive);
 	ClassDB::bind_method(D_METHOD("_make_dir"), &FileDialog::_make_dir);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileDialog::_make_dir_confirm);
+	ClassDB::bind_method(D_METHOD("_update_file_name"), &FileDialog::update_file_name);
 	ClassDB::bind_method(D_METHOD("_update_file_list"), &FileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("_update_dir"), &FileDialog::update_dir);
 	ClassDB::bind_method(D_METHOD("_go_up"), &FileDialog::_go_up);
@@ -871,9 +900,16 @@ FileDialog::FileDialog() {
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	refresh = memnew(ToolButton);
-	refresh->set_tooltip(RTR("Refresh"));
+	refresh->set_tooltip(RTR("Refresh files."));
 	refresh->connect("pressed", this, "_update_file_list");
 	hbc->add_child(refresh);
+
+	show_hidden = memnew(ToolButton);
+	show_hidden->set_toggle_mode(true);
+	show_hidden->set_pressed(is_showing_hidden_files());
+	show_hidden->set_tooltip(RTR("Toggle the visibility of hidden files."));
+	show_hidden->connect("toggled", this, "set_show_hidden_files");
+	hbc->add_child(show_hidden);
 
 	drives = memnew(OptionButton);
 	hbc->add_child(drives);

@@ -41,9 +41,7 @@
 
 #include <stdarg.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+class Mutex;
 
 class OS {
 
@@ -102,7 +100,6 @@ public:
 		bool maximized;
 		bool always_on_top;
 		bool use_vsync;
-		bool layered_splash;
 		bool layered;
 		float get_aspect() const { return (float)width / (float)height; }
 		VideoMode(int p_width = 1024, int p_height = 600, bool p_fullscreen = false, bool p_resizable = true, bool p_borderless_window = false, bool p_maximized = false, bool p_always_on_top = false, bool p_use_vsync = false) {
@@ -115,7 +112,6 @@ public:
 			always_on_top = p_always_on_top;
 			use_vsync = p_use_vsync;
 			layered = false;
-			layered_splash = false;
 		}
 	};
 
@@ -147,6 +143,11 @@ public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
+
+	virtual void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta){};
+	virtual void global_menu_add_separator(const String &p_menu){};
+	virtual void global_menu_remove_item(const String &p_menu, int p_idx){};
+	virtual void global_menu_clear(const String &p_menu){};
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type = Logger::ERR_ERROR);
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -206,8 +207,12 @@ public:
 	virtual int get_screen_dpi(int p_screen = -1) const { return 72; }
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2 &p_position) {}
+	virtual Size2 get_max_window_size() const { return Size2(); };
+	virtual Size2 get_min_window_size() const { return Size2(); };
 	virtual Size2 get_window_size() const = 0;
 	virtual Size2 get_real_window_size() const { return get_window_size(); }
+	virtual void set_min_window_size(const Size2 p_size) {}
+	virtual void set_max_window_size(const Size2 p_size) {}
 	virtual void set_window_size(const Size2 p_size) {}
 	virtual void set_window_fullscreen(bool p_enabled) {}
 	virtual bool is_window_fullscreen() const { return true; }
@@ -219,6 +224,8 @@ public:
 	virtual bool is_window_maximized() const { return true; }
 	virtual void set_window_always_on_top(bool p_enabled) {}
 	virtual bool is_window_always_on_top() const { return false; }
+	virtual void set_console_visible(bool p_enabled) {}
+	virtual bool is_console_visible() const { return false; }
 	virtual void request_attention() {}
 	virtual void center_window();
 
@@ -261,9 +268,10 @@ public:
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
 
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
+	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual Error shell_open(String p_uri);
 	virtual Error set_cwd(const String &p_cwd);
@@ -272,7 +280,7 @@ public:
 	virtual String get_environment(const String &p_var) const = 0;
 	virtual bool set_environment(const String &p_var, const String &p_value) const = 0;
 
-	virtual String get_name() = 0;
+	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual String get_model_name() const;
 
@@ -331,6 +339,7 @@ public:
 	virtual Date get_date(bool local = false) const = 0;
 	virtual Time get_time(bool local = false) const = 0;
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
+	virtual String get_iso_date_time(bool local = false) const;
 	virtual uint64_t get_unix_time() const;
 	virtual uint64_t get_system_time_secs() const;
 	virtual uint64_t get_system_time_msecs() const;
@@ -378,8 +387,9 @@ public:
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
 	virtual int get_virtual_keyboard_height() const;
 
-	virtual void set_cursor_shape(CursorShape p_shape) = 0;
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) = 0;
+	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual CursorShape get_cursor_shape() const;
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	virtual bool get_swap_ok_cancel() { return false; }
 	virtual void dump_memory_to_file(const char *p_file);
@@ -449,6 +459,7 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
+	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
 
 	virtual int get_exit_code() const;
@@ -520,6 +531,8 @@ public:
 	List<String> get_restart_on_exit_arguments() const;
 
 	virtual bool request_permission(const String &p_name) { return true; }
+	virtual bool request_permissions() { return true; }
+	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 
 	virtual void process_and_drop_events() {}
 	OS();

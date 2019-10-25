@@ -73,7 +73,7 @@ void SoftBodyVisualServerHandler::open() {
 }
 
 void SoftBodyVisualServerHandler::close() {
-	write_buffer = PoolVector<uint8_t>::Write();
+	write_buffer.release();
 }
 
 void SoftBodyVisualServerHandler::commit_changes() {
@@ -102,6 +102,14 @@ SoftBody::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
 	spatial_attachment_path = obj_tocopy.spatial_attachment_path;
 	spatial_attachment = obj_tocopy.spatial_attachment;
 	offset = obj_tocopy.offset;
+}
+
+SoftBody::PinnedPoint SoftBody::PinnedPoint::operator=(const PinnedPoint &obj) {
+	point_index = obj.point_index;
+	spatial_attachment_path = obj.spatial_attachment_path;
+	spatial_attachment = obj.spatial_attachment;
+	offset = obj.offset;
+	return *this;
 }
 
 void SoftBody::_update_pickable() {
@@ -397,7 +405,7 @@ String SoftBody::get_configuration_warning() const {
 		if (!warning.empty())
 			warning += "\n\n";
 
-		warning += TTR("This body will be ignored until you set a mesh");
+		warning += TTR("This body will be ignored until you set a mesh.");
 	}
 
 	Transform t = get_transform();
@@ -569,20 +577,14 @@ Array SoftBody::get_collision_exceptions() {
 void SoftBody::add_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->soft_body_add_collision_exception(physics_rid, collision_object->get_rid());
 }
 
 void SoftBody::remove_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->soft_body_remove_collision_exception(physics_rid, collision_object->get_rid());
 }
 
@@ -691,7 +693,6 @@ bool SoftBody::is_ray_pickable() const {
 }
 
 SoftBody::SoftBody() :
-		MeshInstance(),
 		physics_rid(PhysicsServer::get_singleton()->soft_body_create()),
 		mesh_owner(false),
 		collision_mask(1),
@@ -705,6 +706,7 @@ SoftBody::SoftBody() :
 }
 
 SoftBody::~SoftBody() {
+	PhysicsServer::get_singleton()->free(physics_rid);
 }
 
 void SoftBody::reset_softbody_pin() {

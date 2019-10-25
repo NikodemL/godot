@@ -302,6 +302,10 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	visual_server->init();
+
+	///@TODO implement a subclass for UWP and instantiate that instead
+	camera_server = memnew(CameraServer);
+
 	input = memnew(InputDefault);
 
 	joypad = ref new JoypadUWP(input);
@@ -399,6 +403,8 @@ void OS_UWP::finalize() {
 #endif
 
 	memdelete(input);
+
+	memdelete(camera_server);
 
 	joypad = nullptr;
 }
@@ -530,7 +536,7 @@ OS::VideoMode OS_UWP::get_video_mode(int p_screen) const {
 void OS_UWP::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
-String OS_UWP::get_name() {
+String OS_UWP::get_name() const {
 
 	return "UWP";
 }
@@ -704,11 +710,16 @@ void OS_UWP::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
+OS::CursorShape OS_UWP::get_cursor_shape() const {
+
+	return cursor_shape;
+}
+
 void OS_UWP::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	// TODO
 }
 
-Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+Error OS_UWP::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 
 	return FAILED;
 };
@@ -824,11 +835,7 @@ Error OS_UWP::open_dynamic_library(const String p_path, void *&p_library_handle,
 
 	String full_path = "game/" + p_path;
 	p_library_handle = (void *)LoadPackagedLibrary(full_path.c_str(), 0);
-
-	if (!p_library_handle) {
-		ERR_EXPLAIN("Can't open dynamic library: " + full_path + ". Error: " + format_error_message(GetLastError()));
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + full_path + ", error: " + format_error_message(GetLastError()) + ".");
 	return OK;
 }
 
@@ -843,8 +850,7 @@ Error OS_UWP::get_dynamic_library_symbol_handle(void *p_library_handle, const St
 	p_symbol_handle = (void *)GetProcAddress((HMODULE)p_library_handle, p_name.utf8().get_data());
 	if (!p_symbol_handle) {
 		if (!p_optional) {
-			ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + String::num(GetLastError()));
-			ERR_FAIL_V(ERR_CANT_RESOLVE);
+			ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, "Can't resolve symbol " + p_name + ", error: " + String::num(GetLastError()) + ".");
 		} else {
 			return ERR_CANT_RESOLVE;
 		}

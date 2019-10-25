@@ -28,17 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Circular dependency between Vector3 and Basis :/
-#include "core/math/vector3.h"
-
 #ifndef BASIS_H
 #define BASIS_H
 
 #include "core/math/quat.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "core/math/vector3.h"
 
 class Basis {
 public:
@@ -133,7 +127,8 @@ public:
 		return elements[0][2] * v[0] + elements[1][2] * v[1] + elements[2][2] * v[2];
 	}
 
-	bool is_equal_approx(const Basis &a, const Basis &b) const;
+	bool is_equal_approx(const Basis &a, const Basis &b, real_t p_epsilon = CMP_EPSILON) const;
+	bool is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon = UNIT_EPSILON) const;
 
 	bool operator==(const Basis &p_matrix) const;
 	bool operator!=(const Basis &p_matrix) const;
@@ -152,7 +147,7 @@ public:
 	int get_orthogonal_index() const;
 	void set_orthogonal_index(int p_index);
 
-	void set_diagonal(const Vector3 p_diag);
+	void set_diagonal(const Vector3 &p_diag);
 
 	bool is_orthogonal() const;
 	bool is_diagonal() const;

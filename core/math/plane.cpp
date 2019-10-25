@@ -91,7 +91,7 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 
 	real_t denom = vec3_cross(normal0, normal1).dot(normal2);
 
-	if (ABS(denom) <= CMP_EPSILON)
+	if (Math::is_zero_approx(denom))
 		return false;
 
 	if (r_result) {
@@ -110,7 +110,7 @@ bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
-	if (Math::abs(den) <= CMP_EPSILON) {
+	if (Math::is_zero_approx(den)) {
 
 		return false;
 	}
@@ -135,7 +135,7 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
-	if (Math::abs(den) <= CMP_EPSILON) {
+	if (Math::is_zero_approx(den)) {
 
 		return false;
 	}

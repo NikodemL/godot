@@ -34,9 +34,7 @@
 #include "core/resource.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class CanvasItem;
 
 class StyleBox : public Resource {
@@ -149,7 +147,7 @@ class StyleBoxFlat : public StyleBox {
 
 	Color bg_color;
 	Color shadow_color;
-	PoolVector<Color> border_color;
+	Color border_color;
 
 	int border_width[4];
 	int expand_margin[4];
@@ -161,6 +159,7 @@ class StyleBoxFlat : public StyleBox {
 
 	int corner_detail;
 	int shadow_size;
+	Point2 shadow_offset;
 	int aa_size;
 
 protected:
@@ -173,10 +172,8 @@ public:
 	Color get_bg_color() const;
 
 	//Border Color
-	void set_border_color_all(const Color &p_color);
-	Color get_border_color_all() const;
-	void set_border_color(Margin p_border, const Color &p_color);
-	Color get_border_color(Margin p_border) const;
+	void set_border_color(const Color &p_color);
+	Color get_border_color() const;
 
 	//BORDER
 	//width
@@ -217,6 +214,9 @@ public:
 
 	void set_shadow_size(const int &p_size);
 	int get_shadow_size() const;
+
+	void set_shadow_offset(const Point2 &p_offset);
+	Point2 get_shadow_offset() const;
 
 	//ANTI_ALIASING
 	void set_anti_aliased(const bool &p_anti_aliased);

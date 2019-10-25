@@ -246,7 +246,13 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 				case OBJ_MENU_NEW_SCRIPT: {
 
 					if (Object::cast_to<Node>(owner))
-						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner));
+						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner), false);
+
+				} break;
+				case OBJ_MENU_EXTEND_SCRIPT: {
+
+					if (Object::cast_to<Node>(owner))
+						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner), true);
 
 				} break;
 				case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
@@ -310,7 +316,8 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 			}
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -613,7 +620,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						type = Variant::Type(i);
 					}
 				}
-				if (type)
+				if (type != Variant::NIL)
 					property_select->select_method_from_basic_type(type, v);
 				updating = false;
 				return false;
@@ -858,6 +865,13 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", this, "_color_changed");
+
+				// get default color picker mode from editor settings
+				int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+				if (default_color_mode == 1)
+					color_picker->set_hsv_mode(true);
+				else if (default_color_mode == 2)
+					color_picker->set_raw_mode(true);
 			}
 
 			color_picker->show();
@@ -916,7 +930,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					}
 
 					for (Set<String>::Element *j = valid_inheritors.front(); j; j = j->next()) {
-						String t = j->get();
+						const String &t = j->get();
 
 						bool is_custom_resource = false;
 						Ref<Texture> icon;
@@ -970,7 +984,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					menu->add_separator();
 					menu->add_item(TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 				}
-			} else {
 			}
 
 			RES cb = EditorSettings::get_singleton()->get_resource_clipboard();
@@ -1049,7 +1062,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		case Variant::POOL_COLOR_ARRAY: {
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	updating = false;
@@ -1091,7 +1105,8 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 			emit_signal("variant_changed");
 			hide();
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1432,7 +1447,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 		} break;
 
-		default: {};
+		default: {
+		};
 	}
 }
 
@@ -1699,7 +1715,8 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::POOL_COLOR_ARRAY: {
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	updating = false;
@@ -1753,7 +1770,8 @@ void CustomPropertyEditor::_focus_enter() {
 				}
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1774,7 +1792,8 @@ void CustomPropertyEditor::_focus_exit() {
 				value_editor[i]->select(0, 0);
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

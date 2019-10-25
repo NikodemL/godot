@@ -32,7 +32,7 @@
 
 #include "servers/physics_server.h"
 
-Vector<Vector3> RayShape::_gen_debug_mesh_lines() {
+Vector<Vector3> RayShape::get_debug_mesh_lines() {
 
 	Vector<Vector3> points;
 	points.push_back(Vector3());
@@ -47,7 +47,7 @@ void RayShape::_update_shape() {
 	d["length"] = length;
 	d["slips_on_slope"] = slips_on_slope;
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
-	emit_changed();
+	Shape::_update_shape();
 }
 
 void RayShape::set_length(float p_length) {

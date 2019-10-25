@@ -63,10 +63,8 @@ void PCKPacker::_bind_methods() {
 Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 
 	file = FileAccess::open(p_file, FileAccess::WRITE);
-	if (file == NULL) {
 
-		return ERR_CANT_CREATE;
-	};
+	ERR_FAIL_COND_V_MSG(!file, ERR_CANT_CREATE, "Can't open file to write: " + String(p_file) + ".");
 
 	alignment = p_alignment;
 
@@ -109,10 +107,7 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src) {
 
 Error PCKPacker::flush(bool p_verbose) {
 
-	if (!file) {
-		ERR_FAIL_COND_V(!file, ERR_INVALID_PARAMETER);
-		return ERR_INVALID_PARAMETER;
-	};
+	ERR_FAIL_COND_V_MSG(!file, ERR_INVALID_PARAMETER, "File must be opened before use.");
 
 	// write the index
 

@@ -33,9 +33,7 @@
 
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class MenuButton : public Button {
 
 	GDCLASS(MenuButton, Button);
@@ -52,6 +50,7 @@ class MenuButton : public Button {
 	void _gui_input(Ref<InputEvent> p_event);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:

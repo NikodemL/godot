@@ -74,7 +74,7 @@ public:
 
 	bool file_exists(String p_name) const;
 
-	virtual bool try_open_pack(const String &p_path);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
 	FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 
 	static ZipArchive *get_singleton();
@@ -112,6 +112,8 @@ public:
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; } // todo
+	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
 	FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file);
 	~FileAccessZip();

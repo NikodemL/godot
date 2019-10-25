@@ -37,13 +37,10 @@
 #include "scene/resources/texture.h"
 #include "servers/visual/shader_language.h"
 #include "servers/visual_server.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Material : public Resource {
 
-	GDCLASS(Material, Resource)
+	GDCLASS(Material, Resource);
 	RES_BASE_EXTENSION("material")
 	OBJ_SAVE_TYPE(Material)
 
@@ -111,7 +108,7 @@ public:
 
 class SpatialMaterial : public Material {
 
-	GDCLASS(SpatialMaterial, Material)
+	GDCLASS(SpatialMaterial, Material);
 
 public:
 	enum TextureParam {
@@ -196,6 +193,7 @@ public:
 		FLAG_DONT_RECEIVE_SHADOWS,
 		FLAG_ENSURE_CORRECT_NORMALS,
 		FLAG_DISABLE_AMBIENT_LIGHT,
+		FLAG_USE_SHADOW_TO_OPACITY,
 		FLAG_MAX
 	};
 
@@ -439,9 +437,7 @@ private:
 
 	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
 
-	enum {
-		MAX_MATERIALS_FOR_2D = 32
-	};
+	static const int MAX_MATERIALS_FOR_2D = 128;
 
 	static Ref<SpatialMaterial> materials_for_2d[MAX_MATERIALS_FOR_2D]; //used by Sprite3D and other stuff
 
@@ -628,7 +624,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static RID get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass);
+	static RID get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard = false, bool p_billboard_y = false);
 
 	RID get_shader_rid() const;
 

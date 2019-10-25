@@ -32,9 +32,7 @@
 #define TEXTURE_FRAME_H
 
 #include "scene/gui/control.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class TextureRect : public Control {
 
 	GDCLASS(TextureRect, Control);
@@ -53,6 +51,8 @@ public:
 
 private:
 	bool expand;
+	bool hflip;
+	bool vflip;
 	Ref<Texture> texture;
 	StretchMode stretch_mode;
 
@@ -63,6 +63,8 @@ private:
 
 	int vframes;
 	int hframes;
+	
+	void _texture_changed();
 
 protected:
 	void _notification(int p_what);

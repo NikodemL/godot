@@ -32,7 +32,7 @@
 #include "core/math/quick_hull.h"
 #include "servers/physics_server.h"
 
-Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {
+Vector<Vector3> ConvexPolygonShape::get_debug_mesh_lines() {
 
 	PoolVector<Vector3> points = get_points();
 
@@ -58,7 +58,7 @@ Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {
 void ConvexPolygonShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), points);
-	emit_changed();
+	Shape::_update_shape();
 }
 
 void ConvexPolygonShape::set_points(const PoolVector<Vector3> &p_points) {
@@ -83,6 +83,4 @@ void ConvexPolygonShape::_bind_methods() {
 
 ConvexPolygonShape::ConvexPolygonShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON)) {
-
-	//set_points(Vector3(1,1,1));
 }

@@ -73,6 +73,8 @@ public:
 		String enumeration;
 		String description;
 		String setter, getter;
+		String default_value;
+		bool overridden;
 		bool operator<(const PropertyDoc &p_prop) const {
 			return name < p_prop.name;
 		}
@@ -86,7 +88,6 @@ public:
 		String brief_description;
 		String description;
 		Vector<String> tutorials;
-		String demos;
 		Vector<MethodDoc> methods;
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;

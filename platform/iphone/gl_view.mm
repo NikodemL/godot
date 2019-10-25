@@ -284,17 +284,35 @@ static void clear_touches() {
 			kEAGLColorFormatRGBA8,
 			kEAGLDrawablePropertyColorFormat,
 			nil];
+	bool fallback_gl2 = false;
+	// Create a GL ES 3 context based on the gl driver from project settings
+	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3") {
+		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
+		NSLog(@"Setting up an OpenGL ES 3.0 context. Based on Project Settings \"rendering/quality/driver/driver_name\"");
+		if (!context && GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
+			gles3_available = false;
+			fallback_gl2 = true;
+			NSLog(@"Failed to create OpenGL ES 3.0 context. Falling back to OpenGL ES 2.0");
+		}
+	}
 
-	// Create our EAGLContext, and if successful make it current and create our framebuffer.
-	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
-
-	if (!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer]) {
+	// Create GL ES 2 context
+	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES2" || fallback_gl2) {
 		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-		gles3_available = false;
-		if (!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer]) {
-			[self release];
+		NSLog(@"Setting up an OpenGL ES 2.0 context.");
+		if (!context) {
+			NSLog(@"Failed to create OpenGL ES 2.0 context!");
 			return nil;
 		}
+	}
+
+	if (![EAGLContext setCurrentContext:context]) {
+		NSLog(@"Failed to set EAGLContext!");
+		return nil;
+	}
+	if (![self createFramebuffer]) {
+		NSLog(@"Failed to create frame buffer!");
+		return nil;
 	}
 
 	// Default the animation interval to 1/60th of a second.
@@ -319,12 +337,9 @@ static void clear_touches() {
 // the same size as our display area.
 
 - (void)layoutSubviews {
-	//printf("HERE\n");
 	[EAGLContext setCurrentContext:context];
 	[self destroyFramebuffer];
 	[self createFramebuffer];
-	[self drawView];
-	[self drawView];
 }
 
 - (BOOL)createFramebuffer {
@@ -476,7 +491,7 @@ static void clear_touches() {
 #ifdef DEBUG_ENABLED
 	GLenum err = glGetError();
 	if (err)
-		NSLog(@"%x error", err);
+		NSLog(@"DrawView: %x error", err);
 #endif
 }
 
@@ -713,41 +728,5 @@ static void clear_touches() {
 - (void)playerItemDidReachEnd:(NSNotification *)notification {
 	_stop_video();
 }
-
-/*
-- (void)moviePlayBackDidFinish:(NSNotification*)notification {
-
-
-		NSNumber* reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
-		switch ([reason intValue]) {
-				case MPMovieFinishReasonPlaybackEnded:
-						//NSLog(@"Playback Ended");
-						break;
-				case MPMovieFinishReasonPlaybackError:
-						//NSLog(@"Playback Error");
-						video_found_error = true;
-						break;
-				case MPMovieFinishReasonUserExited:
-						//NSLog(@"User Exited");
-						video_found_error = true;
-						break;
-				default:
-					//NSLog(@"Unsupported reason!");
-					break;
-		}
-
-		MPMoviePlayerController *player = [notification object];
-
-		[[NSNotificationCenter defaultCenter]
-			removeObserver:self
-			name:MPMoviePlayerPlaybackDidFinishNotification
-			object:player];
-
-		[_instance.moviePlayerController stop];
-		[_instance.moviePlayerController.view removeFromSuperview];
-
-	video_playing = false;
-}
-*/
 
 @end

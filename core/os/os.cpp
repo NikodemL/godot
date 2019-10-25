@@ -51,6 +51,35 @@ uint32_t OS::get_ticks_msec() const {
 	return get_ticks_usec() / 1000;
 }
 
+String OS::get_iso_date_time(bool local) const {
+	OS::Date date = get_date(local);
+	OS::Time time = get_time(local);
+
+	String timezone;
+	if (!local) {
+		TimeZoneInfo zone = get_time_zone_info();
+		if (zone.bias >= 0) {
+			timezone = "+";
+		}
+		timezone = timezone + itos(zone.bias / 60).pad_zeros(2) + itos(zone.bias % 60).pad_zeros(2);
+	} else {
+		timezone = "Z";
+	}
+
+	return itos(date.year).pad_zeros(2) +
+		   "-" +
+		   itos(date.month).pad_zeros(2) +
+		   "-" +
+		   itos(date.day).pad_zeros(2) +
+		   "T" +
+		   itos(time.hour).pad_zeros(2) +
+		   ":" +
+		   itos(time.min).pad_zeros(2) +
+		   ":" +
+		   itos(time.sec).pad_zeros(2) +
+		   timezone;
+}
+
 uint64_t OS::get_splash_tick_msec() const {
 	return _msec_splash;
 }
@@ -157,6 +186,11 @@ int OS::get_process_id() const {
 	return -1;
 };
 
+void OS::vibrate_handheld(int p_duration_ms) {
+
+	WARN_PRINTS("vibrate_handheld() only works with Android and iOS");
+}
+
 bool OS::is_stdout_verbose() const {
 
 	return _verbose_stdout;
@@ -220,6 +254,16 @@ int OS::get_virtual_keyboard_height() const {
 	return 0;
 }
 
+void OS::set_cursor_shape(CursorShape p_shape) {
+}
+
+OS::CursorShape OS::get_cursor_shape() const {
+	return CURSOR_ARROW;
+}
+
+void OS::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+}
+
 void OS::print_all_resources(String p_to_file) {
 
 	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
@@ -229,7 +273,7 @@ void OS::print_all_resources(String p_to_file) {
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
 			_OSPRF = NULL;
-			ERR_FAIL_COND(err != OK);
+			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
 		}
 	}
 
@@ -447,12 +491,12 @@ void OS::_ensure_user_data_dir() {
 
 	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
-	if (err != OK) {
-		ERR_EXPLAIN("Error attempting to create data dir: " + dd);
-	}
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
 
 	memdelete(da);
+}
+
+void OS::set_native_icon(const String &p_filename) {
 }
 
 void OS::set_icon(const Ref<Image> &p_icon) {
@@ -678,7 +722,7 @@ int OS::get_audio_driver_count() const {
 const char *OS::get_audio_driver_name(int p_driver) const {
 
 	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V(!driver, "");
+	ERR_FAIL_COND_V_MSG(!driver, "", "Cannot get audio driver at index '" + itos(p_driver) + "'.");
 	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
@@ -746,6 +790,8 @@ OS::OS() {
 }
 
 OS::~OS() {
+	if (last_error)
+		memfree(last_error);
 	memdelete(_logger);
 	singleton = NULL;
 }

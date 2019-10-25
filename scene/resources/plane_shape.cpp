@@ -32,7 +32,7 @@
 
 #include "servers/physics_server.h"
 
-Vector<Vector3> PlaneShape::_gen_debug_mesh_lines() {
+Vector<Vector3> PlaneShape::get_debug_mesh_lines() {
 
 	Plane p = get_plane();
 	Vector<Vector3> points;
@@ -64,6 +64,7 @@ Vector<Vector3> PlaneShape::_gen_debug_mesh_lines() {
 void PlaneShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), plane);
+	Shape::_update_shape();
 }
 
 void PlaneShape::set_plane(Plane p_plane) {

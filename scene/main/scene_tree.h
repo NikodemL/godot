@@ -39,10 +39,6 @@
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class PackedScene;
 class Node;
 class Viewport;
@@ -64,6 +60,8 @@ public:
 
 	void set_pause_mode_process(bool p_pause_mode_process);
 	bool is_pause_mode_process();
+
+	void release_connections();
 
 	SceneTreeTimer();
 };
@@ -126,6 +124,7 @@ private:
 	StringName tree_changed_name;
 	StringName node_added_name;
 	StringName node_removed_name;
+	StringName node_renamed_name;
 
 	bool use_font_oversampling;
 	int64_t current_frame;
@@ -201,6 +200,7 @@ private:
 	void tree_changed();
 	void node_added(Node *p_node);
 	void node_removed(Node *p_node);
+	void node_renamed(Node *p_node);
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
@@ -287,7 +287,7 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = 29
+		NOTIFICATION_TRANSFORM_CHANGED = 2000
 	};
 
 	enum GroupCallFlags {
@@ -384,7 +384,7 @@ public:
 	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
 	bool has_group(const StringName &p_identifier) const;
 
-	void set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 p_minsize, real_t p_shrink = 1);
+	void set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 &p_minsize, real_t p_shrink = 1);
 
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;
@@ -409,6 +409,8 @@ public:
 	static SceneTree *get_singleton() { return singleton; }
 
 	void drop_files(const Vector<String> &p_files, int p_from_screen = 0);
+	void global_menu_action(const Variant &p_id, const Variant &p_meta);
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
 	//network API
 

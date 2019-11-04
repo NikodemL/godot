@@ -55,10 +55,7 @@ private:
 	bool vflip;
 	Ref<Texture> texture;
 	StretchMode stretch_mode;
-
-	bool hflip;
-	bool vflip;
-
+	
 	int frame;
 
 	int vframes;

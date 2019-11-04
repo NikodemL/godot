@@ -278,6 +278,7 @@ void TextureRect::set_hframes(int p_amount) {
 	item_rect_changed();
 	_change_notify();
 }
+
 int TextureRect::get_hframes() const {
 
 	return hframes;

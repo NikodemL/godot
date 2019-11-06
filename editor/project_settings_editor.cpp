@@ -442,15 +442,7 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_pressed() && k->get_scancode() != 0) {
 
 		last_wait_for_key = p_event;
-		String str = keycode_get_string(k->get_scancode()).capitalize();
-		if (k->get_metakey())
-			str = vformat("%s+", find_keycode_name(KEY_META)) + str;
-		if (k->get_shift())
-			str = TTR("Shift+") + str;
-		if (k->get_alt())
-			str = TTR("Alt+") + str;
-		if (k->get_control())
-			str = TTR("Control+") + str;
+		const String str = keycode_get_string(k->get_scancode_with_modifiers());
 
 		press_a_key_label->set_text(str);
 		press_a_key->accept_event();
@@ -740,15 +732,7 @@ void ProjectSettingsEditor::_update_actions() {
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
 
-				String str = keycode_get_string(k->get_scancode()).capitalize();
-				if (k->get_metakey())
-					str = vformat("%s+", find_keycode_name(KEY_META)) + str;
-				if (k->get_shift())
-					str = TTR("Shift+") + str;
-				if (k->get_alt())
-					str = TTR("Alt+") + str;
-				if (k->get_control())
-					str = TTR("Control+") + str;
+				const String str = keycode_get_string(k->get_scancode_with_modifiers());
 
 				action2->set_text(0, str);
 				action2->set_icon(0, get_icon("Keyboard", "EditorIcons"));
@@ -845,9 +829,10 @@ void ProjectSettingsEditor::_item_adds(String) {
 
 void ProjectSettingsEditor::_item_add() {
 
-	// Initialize the property with the default value for the given type
+	// Initialize the property with the default value for the given type.
+	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
 	Variant::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected()), NULL, 0, ce);
+	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), NULL, 0, ce);
 
 	String catname = category->get_text().strip_edges();
 	String propname = property->get_text().strip_edges();
@@ -1835,7 +1820,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	// Start at 1 to avoid adding "Nil" as an option
 	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
-		type->add_item(Variant::get_type_name(Variant::Type(i)), i);
+		type->add_item(Variant::get_type_name(Variant::Type(i)));
 	}
 
 	Button *add = memnew(Button);

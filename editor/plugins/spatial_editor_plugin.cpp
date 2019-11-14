@@ -2765,6 +2765,7 @@ void SpatialEditorViewport::_preview_exited_scene() {
 	preview_camera->disconnect("toggled", this, "_toggle_camera_preview");
 	preview_camera->set_pressed(false);
 	_toggle_camera_preview(false);
+	preview_camera->connect("toggled", this, "_toggle_camera_preview");
 	view_menu->show();
 }
 
@@ -3602,6 +3603,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	vbox->add_child(preview_camera);
 	preview_camera->set_h_size_flags(0);
 	preview_camera->hide();
+	preview_camera->connect("toggled", this, "_toggle_camera_preview");
 	previewing = NULL;
 	gizmo_scale = 1.0;
 
@@ -4421,11 +4423,11 @@ void SpatialEditor::_update_camera_override_button(bool p_game_running) {
 
 	if (p_game_running) {
 		button->set_disabled(false);
-		button->set_tooltip(TTR("Game camera override\nNo game instance running."));
+		button->set_tooltip(TTR("Game Camera Override\nNo game instance running."));
 	} else {
 		button->set_disabled(true);
 		button->set_pressed(false);
-		button->set_tooltip(TTR("Game camera override\nOverrides game camera with editor viewport camera."));
+		button->set_tooltip(TTR("Game Camera Override\nOverrides game camera with editor viewport camera."));
 	}
 }
 

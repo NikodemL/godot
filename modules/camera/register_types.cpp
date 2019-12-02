@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godotsharp_dirs.h                                                    */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOTSHARP_DIRS_H
-#define GODOTSHARP_DIRS_H
+#include "register_types.h"
 
-#include "core/ustring.h"
-
-namespace GodotSharpDirs {
-
-String get_res_data_dir();
-String get_res_metadata_dir();
-String get_res_assemblies_base_dir();
-String get_res_assemblies_dir();
-String get_res_config_dir();
-String get_res_temp_dir();
-String get_res_temp_assemblies_base_dir();
-String get_res_temp_assemblies_dir();
-
-String get_mono_user_dir();
-String get_mono_logs_dir();
-
-#ifdef TOOLS_ENABLED
-String get_mono_solutions_dir();
-String get_build_logs_dir();
-
-String get_project_sln_path();
-String get_project_csproj_path();
-
-String get_data_editor_tools_dir();
-String get_data_editor_prebuilt_api_dir();
-#else
-String get_data_game_assemblies_dir();
+#if defined(WINDOWS_ENABLED)
+#include "camera_win.h"
+#endif
+#if defined(IPHONE_ENABLED)
+#include "camera_ios.h"
+#endif
+#if defined(OSX_ENABLED)
+#include "camera_osx.h"
 #endif
 
-String get_data_mono_etc_dir();
-String get_data_mono_lib_dir();
-
-#ifdef WINDOWS_ENABLED
-String get_data_mono_bin_dir();
+void register_camera_types() {
+#if defined(WINDOWS_ENABLED)
+	CameraServer::make_default<CameraWindows>();
 #endif
+#if defined(IPHONE_ENABLED)
+	CameraServer::make_default<CameraIOS>();
+#endif
+#if defined(OSX_ENABLED)
+	CameraServer::make_default<CameraOSX>();
+#endif
+}
 
-} // namespace GodotSharpDirs
-
-#endif // GODOTSHARP_DIRS_H
+void unregister_camera_types() {
+}
